@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Orthogonal Auto Layout</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/src/index.css" />
+</head>
+<body>
+  <div id="app">
+    <div id="toolbar">
+      <button id="btn-auto">Auto Layout</button>
+      <button id="btn-reset">Reset</button>
+      <label><input type="checkbox" id="chk-grid" checked /> Grid</label>
+      <label><input type="checkbox" id="chk-obstacles" /> Obstacles</label>
+      <label><input type="checkbox" id="chk-bbox" /> BoundingBox</label>
+      <span id="metrics"></span>
+    </div>
+    <canvas id="stage"></canvas>
+  </div>
+  <script type="module" src="/src/app/main.ts"></script>
+</body>
+</html>
