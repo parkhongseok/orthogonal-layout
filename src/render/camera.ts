@@ -33,3 +33,18 @@ export function fitToView(
   cam.tx = viewW / 2 - cx * cam.scale;
   cam.ty = viewH / 2 - cy * cam.scale;
 }
+
+export function fitTopLeft(
+  cam: Camera,
+  viewW: number,
+  viewH: number,
+  world: { x: number; y: number; w: number; h: number },
+  pad = 24
+) {
+  // 화면 안에 전부 보이도록 스케일만 정하고, 기준점은 좌상단으로
+  const sx = (viewW - pad * 2) / world.w;
+  const sy = (viewH - pad * 2) / world.h;
+  cam.scale = Math.max(0.05, Math.min(sx, sy));
+  cam.tx = pad - world.x * cam.scale;  // 좌측 여백 pad
+  cam.ty = pad - world.y * cam.scale;  // 상단 여백 pad
+}

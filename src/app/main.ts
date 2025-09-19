@@ -8,8 +8,7 @@ import {
 } from "@render/canvasLayer";
 import { CONFIG } from "./config";
 
-// ⬇️ 추가
-import { makeCamera, applyCamera, zoomAt, fitToView } from "@render/camera";
+import { makeCamera, applyCamera, zoomAt, fitTopLeft } from "@render/camera";
 import { computeWorldBounds } from "@render/world";
 
 const canvas = document.getElementById("stage") as HTMLCanvasElement;
@@ -25,6 +24,7 @@ const ctx = initCanvas(canvas);
 const nNodes = 120;
 const nEdges = 180;
 const nGroups = 4;
+const initPadding = 10;
 let graph = createInitialGraph(nNodes, nEdges, nGroups, CONFIG.gridSize);
 
 function render() {
@@ -61,11 +61,10 @@ document.getElementById("btn-auto")!.addEventListener("click", () => {
   const t1 = performance.now();
   setMetrics(metricsEl, { elapsedMs: (t1 - t0).toFixed(1) });
 
-  // 레이아웃 후 전체 보기
   const rect = canvas.getBoundingClientRect();
   const world = computeWorldBounds(graph);
-  fitToView(camera, rect.width, rect.height, world, 40);
-
+  // 기존: fitToView(camera, rect.width, rect.height, world, 40);
+  fitTopLeft(camera, rect.width, rect.height, world, initPadding);
   render();
 });
 
@@ -75,7 +74,7 @@ document.getElementById("btn-reset")!.addEventListener("click", () => {
 
   const rect = canvas.getBoundingClientRect();
   const world = computeWorldBounds(graph);
-  fitToView(camera, rect.width, rect.height, world, 40);
+  fitTopLeft(camera, rect.width, rect.height, world, initPadding);
 
   render();
 });
@@ -141,7 +140,7 @@ document.getElementById("btn-zoom-out")?.addEventListener("click", () => {
 document.getElementById("btn-fit")?.addEventListener("click", () => {
   const rect = canvas.getBoundingClientRect();
   const world = computeWorldBounds(graph);
-  fitToView(camera, rect.width, rect.height, world, 40);
+  fitTopLeft(camera, rect.width, rect.height, world, initPadding);
   render();
 });
 
@@ -149,7 +148,7 @@ document.getElementById("btn-fit")?.addEventListener("click", () => {
 (() => {
   const rect = canvas.getBoundingClientRect();
   const world = computeWorldBounds(graph);
-  fitToView(camera, rect.width, rect.height, world, 40);
+  fitTopLeft(camera, rect.width, rect.height, world, initPadding);
   render();
 })();
 

@@ -2,9 +2,17 @@ export type NodeId = string & { readonly brand: unique symbol };
 export type EdgeId = string & { readonly brand: unique symbol };
 export type GroupId = string & { readonly brand: unique symbol };
 
-export interface Point { x: number; y: number; }
-export interface Rect { x: number; y: number; w: number; h: number; }
-export type PortSide = 'top' | 'bottom' | 'left' | 'right';
+export interface Point {
+  x: number;
+  y: number;
+}
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+export type PortSide = "top" | "bottom" | "left" | "right";
 
 export interface Node {
   id: NodeId;
