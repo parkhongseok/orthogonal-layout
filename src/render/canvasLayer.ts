@@ -1,5 +1,6 @@
 import { THEME } from "./theme";
 import type { Graph, Rect } from "@domain/types";
+import { portPosition } from "@layout/port/assign";
 
 let _ctx: CanvasRenderingContext2D;
 let _overlays = { grid: true, obstacles: false, bbox: false };
@@ -47,14 +48,6 @@ export function drawAll(
     strokeRect(ctx, grp.bbox);
   }
 
-  // nodes
-  for (const [, node] of g.nodes) {
-    ctx.fillStyle = THEME.nodeFill;
-    ctx.strokeStyle = THEME.nodeStroke;
-    fillRect(ctx, node.bbox);
-    strokeRect(ctx, node.bbox);
-  }
-
   // edges (if path exists, draw orthogonal polyline)
   ctx.strokeStyle = THEME.edgeStroke;
   ctx.lineWidth = 2;
@@ -66,6 +59,33 @@ export function drawAll(
       ctx.lineTo(e.path[i].x, e.path[i].y);
     ctx.stroke();
   }
+
+  // nodes
+  for (const [, node] of g.nodes) {
+    ctx.fillStyle = THEME.nodeFill;
+    ctx.strokeStyle = THEME.nodeStroke;
+    fillRect(ctx, node.bbox);
+    strokeRect(ctx, node.bbox);
+  }
+
+  drawPorts(ctx, g);
+}
+
+export function drawPorts(ctx: CanvasRenderingContext2D, graph: Graph) {
+  ctx.save();
+  ctx.lineWidth = 1;
+  for (const [, n] of graph.nodes) {
+    if (!n.ports?.length) continue;
+    for (const p of n.ports) {
+      const pos = portPosition(n, p.side, p.offset);
+      ctx.beginPath();
+      ctx.rect(pos.x - 2, pos.y - 2, 4, 4); // 작은 정사각형 포트
+      ctx.fillStyle = "#1f6feb";
+      ctx.fill();
+      // ctx.stroke();
+    }
+  }
+  ctx.restore();
 }
 
 function drawGrid(ctx: CanvasRenderingContext2D, grid: number) {

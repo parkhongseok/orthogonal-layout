@@ -11,6 +11,8 @@ export function autoLayoutPipeline(g: Graph, cfg: any): Graph {
   cur = initialPlacement(cur, cfg);
   cur = resolveOverlap(cur, cfg);
   cur = assignPorts(cur, cfg);
+  const anyNode = g.nodes.values().next().value;
+  console.log("ports?", anyNode?.ports?.length, anyNode?.ports?.slice(0, 4));
   cur = spreadPorts(cur, cfg);
   cur = routeAll(cur, cfg);
   cur = sweepCompact(cur, cfg);
