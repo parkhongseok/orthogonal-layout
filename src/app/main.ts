@@ -1,5 +1,6 @@
 import { createInitialGraph } from "@domain/scenario/generator";
 import { autoLayoutPipeline } from "@layout/pipeline";
+import { centerGraph } from "@layout/placement/centerGraph";
 import {
   drawAll,
   initCanvas,
@@ -35,7 +36,9 @@ function render() {
 
 document.getElementById("btn-auto")!.addEventListener("click", () => {
   const t0 = performance.now();
-  graph = autoLayoutPipeline(graph, CONFIG);
+  let laidOutGraph = autoLayoutPipeline(graph, CONFIG);
+  laidOutGraph = centerGraph(laidOutGraph, CONFIG, canvas); // <-- 여기서 직접 호출
+  graph = laidOutGraph;
   const t1 = performance.now();
   setMetrics(metricsEl, { elapsedMs: (t1 - t0).toFixed(1) });
   render();

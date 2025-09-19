@@ -1,5 +1,5 @@
-import { THEME } from './theme';
-import type { Graph, Rect } from '@domain/types';
+import { THEME } from "./theme";
+import type { Graph, Rect } from "@domain/types";
 
 let _ctx: CanvasRenderingContext2D;
 let _overlays = { grid: true, obstacles: false, bbox: false };
@@ -9,16 +9,16 @@ export function initCanvas(canvas: HTMLCanvasElement) {
   const resize = () => {
     canvas.width = canvas.clientWidth * dpr;
     canvas.height = canvas.clientHeight * dpr;
-    const ctx = canvas.getContext('2d')!;
+    const ctx = canvas.getContext("2d")!;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     _ctx = ctx;
   };
   const style = getComputedStyle(canvas);
   if (!canvas.style.width) {
-    canvas.style.width = '100vw';
-    canvas.style.height = 'calc(100vh - 42px)';
+    canvas.style.width = "100vw";
+    canvas.style.height = "calc(100vh - 42px)";
   }
-  window.addEventListener('resize', resize);
+  window.addEventListener("resize", resize);
   resize();
   return _ctx;
 }
@@ -31,7 +31,12 @@ export function setMetrics(el: HTMLElement, m: { elapsedMs: string }) {
   el.textContent = `elapsed: ${m.elapsedMs} ms`;
 }
 
-export function drawAll(ctx: CanvasRenderingContext2D, g: Graph, opts: any, cfg: any) {
+export function drawAll(
+  ctx: CanvasRenderingContext2D,
+  g: Graph,
+  opts: any,
+  cfg: any
+) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   if (_overlays.grid) drawGrid(ctx, cfg.gridSize);
 
@@ -57,19 +62,27 @@ export function drawAll(ctx: CanvasRenderingContext2D, g: Graph, opts: any, cfg:
     if (!e.path || e.path.length === 0) continue;
     ctx.beginPath();
     ctx.moveTo(e.path[0].x, e.path[0].y);
-    for (let i = 1; i < e.path.length; i++) ctx.lineTo(e.path[i].x, e.path[i].y);
+    for (let i = 1; i < e.path.length; i++)
+      ctx.lineTo(e.path[i].x, e.path[i].y);
     ctx.stroke();
   }
 }
 
 function drawGrid(ctx: CanvasRenderingContext2D, grid: number) {
-  const w = ctx.canvas.width, h = ctx.canvas.height;
+  const w = ctx.canvas.width,
+    h = ctx.canvas.height;
   ctx.save();
   ctx.strokeStyle = THEME.grid;
   ctx.lineWidth = 1;
   ctx.beginPath();
-  for (let x = 0; x < w; x += grid) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
-  for (let y = 0; y < h; y += grid) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
+  for (let x = 0; x < w; x += grid) {
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, h);
+  }
+  for (let y = 0; y < h; y += grid) {
+    ctx.moveTo(0, y);
+    ctx.lineTo(w, y);
+  }
   ctx.stroke();
   ctx.restore();
 }
