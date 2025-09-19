@@ -1,7 +1,6 @@
 import type { Graph } from "@domain/types";
 import { initialPlacement } from "@layout/placement/initPlacement";
 import { resolveOverlap } from "@layout/placement/resolveOverlap";
-import { updateGroupBounds } from "@layout/placement/updateGroupBounds";
 import { assignPorts } from "@layout/port/assign";
 import { spreadPorts } from "@layout/port/spread";
 import { routeAll } from "@layout/routing/routeAll";
@@ -11,7 +10,6 @@ export function autoLayoutPipeline(g: Graph, cfg: any): Graph {
   let cur = g;
   cur = initialPlacement(cur, cfg);
   cur = resolveOverlap(cur, cfg);
-  cur = updateGroupBounds(cur, cfg);
   cur = assignPorts(cur, cfg);
   cur = spreadPorts(cur, cfg);
   cur = routeAll(cur, cfg);

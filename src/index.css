@@ -1,7 +1,0 @@
-html, body, #app { margin: 0; padding: 0; height: 100%; }
-#toolbar {
-  display: flex; gap: 8px; align-items: center;
-  padding: 8px; border-bottom: 1px solid #ddd; font-family: system-ui, sans-serif;
-}
-#stage { display: block; width: 100vw; height: calc(100vh - 42px); }
-label { user-select: none; }
