@@ -2,7 +2,7 @@ import type { Graph, Node, Point, NodeRec, Dir } from "@domain/types";
 import { buildGrid, worldToCell, cellAt, Grid } from "./grid";
 import { aStarGrid } from "./aStar";
 import type { CostConfig } from "./cost";
-import { smoothPath } from "./pathSmoother";
+import { cleanupCollinearPoints, smoothPath } from "./pathSmoother";
 import { findBestPortPair } from "./portSelector"; // 새로운 '포트 전략가' import
 
 /**
@@ -82,9 +82,39 @@ export function routeAll(g: Graph, cfg: any): Graph {
         targetSide
       );
     } else {
-      // 6. A*가 경로를 찾지 못한 경우, 간단한 L자 형태의 비상 경로를 생성합니다.
-      const midPt = { x: targetPort.x, y: sourcePort.y };
-      finalPath = [sourcePort, midPt, targetPort];
+      // [수정] A* 실패 시, 포트 방향을 존중하는 대체 경로 생성 로직
+      console.warn(`A* failed for edge ${e.id}, using fallback routing.`); // 디버깅을 위한 로그 추가
+
+      const path: Point[] = [sourcePort];
+      const sp = sourcePort;
+      const tp = targetPort;
+
+      if (
+        (sourceSide === "left" || sourceSide === "right") &&
+        (targetSide === "left" || targetSide === "right")
+      ) {
+        // 수평 -> 수평
+        const midX = sp.x + (tp.x - sp.x) / 2;
+        path.push({ x: midX, y: sp.y });
+        path.push({ x: midX, y: tp.y });
+      } else if (
+        (sourceSide === "top" || sourceSide === "bottom") &&
+        (targetSide === "top" || targetSide === "bottom")
+      ) {
+        // 수직 -> 수직
+        const midY = sp.y + (tp.y - sp.y) / 2;
+        path.push({ x: sp.x, y: midY });
+        path.push({ x: tp.x, y: midY });
+      } else if (sourceSide === "left" || sourceSide === "right") {
+        // 수평 -> 수직 (L자 경로)
+        path.push({ x: tp.x, y: sp.y });
+      } else {
+        // 수직 -> 수평 (L자 경로)
+        path.push({ x: sp.x, y: tp.y });
+      }
+
+      path.push(targetPort);
+      finalPath = cleanupCollinearPoints(path);
     }
 
     // 7. 계산된 최종 경로를 엣지 데이터에 업데이트합니다.

@@ -40,7 +40,7 @@ function findCorners(nodes: NodeRec[], grid: Grid): Point[] {
 /**
  * 경로에서 연속된 세 점이 한 직선 위에 있을 경우, 중간 점을 제거합니다.
  */
-function cleanupCollinearPoints(path: Point[]): Point[] {
+export function cleanupCollinearPoints(path: Point[]): Point[] {
   if (path.length < 3) return path;
   const cleaned: Point[] = [path[0]];
   for (let i = 1; i < path.length - 1; i++) {
