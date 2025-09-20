@@ -1,3 +1,4 @@
+import { BusRoutingStrategy } from "./../layout/routing/busStrategy/busRoutingStrategy";
 import { createInitialGraph } from "@domain/scenario/generator";
 import { autoLayoutPipeline } from "@layout/pipeline";
 import {
@@ -11,7 +12,8 @@ import { CONFIG } from "./config";
 import { makeCamera, applyCamera, zoomAt, fitTopLeft } from "@render/camera";
 import { computeWorldBounds } from "@render/world";
 import { Graph } from "@domain/types";
-import { clearLastBuiltGrid } from "@layout/routing/routeAll";
+import { clearLastBuiltGrid } from "@layout/routing/aStarStrategy/routeAll";
+import { LegacyAStarStrategy } from "@layout/routing/aStarStrategy/legacyAStarStrategy";
 
 const canvas = document.getElementById("stage") as HTMLCanvasElement;
 const metricsEl = document.getElementById("metrics")!;
@@ -19,6 +21,7 @@ const infoPanelEl = document.getElementById("info-panel")!; // 정보 패널
 
 // 컨트롤 요소들
 const btnAuto = document.getElementById("btn-auto")!;
+const btnBusAuto = document.getElementById("btn-bus-auto")!;
 const btnReset = document.getElementById("btn-reset")!;
 const numNodesInput = document.getElementById("num-nodes") as HTMLInputElement;
 const numEdgesInput = document.getElementById("num-edges") as HTMLInputElement;
@@ -104,9 +107,29 @@ function render() {
 }
 
 // ===== Auto Layout =====
+btnBusAuto.addEventListener("click", () => {
+  const t0 = performance.now();
+  const busRoutingStrategy = new BusRoutingStrategy();
+
+  // 파이프라인에 전략을 전달
+  graph = autoLayoutPipeline(graph, CONFIG, busRoutingStrategy);
+  const t1 = performance.now();
+  setMetrics(metricsEl, { elapsedMs: (t1 - t0).toFixed(1) });
+
+  const rect = canvas.getBoundingClientRect();
+  const world = computeWorldBounds(graph);
+  fitTopLeft(camera, rect.width, rect.height, world, initPadding);
+
+  updateInfoPanel(graph); // 레이아웃 후 정보 패널 업데이트
+  render();
+});
+
 btnAuto.addEventListener("click", () => {
   const t0 = performance.now();
-  graph = autoLayoutPipeline(graph, CONFIG);
+  const legacyStrategy = new LegacyAStarStrategy();
+
+  // 파이프라인에 전략을 전달
+  graph = autoLayoutPipeline(graph, CONFIG, legacyStrategy);
   const t1 = performance.now();
   setMetrics(metricsEl, { elapsedMs: (t1 - t0).toFixed(1) });
 

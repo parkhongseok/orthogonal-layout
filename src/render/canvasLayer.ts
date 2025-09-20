@@ -1,8 +1,8 @@
 import { THEME } from "./theme";
 import type { Graph, Rect } from "@domain/types";
 import { portPosition } from "@layout/port/assign";
-import { Grid } from "@layout/routing/grid";
-import { lastBuiltGrid } from "@layout/routing/routeAll";
+import { Grid } from "@layout/routing/aStarStrategy/grid";
+import { lastBuiltGrid } from "@layout/routing/aStarStrategy/routeAll";
 
 let _ctx: CanvasRenderingContext2D;
 let _overlays = { grid: true, obstacles: false, bbox: false };

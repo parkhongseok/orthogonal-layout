@@ -3,11 +3,15 @@ import { initialPlacement } from "@layout/placement/initPlacement";
 import { resolveOverlap } from "@layout/placement/resolveOverlap";
 import { spreadNodes } from "@layout/placement/spread";
 import { assignPorts } from "@layout/port/assign";
-import { beautifyPath } from "@layout/port/beautifyPath";
-import { routeAll } from "@layout/routing/routeAll";
 import { sweepCompact } from "@layout/compaction/sweep";
+import { routeAll } from "./routing/aStarStrategy/routeAll";
+import { RoutingStrategy } from "./routing/strategy";
 
-export function autoLayoutPipeline(g: Graph, cfg: any): Graph {
+export function autoLayoutPipeline(
+  g: Graph,
+  cfg: any,
+  strategy: RoutingStrategy
+): Graph {
   let cur = g;
   // --- 1. 노드 위치 결정 단계 ---
   cur = initialPlacement(cur, cfg);
@@ -16,7 +20,6 @@ export function autoLayoutPipeline(g: Graph, cfg: any): Graph {
   cur = assignPorts(cur, cfg);
   cur = sweepCompact(cur, cfg);
 
-  cur = routeAll(cur, cfg);
-  // cur = beautifyPath(cur, cfg);
+  cur = strategy.execute(cur, cfg);
   return cur;
 }
