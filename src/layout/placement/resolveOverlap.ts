@@ -5,34 +5,41 @@ import { snap, snapUp } from "@utils/math";
 export function resolveOverlap(g: Graph, cfg: any): Graph {
   const grid = cfg.gridSize as number;
   const inset = (cfg.layout?.groupInset ?? 2) * grid;
+  const gap = (cfg.layout?.nodeGapX ?? 2) * cfg.gridSize;
 
   const out = cloneGraph(g);
   // Map을 새로 만들어 내부 객체들이 확실히 참조되도록 보장합니다.
   out.nodes = new Map(out.nodes);
   out.groups = new Map(out.groups);
 
-  const maxIterations = 5; // 전체 과정을 여러 번 반복하여 안정화시킵니다.
+  const maxIterations = 10; // 안정성을 위해 반복 횟수 증가
   for (let i = 0; i < maxIterations; i++) {
+    let movedCount = 0;
+
     // 1단계: 그룹과 루트 노드(상위 레벨)들의 겹침을 해결합니다.
     const topLevelItems: (Group | Node)[] = [
       ...Array.from(out.groups.values()),
       ...Array.from(out.nodes.values()).filter((n) => !n.groupId),
     ];
-    const deltas = sweepAndPush(topLevelItems, cfg);
+    const deltas = sweepAndPush(topLevelItems, gap);
 
-    // 2단계: 그룹이 이동한 만큼 자식 노드들도 똑같이 이동시킵니다.
-    deltas.forEach((delta, id) => {
-      const group = out.groups.get(id as any);
-      if (group) {
-        group.bbox.x += delta.dx;
-        group.bbox.y += delta.dy;
-        group.children.forEach((childId) => {
-          const childNode = out.nodes.get(childId);
-          if (childNode) {
-            childNode.bbox.x += delta.dx;
-            childNode.bbox.y += delta.dy;
-          }
-        });
+    // 2단계: 계산된 이동량을 그룹과 그 자식 노드들, 그리고 루트 노드에 적용합니다.
+    deltas.forEach((delta, item) => {
+      if (Math.abs(delta.dx) > 0.1 || Math.abs(delta.dy) > 0.1) {
+        movedCount++;
+        item.bbox.x += delta.dx;
+        item.bbox.y += delta.dy;
+
+        // 아이템이 그룹일 경우, 자식 노드들도 똑같이 이동시킵니다.
+        if ("children" in item) {
+          item.children.forEach((childId) => {
+            const childNode = out.nodes.get(childId);
+            if (childNode) {
+              childNode.bbox.x += delta.dx;
+              childNode.bbox.y += delta.dy;
+            }
+          });
+        }
       }
     });
 
@@ -42,81 +49,103 @@ export function resolveOverlap(g: Graph, cfg: any): Graph {
         .map((id) => out.nodes.get(id)!)
         .filter(Boolean);
       if (children.length > 1) {
-        sweepAndPush(children, cfg);
+        const childDeltas = sweepAndPush(children, gap);
+        childDeltas.forEach((delta, item) => {
+          if (Math.abs(delta.dx) > 0.1 || Math.abs(delta.dy) > 0.1) {
+            movedCount++;
+            item.bbox.x += delta.dx;
+            item.bbox.y += delta.dy;
+          }
+        });
       }
     }
 
     // 4단계: 모든 이동이 끝난 후, 그룹 경계 상자를 자식에 맞게 다시 조절합니다.
     updateAllGroupBBoxes(out, grid, inset);
+
+    // 변경 사항이 없으면 루프를 조기 종료하여 최적화합니다.
+    if (movedCount === 0) {
+      break;
+    }
   }
 
   return out;
 }
 
 /**
- * 주어진 아이템(노드 또는 그룹) 리스트의 겹침을 해결하고, 각 아이템의 이동량을 반환합니다.
- * 이 함수는 전달된 아이템의 bbox 속성을 직접 수정합니다.
+ * 주어진 아이템 리스트의 겹침을 해결하고, 각 아이템의 이동량(delta)을 Map 형태로 반환합니다.
+ * [중요] 이 함수는 전달된 아이템의 bbox를 직접 수정하지 않습니다.
  */
 function sweepAndPush(
   items: (Node | Group)[],
-  cfg: any
-): Map<string, { dx: number; dy: number }> {
-  const gap = (cfg.layout?.nodeGapX ?? 2) * cfg.gridSize;
-  const initialPositions = new Map(
-    items.map((it) => [it.id, { x: it.bbox.x, y: it.bbox.y }])
-  );
+  gap: number
+): Map<Node | Group, { dx: number; dy: number }> {
+  const deltas = new Map(items.map((it) => [it, { dx: 0, dy: 0 }]));
 
-  // 안정성을 위해 스윕-푸시를 2번 실행합니다.
-  for (let iter = 0; iter < 2; iter++) {
-    // 세로 스윕
-    items.sort(
-      (a, b) =>
-        a.bbox.y - b.bbox.y || a.bbox.x - b.bbox.x || a.id.localeCompare(b.id)
-    );
+  // 안정성을 위해 스윕-푸시를 여러 번(e.g., 4번) 실행합니다.
+  for (let iter = 0; iter < 4; iter++) {
+    items.sort((a, b) => a.bbox.y - b.bbox.y || a.bbox.x - b.bbox.x);
     for (let i = 0; i < items.length; i++) {
-      for (let j = 0; j < i; j++) {
-        const upper = items[j];
-        const lower = items[i];
-        if (
-          upper.bbox.x < lower.bbox.x + lower.bbox.w &&
-          upper.bbox.x + upper.bbox.w > lower.bbox.x
-        ) {
-          const requiredY = upper.bbox.y + upper.bbox.h + gap;
-          if (lower.bbox.y < requiredY) lower.bbox.y = requiredY;
-        }
+      for (let j = i + 1; j < items.length; j++) {
+        push(items[i], items[j], gap, deltas);
       }
     }
 
-    // 가로 스윕
-    items.sort(
-      (a, b) =>
-        a.bbox.x - b.bbox.x || a.bbox.y - b.bbox.y || a.id.localeCompare(b.id)
-    );
+    items.sort((a, b) => a.bbox.x - b.bbox.x || a.bbox.y - b.bbox.y);
     for (let i = 0; i < items.length; i++) {
-      for (let j = 0; j < i; j++) {
-        const left = items[j];
-        const right = items[i];
-        if (
-          left.bbox.y < right.bbox.y + right.bbox.h &&
-          left.bbox.y + left.bbox.h > right.bbox.y
-        ) {
-          const requiredX = left.bbox.x + left.bbox.w + gap;
-          if (right.bbox.x < requiredX) right.bbox.x = requiredX;
-        }
+      for (let j = i + 1; j < items.length; j++) {
+        push(items[i], items[j], gap, deltas);
       }
     }
-  }
-
-  // 각 아이템이 얼마나 움직였는지 변위(delta)를 계산하여 반환합니다.
-  const deltas = new Map<string, { dx: number; dy: number }>();
-  for (const item of items) {
-    const initial = initialPositions.get(item.id)!;
-    deltas.set(item.id, {
-      dx: item.bbox.x - initial.x,
-      dy: item.bbox.y - initial.y,
-    });
   }
   return deltas;
+}
+
+/** 두 아이템이 겹칠 경우 밀어낼 힘을 계산하여 delta에 누적합니다. */
+function push(
+  a: Node | Group,
+  b: Node | Group,
+  gap: number,
+  deltas: Map<Node | Group, { dx: number; dy: number }>
+) {
+  const ad = deltas.get(a)!;
+  const bd = deltas.get(b)!;
+  const ax1 = a.bbox.x + ad.dx,
+    ay1 = a.bbox.y + ad.dy;
+  const bx1 = b.bbox.x + bd.dx,
+    by1 = b.bbox.y + bd.dy;
+  const ax2 = ax1 + a.bbox.w,
+    ay2 = ay1 + a.bbox.h;
+  const bx2 = bx1 + b.bbox.w,
+    by2 = by1 + b.bbox.h;
+
+  if (
+    ax1 < bx2 + gap &&
+    ax2 + gap > bx1 &&
+    ay1 < by2 + gap &&
+    ay2 + gap > by1
+  ) {
+    const dx = Math.min(ax2 + gap - bx1, bx2 + gap - ax1);
+    const dy = Math.min(ay2 + gap - by1, by2 + gap - ay1);
+
+    if (dx < dy) {
+      if (a.bbox.x < b.bbox.x) {
+        ad.dx -= dx / 2;
+        bd.dx += dx / 2;
+      } else {
+        ad.dx += dx / 2;
+        bd.dx -= dx / 2;
+      }
+    } else {
+      if (a.bbox.y < b.bbox.y) {
+        ad.dy -= dy / 2;
+        bd.dy += dy / 2;
+      } else {
+        ad.dy += dy / 2;
+        bd.dy -= dy / 2;
+      }
+    }
+  }
 }
 
 function updateAllGroupBBoxes(out: Graph, grid: number, inset: number) {

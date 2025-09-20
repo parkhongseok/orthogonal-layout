@@ -59,9 +59,9 @@ export function cleanupCollinearPoints(path: Point[]): Point[] {
   cleaned.push(path[path.length - 1]);
   return cleaned;
 }
-
 /**
- * A* 경로와 포트 정보를 받아, 최종 렌더링에 사용될 완벽한 직교 경로를 생성합니다.
+ * [수정] A* 경로와 포트 정보를 받아, 불필요한 꺾임을 최소화한
+ * 최종 렌더링 경로를 생성합니다.
  */
 export function smoothPath(
   aStarPath: NodeRec[],
@@ -73,7 +73,7 @@ export function smoothPath(
 ): Point[] {
   const corners = findCorners(aStarPath, grid);
 
-  if (corners.length === 0) {
+  if (corners.length < 2) {
     const midPt =
       startSide === "left" || startSide === "right"
         ? { x: endPortPos.x, y: startPortPos.y }
@@ -82,22 +82,54 @@ export function smoothPath(
   }
 
   const path: Point[] = [startPortPos];
-  const firstCorner = corners[0];
-  const lastCorner = corners[corners.length - 1];
+  let remainingCorners = corners;
 
-  if (startSide === "left" || startSide === "right") {
-    path.push({ x: firstCorner.x, y: startPortPos.y });
+  // --- 시작점 연결 최적화 ---
+  const firstCorner = remainingCorners[0];
+  const secondCorner = remainingCorners[1];
+  const isPortHorizontal = startSide === "left" || startSide === "right";
+  const isFirstPathSegmentHorizontal =
+    Math.abs(firstCorner.y - secondCorner.y) < 1;
+
+  if (isPortHorizontal === isFirstPathSegmentHorizontal) {
+    // 방향이 일치: 첫 꺾임을 제거하고, 두 번째 꺾임과 정렬된 점을 추가
+    if (isPortHorizontal) {
+      path.push({ x: secondCorner.x, y: startPortPos.y });
+    } else {
+      path.push({ x: startPortPos.x, y: secondCorner.y });
+    }
+    remainingCorners = remainingCorners.slice(1);
   } else {
-    path.push({ x: startPortPos.x, y: firstCorner.y });
+    // 방향 불일치: 기존 방식대로 첫 꺾임 지점에 연결
+    if (isPortHorizontal) {
+      path.push({ x: firstCorner.x, y: startPortPos.y });
+    } else {
+      path.push({ x: startPortPos.x, y: firstCorner.y });
+    }
   }
 
-  path.push(...corners);
+  // --- 남은 경로와 도착점 연결 ---
+  path.push(...remainingCorners);
+  const lastPathPoint = path[path.length - 1];
+  const isEndPortHorizontal = endSide === "left" || endSide === "right";
 
-  if (endSide === "left" || endSide === "right") {
-    path.push({ x: lastCorner.x, y: endPortPos.y });
+  if (
+    (isEndPortHorizontal && Math.abs(lastPathPoint.x - endPortPos.x) < 1) ||
+    (!isEndPortHorizontal && Math.abs(lastPathPoint.y - endPortPos.y) < 1)
+  ) {
+    // 마지막 세그먼트와 도착 방향이 일치 -> 마지막 포인트의 좌표를 조정
+    path[path.length - 1] = isEndPortHorizontal
+      ? { x: endPortPos.x, y: lastPathPoint.y }
+      : { x: lastPathPoint.x, y: endPortPos.y };
   } else {
-    path.push({ x: endPortPos.x, y: lastCorner.y });
+    // 방향 불일치 -> 도착점과 정렬된 중간 지점 추가
+    if (isEndPortHorizontal) {
+      path.push({ x: lastPathPoint.x, y: endPortPos.y });
+    } else {
+      path.push({ x: endPortPos.x, y: lastPathPoint.y });
+    }
   }
+
   path.push(endPortPos);
 
   return cleanupCollinearPoints(path);

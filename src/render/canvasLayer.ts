@@ -1,6 +1,8 @@
 import { THEME } from "./theme";
 import type { Graph, Rect } from "@domain/types";
 import { portPosition } from "@layout/port/assign";
+import { Grid } from "@layout/routing/grid";
+import { lastBuiltGrid } from "@layout/routing/routeAll";
 
 let _ctx: CanvasRenderingContext2D;
 let _overlays = { grid: true, obstacles: false, bbox: false };
@@ -16,8 +18,8 @@ export function initCanvas(canvas: HTMLCanvasElement) {
   };
   const style = getComputedStyle(canvas);
   if (!canvas.style.width) {
-    canvas.style.width = "100vw";
-    canvas.style.height = "calc(100vh - 42px)";
+    canvas.style.width = "100%";
+    canvas.style.height = "calc(100vh - 82px)";
   }
   window.addEventListener("resize", resize);
   resize();
@@ -40,8 +42,37 @@ export function drawAll(
 ) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   if (_overlays.grid) drawGrid(ctx, cfg.gridSize);
+  // [추가] 'Obstacles' 체크박스가 켜져 있으면 장애물 맵을 그립니다.
 
-  // groups
+  drawGroups(ctx, g);
+  drawNodes(ctx, g);
+  drawNodeNames(ctx, g);
+  drawPorts(ctx, g);
+  drawEdges(ctx, g);
+
+  if (_overlays.obstacles && lastBuiltGrid) {
+    drawObstacles(ctx, lastBuiltGrid);
+  }
+}
+
+// [추가] 장애물 그리드를 시각화하는 새로운 함수
+function drawObstacles(ctx: CanvasRenderingContext2D, grid: Grid) {
+  ctx.save();
+  ctx.fillStyle = "rgba(255, 0, 0, 0.2)"; // 반투명 빨간색
+  for (let y = 0; y < grid.rows; y++) {
+    for (let x = 0; x < grid.cols; x++) {
+      const cell = grid.cells[y * grid.cols + x];
+      if (cell.blocked) {
+        const worldX = grid.originX + x * grid.size;
+        const worldY = grid.originY + y * grid.size;
+        ctx.fillRect(worldX, worldY, grid.size, grid.size);
+      }
+    }
+  }
+  ctx.restore();
+}
+
+export function drawGroups(ctx: CanvasRenderingContext2D, g: Graph) {
   ctx.strokeStyle = THEME.groupStroke;
   ctx.lineWidth = 1;
   for (const [, grp] of g.groups) {
@@ -81,32 +112,22 @@ export function drawAll(
       grp.bbox.y + labelHeight / 2
     );
   }
+}
 
-  // edges (if path exists, draw orthogonal polyline)
-  ctx.strokeStyle = THEME.edgeStroke;
-  ctx.lineWidth = 2;
-  for (const [, e] of g.edges) {
-    if (!e.path || e.path.length === 0) continue;
-    ctx.beginPath();
-    ctx.moveTo(e.path[0].x, e.path[0].y);
-    for (let i = 1; i < e.path.length; i++)
-      ctx.lineTo(e.path[i].x, e.path[i].y);
-    ctx.stroke();
-  }
-
-  // nodes
+export function drawNodes(ctx: CanvasRenderingContext2D, g: Graph) {
   for (const [, node] of g.nodes) {
     ctx.fillStyle = THEME.nodeFill;
     ctx.strokeStyle = THEME.nodeStroke;
     fillRect(ctx, node.bbox);
     strokeRect(ctx, node.bbox);
   }
+}
 
+export function drawNodeNames(ctx: CanvasRenderingContext2D, g: Graph) {
   for (const [, node] of g.nodes) {
     ctx.fillStyle = THEME.nodeFill;
     ctx.strokeStyle = THEME.nodeStroke;
     ctx.lineWidth = 1; // 텍스트를 그리기 전에 선 두께를 재설정
-
     fillRect(ctx, node.bbox);
     strokeRect(ctx, node.bbox);
 
@@ -123,8 +144,20 @@ export function drawAll(
     const nodeIdText = node.id.replace("n-", "");
     ctx.fillText(nodeIdText, textX, textY);
   }
+}
 
-  drawPorts(ctx, g);
+export function drawEdges(ctx: CanvasRenderingContext2D, g: Graph) {
+  // edges (if path exists, draw orthogonal polyline)
+  ctx.strokeStyle = THEME.edgeStroke;
+  ctx.lineWidth = 2;
+  for (const [, e] of g.edges) {
+    if (!e.path || e.path.length === 0) continue;
+    ctx.beginPath();
+    ctx.moveTo(e.path[0].x, e.path[0].y);
+    for (let i = 1; i < e.path.length; i++)
+      ctx.lineTo(e.path[i].x, e.path[i].y);
+    ctx.stroke();
+  }
 }
 
 export function drawPorts(ctx: CanvasRenderingContext2D, graph: Graph) {
@@ -136,7 +169,7 @@ export function drawPorts(ctx: CanvasRenderingContext2D, graph: Graph) {
       const pos = portPosition(n, p.side, p.offset);
       ctx.beginPath();
       ctx.rect(pos.x - 2, pos.y - 2, 4, 4); // 작은 정사각형 포트
-      ctx.fillStyle = "#1f6feb";
+      ctx.fillStyle = "#c1ccddff";
       ctx.fill();
       // ctx.stroke();
     }

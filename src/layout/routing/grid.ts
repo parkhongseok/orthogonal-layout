@@ -70,10 +70,19 @@ export function buildGrid(graph: Graph, cfg: any): Grid {
     markRectAsBlocked(grid, node.bbox, nodeExpand);
   }
 
-  // 4. 그룹 경계도 장애물로 등록합니다. (여백 없이)
-  for (const group of graph.groups.values()) {
-    markRectAsBlocked(grid, group.bbox, 0);
-  }
+  // // 4. 그룹 경계도 장애물로 등록합니다. (여백 없이)
+  // for (const group of graph.groups.values()) {
+  //   markRectAsBlocked(grid, group.bbox, 0);
+  // }
+
+  // [디버깅] 블록 처리된 셀의 총 개수를 로그로 남깁니다.
+  const blockedCount = cells.filter((c) => c.blocked).length;
+  console.log(
+    `Grid created: ${cols}x${rows}. Blocked cells: ${blockedCount} (${(
+      (blockedCount / (cols * rows)) *
+      100
+    ).toFixed(1)}%)`
+  );
 
   return grid;
 }

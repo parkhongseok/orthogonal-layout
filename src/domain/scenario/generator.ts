@@ -88,7 +88,26 @@ export function createInitialGraph(
       t = nodeIds[Math.floor(Math.random() * nodeIds.length)];
     }
     const eid = edgeId(e++);
-    edges.set(eid, { id: eid, sourceId: s, targetId: t });
+
+    // [수정] 초기 렌더링을 위해 간단한 직선 경로를 생성합니다.
+    const sourceNode = nodes.get(s)!;
+    const targetNode = nodes.get(t)!;
+
+    const sourceCenter = {
+      x: sourceNode.bbox.x + sourceNode.bbox.w / 2,
+      y: sourceNode.bbox.y + sourceNode.bbox.h / 2,
+    };
+    const targetCenter = {
+      x: targetNode.bbox.x + targetNode.bbox.w / 2,
+      y: targetNode.bbox.y + targetNode.bbox.h / 2,
+    };
+
+    edges.set(eid, {
+      id: eid,
+      sourceId: s,
+      targetId: t,
+      path: [sourceCenter, targetCenter], // path 속성을 기본값으로 추가
+    });
   }
 
   return { nodes, edges, groups };

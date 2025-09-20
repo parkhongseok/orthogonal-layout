@@ -1,35 +1,50 @@
-import type { Graph } from "@domain/types";
+// src/layout/port/spread.ts
+
+import type { Graph, NodeId, PortSide } from "@domain/types";
+import { getCandidateSides } from "@layout/routing/portSelector";
 
 export function spreadPorts(g: Graph, cfg: any): Graph {
-  // TODO: 같은 면의 포트를 균등 간격으로 분산
-  /**
-   * spread(g, cfg)
-   *
-   * 목적:
-   *  - 초기 배치(initialPlacement)와 겹침해소(resolveOverlap) 이후,
-   *    그룹/노드 사이 간격을 미세하게 펴서(컴팩션/스프레드) 미적 품질을 높인다.
-   *
-   * 언제 필요한가:
-   *  - 그룹 간 박스가 가까워 보이거나, 루트 레벨 노드가 가로/세로로 너무 빽빽할 때
-   *  - 레이아웃만으로는 빈 공간이 들쭉날쭉할 때(‘격자 정렬’은 맞지만 보기 답답)
-   *  - 대규모 N에서, resolveOverlap이 충돌만 없앴지 배치 품질은 낮을 때
-   *
-   * 전후 관계(권장 파이프라인):
-   *  initialPlacement → resolveOverlap → [spread] → assignPorts → routing
-   *
-   * 입력/출력:
-   *  - 입력: Graph (노드/그룹 bbox는 확정된 상태)
-   *  - 출력: Graph (bbox만 소폭 이동; 위상/연결/크기는 불변)
-   *
-   * 구현 아이디어(추후):
-   *  - 최소 간격 유지: cfg.layout.nodeGapX/Y, groupGapX/Y 준수
-   *  - 행/열 기준의 타일 ‘컴팩션’ (좌→우, 상→하 스윕으로 빈 칸 채우기)
-   *  - 그룹 레벨 우선 정렬 후, 루트 레벨 노드 별도 스프레드
-   *  - 반복 횟수, 이동 한계치(최대 이동량), 스냅 유지
-   *
-   * 주의:
-   *  - bbox를 움직인 후에는 그룹 bbox 재계산 필요(updateGroupBBox)
-   *  - 카메라 Fit/TopLeft 등 뷰 맞춤은 렌더 단계에서 처리
-   */
-  return g;
+  const out = { ...g, nodes: new Map(g.nodes) };
+
+  // 1. 각 노드의 면(side) 별로 연결될 엣지 수를 예측하여 카운트합니다.
+  const portCounts = new Map<NodeId, Map<PortSide, number>>();
+
+  for (const edge of out.edges.values()) {
+    const sourceNode = out.nodes.get(edge.sourceId);
+    const targetNode = out.nodes.get(edge.targetId);
+    if (!sourceNode || !targetNode) continue;
+
+    // 두 노드에 대한 최적의 연결면 후보 중 첫 번째(가장 유력한) 것을 선택합니다.
+    const candidates = getCandidateSides(sourceNode, targetNode);
+    if (candidates.length > 0) {
+      const [sourceSide, targetSide] = candidates[0];
+
+      // 소스 노드의 포트 카운트 증가
+      if (!portCounts.has(sourceNode.id)) portCounts.set(sourceNode.id, new Map());
+      const sCounts = portCounts.get(sourceNode.id)!;
+      sCounts.set(sourceSide, (sCounts.get(sourceSide) || 0) + 1);
+
+      // 타겟 노드의 포트 카운트 증가
+      if (!portCounts.has(targetNode.id)) portCounts.set(targetNode.id, new Map());
+      const tCounts = portCounts.get(targetNode.id)!;
+      tCounts.set(targetSide, (tCounts.get(targetSide) || 0) + 1);
+    }
+  }
+
+  // 2. 카운트된 수에 맞춰 각 면에 포트를 균등하게 재배치합니다.
+  for (const [nodeId, sideCounts] of portCounts.entries()) {
+    const node = out.nodes.get(nodeId);
+    if (!node) continue;
+
+    const newPorts: { side: PortSide; offset: number }[] = [];
+    for (const [side, count] of sideCounts.entries()) {
+      for (let i = 0; i < count; i++) {
+        // 오프셋을 1/(count+1), 2/(count+1), ... 로 균등하게 배분
+        newPorts.push({ side, offset: (i + 1) / (count + 1) });
+      }
+    }
+    out.nodes.set(nodeId, { ...node, ports: newPorts });
+  }
+
+  return out;
 }

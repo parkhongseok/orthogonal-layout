@@ -5,7 +5,7 @@ function center(n: Node) {
   return { x: n.bbox.x + n.bbox.w / 2, y: n.bbox.y + n.bbox.h / 2 };
 }
 // [수정] 두 노드의 상대 위치에 따라 가능한 연결 면(side) 조합을 반환합니다.
-function getCandidateSides(a: Node, b: Node): [PortSide, PortSide][] {
+export function getCandidateSides(a: Node, b: Node): [PortSide, PortSide][] {
   const ca = center(a),
     cb = center(b);
   const dx = cb.x - ca.x,
