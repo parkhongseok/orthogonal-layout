@@ -20,5 +20,7 @@ export const CONFIG = {
     groupInset: 2, // 그룹 안쪽 여백(격자 셀 수)
     groupGapX: 6,
     groupGapY: 6,
+    spreadIterations: 20, // 스프레드 반복 횟수
+    spreadStep: 0.5, // 1이면 한 번에, 0.2면 서서히
   },
 };

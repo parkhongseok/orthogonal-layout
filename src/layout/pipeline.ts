@@ -1,6 +1,7 @@
 import type { Graph } from "@domain/types";
 import { initialPlacement } from "@layout/placement/initPlacement";
 import { resolveOverlap } from "@layout/placement/resolveOverlap";
+import { spread } from "@layout/placement/spread";
 import { assignPorts } from "@layout/port/assign";
 import { spreadPorts } from "@layout/port/spread";
 import { routeAll } from "@layout/routing/routeAll";
@@ -10,11 +11,10 @@ export function autoLayoutPipeline(g: Graph, cfg: any): Graph {
   let cur = g;
   cur = initialPlacement(cur, cfg);
   cur = resolveOverlap(cur, cfg);
+  // cur = spread(cur, cfg);
   cur = assignPorts(cur, cfg);
-  const anyNode = g.nodes.values().next().value;
-  console.log("ports?", anyNode?.ports?.length, anyNode?.ports?.slice(0, 4));
   cur = spreadPorts(cur, cfg);
-  cur = routeAll(cur, cfg);
+  // cur = routeAll(cur, cfg);
   cur = sweepCompact(cur, cfg);
   return cur;
 }

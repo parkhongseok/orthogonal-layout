@@ -8,18 +8,39 @@
   </head>
   <body>
     <div id="app">
-      <div id="toolbar">
-        <button id="btn-auto">Auto Layout</button>
-        <button id="btn-reset">Reset</button>
-        <label><input type="checkbox" id="chk-grid" checked /> Grid</label>
-        <label><input type="checkbox" id="chk-obstacles" /> Obstacles</label>
-        <label><input type="checkbox" id="chk-bbox" /> BoundingBox</label>
-        <span id="metrics"></span>
-
-        <button id="btn-zoom-in">+</button>
-        <button id="btn-zoom-out">−</button>
-        <button id="btn-fit">Fit</button>
+      <div id="header-container">
+        <div id="toolbar">
+          <span class="control-group">
+            <button id="btn-auto">Auto Layout</button>
+            <button id="btn-reset">Regenerate</button>
+          </span>
+          <span class="control-group">
+            <label
+              >Nodes: <input type="number" id="num-nodes" value="12"
+            /></label>
+            <label
+              >Edges: <input type="number" id="num-edges" value="18"
+            /></label>
+          </span>
+          <span class="control-group">
+            <label><input type="checkbox" id="chk-grid" checked /> Grid</label>
+            <label
+              ><input type="checkbox" id="chk-obstacles" /> Obstacles</label
+            >
+            <label><input type="checkbox" id="chk-bbox" /> BoundingBox</label>
+          </span>
+          <span class="control-group">
+            <button id="btn-zoom-in">+</button>
+            <button id="btn-zoom-out">−</button>
+            <button id="btn-fit">Fit</button>
+          </span>
+        </div>
+        <div id="toolbar">
+          <span id="metrics"></span>
+          <span id="info-panel"></span>
+        </div>
       </div>
+
       <canvas id="stage"></canvas>
     </div>
     <script type="module" src="/src/app/main.ts"></script>

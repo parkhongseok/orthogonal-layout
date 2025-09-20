@@ -10,9 +10,19 @@ import { CONFIG } from "./config";
 
 import { makeCamera, applyCamera, zoomAt, fitTopLeft } from "@render/camera";
 import { computeWorldBounds } from "@render/world";
+import { Graph } from "@domain/types";
 
 const canvas = document.getElementById("stage") as HTMLCanvasElement;
 const metricsEl = document.getElementById("metrics")!;
+const infoPanelEl = document.getElementById("info-panel")!; // 정보 패널
+
+// 컨트롤 요소들
+const btnAuto = document.getElementById("btn-auto")!;
+const btnReset = document.getElementById("btn-reset")!;
+const numNodesInput = document.getElementById("num-nodes") as HTMLInputElement;
+const numEdgesInput = document.getElementById("num-edges") as HTMLInputElement;
+
+// 카메라 요소
 const chkGrid = document.getElementById("chk-grid") as HTMLInputElement;
 const chkObs = document.getElementById("chk-obstacles") as HTMLInputElement;
 const chkBox = document.getElementById("chk-bbox") as HTMLInputElement;
@@ -21,11 +31,46 @@ const chkBox = document.getElementById("chk-bbox") as HTMLInputElement;
 const camera = makeCamera();
 
 const ctx = initCanvas(canvas);
-const nNodes = 120;
-const nEdges = 180;
-const nGroups = 4;
+const nNodes = 7;
+const nEdges = 3;
+const nGroups = 2;
 const initPadding = 10;
-let graph = createInitialGraph(nNodes, nEdges, nGroups, CONFIG.gridSize);
+let graph: Graph = createInitialGraph(nNodes, nEdges, nGroups, CONFIG.gridSize);
+
+// 정포 페널 갱신 함수
+function updateInfoPanel(g: Graph) {
+  const nodeCount = g.nodes.size;
+  const edgeCount = g.edges.size;
+  const groupCount = g.groups.size;
+
+  let groupInfo = "<span>";
+  for (const group of g.groups.values()) {
+    groupInfo += `{${group.id}: ${group.children.length} nodes}, `;
+  }
+  groupInfo += "</span>";
+
+  infoPanelEl.innerHTML = ` 
+    <span><b>Total Nodes:</b> ${nodeCount}</span>
+    <span><b>Total Edges:</b> ${edgeCount}</span>
+    <span><b>Total Groups:</b> ${groupCount}</span>
+    <span><b>Nodes per Group:</b> ${groupInfo}</span>
+  `;
+}
+
+// 그래프를 (재)생성하는 로직을 함수로 분리
+function regenerateGraph() {
+  const nNodes = parseInt(numNodesInput.value, 10) || 12;
+  const nEdges = parseInt(numEdgesInput.value, 10) || 18;
+
+  graph = createInitialGraph(nNodes, nEdges, nGroups, CONFIG.gridSize);
+
+  const rect = canvas.getBoundingClientRect();
+  const world = computeWorldBounds(graph);
+  fitTopLeft(camera, rect.width, rect.height, world, initPadding);
+
+  updateInfoPanel(graph); // 정보 패널 업데이트
+  render();
+}
 
 function render() {
   const dpr = window.devicePixelRatio || 1;
@@ -55,7 +100,7 @@ function render() {
 }
 
 // ===== Auto Layout =====
-document.getElementById("btn-auto")!.addEventListener("click", () => {
+btnAuto.addEventListener("click", () => {
   const t0 = performance.now();
   graph = autoLayoutPipeline(graph, CONFIG);
   const t1 = performance.now();
@@ -63,21 +108,14 @@ document.getElementById("btn-auto")!.addEventListener("click", () => {
 
   const rect = canvas.getBoundingClientRect();
   const world = computeWorldBounds(graph);
-  // 기존: fitToView(camera, rect.width, rect.height, world, 40);
   fitTopLeft(camera, rect.width, rect.height, world, initPadding);
+
+  updateInfoPanel(graph); // 레이아웃 후 정보 패널 업데이트
   render();
 });
 
 // ===== Reset Graph =====
-document.getElementById("btn-reset")!.addEventListener("click", () => {
-  graph = createInitialGraph(nNodes, nEdges, nGroups, CONFIG.gridSize);
-
-  const rect = canvas.getBoundingClientRect();
-  const world = computeWorldBounds(graph);
-  fitTopLeft(camera, rect.width, rect.height, world, initPadding);
-
-  render();
-});
+btnReset.addEventListener("click", regenerateGraph);
 
 // ===== 오버레이 토글 =====
 [chkGrid, chkObs, chkBox].forEach((el) =>
@@ -145,12 +183,8 @@ document.getElementById("btn-fit")?.addEventListener("click", () => {
 });
 
 // ===== 초기 1회 Fit + 렌더 =====
-(() => {
-  const rect = canvas.getBoundingClientRect();
-  const world = computeWorldBounds(graph);
-  fitTopLeft(camera, rect.width, rect.height, world, initPadding);
-  render();
-})();
+// ===== 초기 실행 =====
+regenerateGraph();
 
 // ===== 리사이즈 대응 =====
 window.addEventListener("resize", render);

@@ -1,23 +1,60 @@
 html,
-body,
-#app {
+body {
   margin: 0;
   padding: 0;
   height: 100%;
 }
-#toolbar {
+
+/* [수정] 앱 전체를 Flexbox 컨테이너로 만듭니다. */
+#app {
   display: flex;
-  gap: 8px;
+  flex-direction: column;
+  height: 100vh; /* 뷰포트 전체 높이를 차지하도록 설정 */
+}
+
+#header-container {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: white; /* 스크롤 시 캔버스 내용이 비치지 않도록 배경색 지정 */
+}
+
+label {
+  user-select: none;
+}
+
+#toolbar {
+  /* [수정] 여러 줄의 컨트롤을 허용하도록 flex-wrap 추가 */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px; /* 세로 간격, 가로 간격 */
   align-items: center;
   padding: 8px;
   border-bottom: 1px solid #ddd;
   font-family: system-ui, sans-serif;
 }
+/* [추가] 컨트롤 그룹 스타일 */
+.control-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+/* [추가] 숫자 입력 필드 크기 조절 */
+#num-nodes,
+#num-edges {
+  width: 50px;
+}
+/* [수정] 캔버스 높이 계산 변경 (툴바 높이가 유동적으로 변하므로) */
 #stage {
   display: block;
-  width: 100vw;
-  height: calc(100vh - 42px);
+  width: 100%; /* vw 대신 % 사용 */
+  height: calc(100vh - 84px); /* 툴바 높이를 넉넉하게 2줄 기준으로 조절 */
 }
-label {
-  user-select: none;
+
+#info-panel {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  color: #495057;
 }

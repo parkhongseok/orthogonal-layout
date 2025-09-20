@@ -45,7 +45,41 @@ export function drawAll(
   ctx.strokeStyle = THEME.groupStroke;
   ctx.lineWidth = 1;
   for (const [, grp] of g.groups) {
+    // 1. 그룹의 메인 사각형을 먼저 그립니다.
     strokeRect(ctx, grp.bbox);
+
+    // [추가] 그룹 이름 라벨을 그리는 로직
+    const labelHeight = 12;
+    const labelPadding = 5;
+    // 라벨의 너비를 텍스트 길이에 맞게 동적으로 계산
+    const groupName = `Group ${grp.id.replace("g-", "")}`;
+    ctx.font = "bold 7.6px sans-serif"; // 폰트를 먼저 설정해야 너비 계산이 정확
+    const textMetrics = ctx.measureText(groupName);
+    const labelWidth = textMetrics.width + labelPadding * 2;
+
+    const labelRect = {
+      x: grp.bbox.x,
+      y: grp.bbox.y,
+      w: labelWidth,
+      h: labelHeight,
+    };
+
+    // 2. 라벨 배경을 흰색으로 칠해서 그룹 테두리를 가립니다.
+    ctx.fillStyle = "white";
+    ctx.fillRect(labelRect.x, labelRect.y - 1, labelRect.w, labelRect.h + 2);
+
+    // 3. 라벨 테두리를 다시 그립니다.
+    strokeRect(ctx, labelRect);
+
+    // 4. 라벨 텍스트를 씁니다.
+    ctx.fillStyle = THEME.groupStroke; // 텍스트 색상
+    ctx.textAlign = "left"; // 왼쪽 정렬
+    ctx.textBaseline = "middle"; // 세로 중앙 정렬
+    ctx.fillText(
+      groupName,
+      grp.bbox.x + labelPadding,
+      grp.bbox.y + labelHeight / 2
+    );
   }
 
   // edges (if path exists, draw orthogonal polyline)
@@ -66,6 +100,28 @@ export function drawAll(
     ctx.strokeStyle = THEME.nodeStroke;
     fillRect(ctx, node.bbox);
     strokeRect(ctx, node.bbox);
+  }
+
+  for (const [, node] of g.nodes) {
+    ctx.fillStyle = THEME.nodeFill;
+    ctx.strokeStyle = THEME.nodeStroke;
+    ctx.lineWidth = 1; // 텍스트를 그리기 전에 선 두께를 재설정
+
+    fillRect(ctx, node.bbox);
+    strokeRect(ctx, node.bbox);
+
+    // 노드 ID 텍스트를 그리는 로직
+    ctx.fillStyle = THEME.nodeStroke; // 텍스트 색상
+    ctx.font = "12px sans-serif"; // 폰트 설정
+    ctx.textAlign = "center"; // 가로 중앙 정렬
+    ctx.textBaseline = "middle"; // 세로 중앙 정렬
+
+    const textX = node.bbox.x + node.bbox.w / 2;
+    const textY = node.bbox.y + node.bbox.h / 2;
+
+    // 노드 ID에서 'n-' 접두사를 제거하고 숫자만 표시
+    const nodeIdText = node.id.replace("n-", "");
+    ctx.fillText(nodeIdText, textX, textY);
   }
 
   drawPorts(ctx, g);
