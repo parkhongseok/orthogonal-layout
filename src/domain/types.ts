@@ -1,6 +1,7 @@
 export type NodeId = string & { readonly brand: unique symbol };
 export type EdgeId = string & { readonly brand: unique symbol };
 export type GroupId = string & { readonly brand: unique symbol };
+export type Dir = "U" | "D" | "L" | "R";
 
 export interface Point {
   x: number;
@@ -38,4 +39,13 @@ export interface Graph {
   nodes: Map<NodeId, Node>;
   edges: Map<EdgeId, Edge>;
   groups: Map<GroupId, Group>;
+}
+
+export interface NodeRec {
+  cx: number;
+  cy: number;
+  g: number;
+  f: number;
+  came?: NodeRec;
+  dir?: Dir;
 }

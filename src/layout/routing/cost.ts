@@ -1,3 +1,5 @@
+import { Dir } from "@domain/types";
+
 // src/layout/routing/cost.ts
 export interface CostConfig {
   distance: number;   // 한 스텝(인접 셀) 이동 비용 가중치
@@ -6,7 +8,7 @@ export interface CostConfig {
   congestion: number; // 혼잡 셀(이미 경로가 많은 셀)의 가중치
 }
 
-export type Dir = "U" | "D" | "L" | "R";
+
 
 /** 맨해튼 휴리스틱 */
 export function hManhattan(ax: number, ay: number, bx: number, by: number, dist = 1) {

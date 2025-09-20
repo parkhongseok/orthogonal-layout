@@ -14,7 +14,7 @@ export function autoLayoutPipeline(g: Graph, cfg: any): Graph {
   // cur = spread(cur, cfg);
   cur = assignPorts(cur, cfg);
   cur = spreadPorts(cur, cfg);
-  // cur = routeAll(cur, cfg);
+  cur = routeAll(cur, cfg);
   cur = sweepCompact(cur, cfg);
   return cur;
 }

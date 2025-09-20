@@ -1,85 +1,102 @@
-// src/layout/routing/routeAll.ts
-import type { Graph, Node, PortSide, Point } from "@domain/types";
-import { buildGrid, worldToCell, cellCenterToWorld, Grid } from "./grid";
+import type { Graph, Node, Point, NodeRec, Dir } from "@domain/types";
+import { buildGrid, worldToCell, cellAt, Grid } from "./grid";
 import { aStarGrid } from "./aStar";
 import type { CostConfig } from "./cost";
-import { portPosition } from "@layout/port/assign";
+import { smoothPath } from "./pathSmoother";
+import { findBestPortPair } from "./portSelector"; // 새로운 '포트 전략가' import
 
-type Side = PortSide;
+/**
+ * 포트 위치와 진출 방향을 기준으로, 장애물이 없는 첫 번째 그리드 셀(진입점)을 찾습니다.
+ * @param grid 라우팅에 사용될 Grid 객체
+ * @param pos 포트의 실제 월드 좌표
+ * @param side 포트가 위치한 노드의 면 (진출 방향)
+ * @returns A* 탐색의 시작/종료점으로 사용될 셀 좌표와 방향
+ */
+function findEntryPoint(
+  grid: Grid,
+  pos: Point,
+  side: Dir
+): { cx: number; cy: number; dir: Dir } {
+  let { cx, cy } = worldToCell(grid, pos.x, pos.y);
+  const maxIter = grid.cols + grid.rows; // 무한 루프 방지를 위한 안전 장치
 
-function center(n: Node) {
-  return { x: n.bbox.x + n.bbox.w / 2, y: n.bbox.y + n.bbox.h / 2 };
+  // 지정된 방향으로 한 칸씩 이동하며 'blocked'가 아닌 첫 셀을 찾습니다.
+  for (let i = 0; i < maxIter; i++) {
+    if (!cellAt(grid, cx, cy)?.blocked) {
+      break; // 장애물이 없는 셀을 찾았으므로 루프 종료
+    }
+    if (side === "U") cy--;
+    if (side === "D") cy++;
+    if (side === "L") cx--;
+    if (side === "R") cx++;
+  }
+  return { cx, cy, dir: side };
 }
 
-function chooseSide(a: Node, b: Node): Side {
-  const ca = center(a), cb = center(b);
-  const dx = cb.x - ca.x, dy = cb.y - ca.y;
-  if (Math.abs(dx) >= Math.abs(dy)) return dx >= 0 ? "right" : "left";
-  return dy >= 0 ? "bottom" : "top";
-}
-
-function pickPort(n: Node, side: Side, other: Node) {
-  const ports = (n.ports || []).filter(p => p.side === side);
-  if (!ports.length) return { pos: center(n), idx: -1 };
-  // 투영 좌표 기준 가장 가까운 포트
-  const o = center(other);
-  const scored = ports.map((p, i) => {
-    const pos = portPosition(n, side, p.offset);
-    const key = (side === "top" || side === "bottom") ? pos.x : pos.y;
-    const tgt = (side === "top" || side === "bottom") ? o.x : o.y;
-    return { i, pos, d: Math.abs(key - tgt) };
-  }).sort((a,b) => a.d - b.d);
-  return { pos: scored[0].pos, idx: scored[0].i };
-}
-
+/**
+ * 그래프의 모든 엣지에 대한 직교 경로를 계산하고 적용합니다.
+ * 이 함수는 라우팅 파이프라인의 최종 실행을 담당합니다.
+ */
 export function routeAll(g: Graph, cfg: any): Graph {
-  const out: Graph = {
-    nodes: new Map(g.nodes),
-    edges: new Map(g.edges),
-    groups: new Map(g.groups),
-  };
+  // 그래프 데이터 복사 (원본 불변성 유지)
+  const out = { ...g, edges: new Map(g.edges) };
+  // 1. 라우팅을 위한 '지도'를 생성합니다.
+  const grid = buildGrid(out, cfg);
+  const costCfg = cfg.cost as CostConfig;
 
-  const grid: Grid = buildGrid(out, cfg);
-  const costCfg = cfg?.cost as CostConfig;
-
-  for (const [, e] of out.edges) {
+  for (const e of out.edges.values()) {
     const s = out.nodes.get(e.sourceId)!;
     const t = out.nodes.get(e.targetId)!;
+    if (!s || !t) continue; // 엣지가 유효하지 않으면 건너뜁니다.
 
-    // 1) 면/포트 선택
-    const sSide = chooseSide(s, t);
-    const tSide = chooseSide(t, s);
-    const sPort = pickPort(s, sSide, t);
-    const tPort = pickPort(t, tSide, s);
+    // 2. [핵심] '포트 전략가'를 호출하여 최적의 포트 쌍을 결정합니다.
+    const { sourcePort, targetPort, sourceSide, targetSide } = findBestPortPair(
+      s,
+      t
+    );
 
-    // 2) A* 실행 (월드→셀)
-    const start = worldToCell(grid, sPort.pos.x, sPort.pos.y);
-    const goal  = worldToCell(grid, tPort.pos.x, tPort.pos.y);
-    const nodes = aStarGrid(grid, start, goal, costCfg);
+    // 3. 결정된 포트를 기준으로 A* 탐색을 위한 진입/진출점을 찾습니다.
+    const start = findEntryPoint(
+      grid,
+      sourcePort,
+      sourceSide?.toUpperCase() as Dir
+    );
+    const goal = findEntryPoint(
+      grid,
+      targetPort,
+      targetSide?.toUpperCase() as Dir
+    );
 
-    // 3) 경로 복원 (셀→월드 중심, 첫/마지막은 정확히 포트 좌표로 보정)
-    let path: Point[] = [];
-    if (nodes && nodes.length) {
-      path = nodes.map(n => {
-        const p = cellCenterToWorld(grid, n.cx, n.cy);
-        return { x: p.x, y: p.y };
-      });
-      // 보정
-      if (path.length) {
-        path[0] = { x: sPort.pos.x, y: sPort.pos.y };
-        path[path.length - 1] = { x: tPort.pos.x, y: tPort.pos.y };
-      }
+    // 4. '탐험가(A*)'를 호출하여 최적의 셀 경로를 찾습니다.
+    const aStarPath = aStarGrid(grid, start, goal, costCfg, start.dir);
+
+    let finalPath: Point[];
+    if (aStarPath) {
+      // 5. '경로 설계자'를 호출하여 셀 경로를 완벽한 직교 좌표 경로로 다듬습니다.
+      finalPath = smoothPath(
+        aStarPath,
+        grid,
+        sourcePort,
+        targetPort,
+        sourceSide,
+        targetSide
+      );
     } else {
-      // A* 실패 시 간단한 L-자 폴백(선택)
-      path = [
-        { x: sPort.pos.x, y: sPort.pos.y },
-        { x: tPort.pos.x, y: sPort.pos.y },
-        { x: tPort.pos.x, y: tPort.pos.y },
-      ];
+      // 6. A*가 경로를 찾지 못한 경우, 간단한 L자 형태의 비상 경로를 생성합니다.
+      const midPt = { x: targetPort.x, y: sourcePort.y };
+      finalPath = [sourcePort, midPt, targetPort];
     }
 
-    out.edges.set(e.id, { ...e, path });
-  }
+    // 7. 계산된 최종 경로를 엣지 데이터에 업데이트합니다.
+    out.edges.set(e.id, { ...e, path: finalPath });
 
+    // 8. (심화) 경로가 지나간 셀의 혼잡도를 높여, 다음 엣지가 이 경로를 피하도록 유도합니다.
+    if (aStarPath) {
+      for (const node of aStarPath) {
+        const cell = cellAt(grid, node.cx, node.cy);
+        if (cell) cell.congestion++;
+      }
+    }
+  }
   return out;
 }
