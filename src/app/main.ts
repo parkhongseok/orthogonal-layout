@@ -12,8 +12,8 @@ import { CONFIG } from "./config";
 import { makeCamera, applyCamera, zoomAt, fitTopLeft } from "@render/camera";
 import { computeWorldBounds } from "@render/world";
 import { Graph } from "@domain/types";
-import { clearLastBuiltGrid } from "@layout/routing/aStarStrategy/routeAll";
 import { LegacyAStarStrategy } from "@layout/routing/aStarStrategy/legacyAStarStrategy";
+import { clearDebugData } from "@render/debug";
 
 const canvas = document.getElementById("stage") as HTMLCanvasElement;
 const metricsEl = document.getElementById("metrics")!;
@@ -64,7 +64,7 @@ function updateInfoPanel(g: Graph) {
 // 그래프를 (재)생성하는 로직을 함수로 분리
 function regenerateGraph() {
   // 재생성 시 이전 레이아웃의 장애물 정보를 깨끗이 지웁니다.
-  clearLastBuiltGrid();
+  clearDebugData();
   const nNodes = parseInt(numNodesInput.value, 10) || 12;
   const nEdges = parseInt(numEdgesInput.value, 10) || 18;
 

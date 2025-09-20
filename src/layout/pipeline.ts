@@ -17,7 +17,6 @@ export function autoLayoutPipeline(
   cur = initialPlacement(cur, cfg);
   cur = resolveOverlap(cur, cfg);
   cur = spreadNodes(cur, cfg);
-  cur = assignPorts(cur, cfg);
   cur = sweepCompact(cur, cfg);
 
   cur = strategy.execute(cur, cfg);

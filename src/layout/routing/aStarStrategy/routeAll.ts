@@ -5,13 +5,7 @@ import type { CostConfig } from "./cost";
 import { cleanupCollinearPoints, smoothPath } from "./pathSmoother";
 import { findBestPortPair, getCandidateSides } from "./portSelector"; // 새로운 '포트 전략가' import
 import { portPosition } from "@layout/port/assign";
-
-// (디버깅 목적으로만 사용합니다)
-export let lastBuiltGrid: Grid | null = null;
-
-export function clearLastBuiltGrid() {
-  lastBuiltGrid = null;
-}
+import { setLastBuiltGrid } from "@render/debug";
 
 /**
  * [수정] findEntryPoint 함수를 더 안정적인 로직으로 전면 교체합니다.
@@ -79,7 +73,7 @@ function findEntryPoint(
 export function routeAll(g: Graph, cfg: any): Graph {
   const out = { ...g, edges: new Map(g.edges) };
   const grid = buildGrid(out, cfg);
-  lastBuiltGrid = grid;
+  setLastBuiltGrid(grid);
   const costCfg = cfg.cost as CostConfig;
 
   for (const e of out.edges.values()) {
@@ -130,8 +124,21 @@ export function routeAll(g: Graph, cfg: any): Graph {
     }
 
     let finalPath: Point[];
-    if (bestPath && bestSourcePort && bestTargetPort && bestSourceSide && bestTargetSide) {
-      finalPath = smoothPath(bestPath, grid, bestSourcePort, bestTargetPort, bestSourceSide, bestTargetSide);
+    if (
+      bestPath &&
+      bestSourcePort &&
+      bestTargetPort &&
+      bestSourceSide &&
+      bestTargetSide
+    ) {
+      finalPath = smoothPath(
+        bestPath,
+        grid,
+        bestSourcePort,
+        bestTargetPort,
+        bestSourceSide,
+        bestTargetSide
+      );
     } else {
       // 최적 경로를 찾지 못한 경우에만 비상용 대체 경로 사용
       const fallbackPair = getCandidateSides(s, t)[0];

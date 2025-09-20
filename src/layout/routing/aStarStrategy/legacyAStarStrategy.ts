@@ -11,15 +11,8 @@ import { sweepCompact } from "@layout/compaction/sweep";
 export class LegacyAStarStrategy implements RoutingStrategy {
   public execute(graph: Graph, cfg: any): Graph {
     console.log("Executing: Legacy A* Strategy");
-
     let cur = graph;
-    // --- 1. 노드 위치 결정 단계 ---
-    cur = initialPlacement(cur, cfg);
-    cur = resolveOverlap(cur, cfg);
-    cur = spreadNodes(cur, cfg);
     cur = assignPorts(cur, cfg);
-    cur = sweepCompact(cur, cfg);
-
     cur = routeAll(cur, cfg);
     return cur;
   }

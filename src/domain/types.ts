@@ -49,3 +49,14 @@ export interface NodeRec {
   came?: NodeRec;
   dir?: Dir;
 }
+
+export interface BusChannel {
+  id: string;
+  geometry: Rect; // 채널이 차지하는 사각형 영역
+  direction: 'horizontal' | 'vertical';
+}
+
+export interface BusNetwork {
+  channels: BusChannel[];
+  // (추후 확장) 채널 간의 교차점 정보 등
+}
