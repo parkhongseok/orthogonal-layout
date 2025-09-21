@@ -42,6 +42,7 @@ export interface Graph {
   groups: Map<GroupId, Group>;
 }
 
+// A* Grid 라우팅을 위한 타입
 export interface NodeRec {
   cx: number;
   cy: number;
@@ -57,11 +58,11 @@ export interface BusChannel {
   direction: "horizontal" | "vertical";
   lanes: Map<EdgeId, number>;
   level?: number; // << 0: 간선도로, 1: 지역도로
-  cost?: number;  // << 이 채널을 통과하는 라우팅 비용
+  cost?: number; // << 이 채널을 통과하는 라우팅 비용
 }
 
 export interface BusNetwork {
-  channels: Map<string, BusChannel>;
+  channels: Map<BusChannelId, BusChannel>;
   // 교차점을 그래프의 엣지처럼 표현합니다. <채널 ID, [연결된 채널 ID들]>
-  intersections: Map<string, string[]>;
+  intersections: Map<BusChannelId, BusChannelId[]>;
 }
