@@ -16,7 +16,6 @@ import { cleanupCollinearPoints } from "@layout/routing/aStarStrategy/pathSmooth
 export function beautifyPath(g: Graph, cfg: any): Graph {
   const out = { ...g, edges: new Map(g.edges) };
 
-  // 1. 각 노드의 면(side) 별로 연결된 엣지를 수집합니다. (이전과 동일)
   const sideUsage = new Map<
     NodeId,
     Map<PortSide, { edgeId: string; type: "source" | "target" }[]>
@@ -42,69 +41,93 @@ export function beautifyPath(g: Graph, cfg: any): Graph {
     tSides.get(targetSide)!.push({ edgeId: edge.id, type: "target" });
   }
 
-  // 2. 수집된 정보를 바탕으로 포트 위치를 재분배하고 경로를 수정합니다.
   for (const [nodeId, sides] of sideUsage.entries()) {
     const node = out.nodes.get(nodeId)!;
     for (const [side, edges] of sides.entries()) {
       const k = edges.length;
       if (k === 0) continue;
 
-      // 엣지들을 '꼬이지 않는' 순서로 정렬합니다. (이전과 동일)
       edges.sort((a, b) => {
         const aEdge = out.edges.get(a.edgeId as any)!;
         const bEdge = out.edges.get(b.edgeId as any)!;
-        const aPoint =
-          a.type === "source"
-            ? aEdge.path![1]
-            : aEdge.path![aEdge.path!.length - 2];
-        const bPoint =
-          b.type === "source"
-            ? bEdge.path![1]
-            : bEdge.path![bEdge.path!.length - 2];
-        if (side === "top" || side === "bottom") return aPoint.x - bPoint.x;
-        return aPoint.y - bPoint.y;
+        const aOtherNodeId =
+          a.type === "source" ? aEdge.targetId : aEdge.sourceId;
+        const bOtherNodeId =
+          b.type === "source" ? bEdge.targetId : bEdge.sourceId;
+        const aOtherNode = out.nodes.get(aOtherNodeId)!;
+        const bOtherNode = out.nodes.get(bOtherNodeId)!;
+        const aCenter = {
+          x: aOtherNode.bbox.x + aOtherNode.bbox.w / 2,
+          y: aOtherNode.bbox.y + aOtherNode.bbox.h / 2,
+        };
+        const bCenter = {
+          x: bOtherNode.bbox.x + bOtherNode.bbox.w / 2,
+          y: bOtherNode.bbox.y + bOtherNode.bbox.h / 2,
+        };
+        if (side === "top" || side === "bottom") {
+          return aCenter.x - bCenter.x;
+        }
+        return aCenter.y - bCenter.y;
       });
 
+      // [핵심 수정] 포트 간격을 노드 너비가 아닌, 차선(Lane) 시스템과 동일한 규칙으로 재계산합니다.
+      const laneSpacing = cfg.bus?.laneWidth ?? cfg.gridSize / 2;
+      const totalPortsWidth = (edges.length - 1) * laneSpacing;
+      let startOffset: number;
+
+      if (side === "top" || side === "bottom") {
+        const sideCenter = node.bbox.x + node.bbox.w / 2;
+        startOffset = sideCenter - totalPortsWidth / 2;
+      } else {
+        // left or right
+        const sideCenter = node.bbox.y + node.bbox.h / 2;
+        startOffset = sideCenter - totalPortsWidth / 2;
+      }
+
       edges.forEach(({ edgeId, type }, i) => {
-        const offset = (i + 1) / (k + 1);
-        const newPortPos = portPosition(node, side, offset);
         const edge = out.edges.get(edgeId as any)!;
+
+        let newPortPos: Point;
+        if (side === "top" || side === "bottom") {
+          const portX = startOffset + i * laneSpacing;
+          newPortPos = {
+            x: portX,
+            y: node.bbox.y + (side === "bottom" ? node.bbox.h : 0),
+          };
+        } else {
+          // left or right
+          const portY = startOffset + i * laneSpacing;
+          newPortPos = {
+            x: node.bbox.x + (side === "right" ? node.bbox.w : 0),
+            y: portY,
+          };
+        }
+
         const newPath = [...edge.path!];
 
-        // [핵심 수정] 더 안정적인 방식으로 경로 끝단을 재구성합니다.
+        // 새 포트 위치에 맞게 경로를 재구성하는 로직 (기존과 유사)
         if (type === "source") {
-          const p1 = newPath[1]; // 경로의 두 번째 점
-          newPath.shift(); // 기존 시작점(오래된 포트) 제거
-
-          // 새 포트 위치와 p1 사이에 필요한 중간점을 계산하여 경로 맨 앞에 추가
+          const p1 = newPath[1];
+          newPath.shift();
           if (side === "top" || side === "bottom") {
-            if (Math.abs(newPortPos.x - p1.x) > 0.1) {
+            if (Math.abs(newPortPos.x - p1.x) > 0.1)
               newPath.unshift({ x: newPortPos.x, y: p1.y });
-            }
           } else {
-            // left or right
-            if (Math.abs(newPortPos.y - p1.y) > 0.1) {
+            if (Math.abs(newPortPos.y - p1.y) > 0.1)
               newPath.unshift({ x: p1.x, y: newPortPos.y });
-            }
           }
-          newPath.unshift(newPortPos); // 새로운 시작점(포트)을 맨 앞에 추가
+          newPath.unshift(newPortPos);
         } else {
-          // type === 'target'
-          const pN_1 = newPath[newPath.length - 2]; // 경로의 끝에서 두 번째 점
-          newPath.pop(); // 기존 끝점(오래된 포트) 제거
-
-          // pN_1과 새 포트 위치 사이에 필요한 중간점을 계산하여 경로 맨 뒤에 추가
+          const pN_1 = newPath[newPath.length - 2];
+          newPath.pop();
           if (side === "top" || side === "bottom") {
-            if (Math.abs(pN_1.x - newPortPos.x) > 0.1) {
+            if (Math.abs(pN_1.x - newPortPos.x) > 0.1)
               newPath.push({ x: newPortPos.x, y: pN_1.y });
-            }
           } else {
-            // left or right
-            if (Math.abs(pN_1.y - newPortPos.y) > 0.1) {
+            if (Math.abs(pN_1.y - newPortPos.y) > 0.1)
               newPath.push({ x: pN_1.x, y: newPortPos.y });
-            }
           }
-          newPath.push(newPortPos); // 새로운 끝점(포트)을 맨 뒤에 추가
+          newPath.push(newPortPos);
         }
 
         out.edges.set(edge.id, {
