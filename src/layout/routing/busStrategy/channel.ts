@@ -3,15 +3,15 @@ import type {
   Graph,
   Rect,
   BusChannel,
-  Node,
   Group,
   BusChannelId,
 } from "@domain/types";
 import { computeWorldBounds } from "@render/world";
 
 let channelIdCounter = 0;
+
 /**
- * [수정] 채널 생성 후 등급과 비용을 계산하는 로직을 추가합니다.
+ * [개선] 그룹 내/외부를 포함한 완전한 버스 채널 네트워크를 생성하고, 등급과 비용을 할당합니다.
  * @param g 노드 배치가 완료된 그래프
  * @param cfg 설정 객체
  * @returns 생성된 BusChannel의 배열
@@ -19,6 +19,7 @@ let channelIdCounter = 0;
 export function createBusChannels(g: Graph, cfg: any): BusChannel[] {
   console.log("Creating bus channels...");
   const minChannelWidth = (cfg.bus?.minChannelWidth ?? 3) * cfg.gridSize;
+  const gridSize = cfg.gridSize;
 
   // --- 1단계: 최상위 레벨 (그룹 간) 채널 탐색 ---
   const topLevelObstacles: Rect[] = [
@@ -47,34 +48,71 @@ export function createBusChannels(g: Graph, cfg: any): BusChannel[] {
     const childrenNodes = group.children.map(
       (childId) => g.nodes.get(childId)!
     );
-    if (childrenNodes.length < 2) continue;
-    const groupInternalObstacles = childrenNodes.map((n) => n.bbox);
-    const inset = (cfg.layout?.groupInset ?? 2) * cfg.gridSize;
-    const groupWorld: Rect = {
+    if (childrenNodes.length === 0) continue;
+
+    // [핵심 수정] 탐색 영역(searchArea)은 그룹의 안쪽 여백을 포함한 전체로 설정합니다.
+    const inset = (cfg.layout?.groupInset ?? 2) * gridSize;
+    const searchArea: Rect = {
       x: group.bbox.x + inset,
       y: group.bbox.y + inset,
       w: group.bbox.w - inset * 2,
       h: group.bbox.h - inset * 2,
     };
+
+    // [핵심 수정] 장애물 목록에는 자식 노드 + 탐색 영역의 '가장자리'에 위치한 가상 벽을 추가합니다.
+    const groupInternalObstacles: Rect[] = [
+      ...childrenNodes.map((n) => n.bbox),
+    ];
+
+    const boundaryThickness = 1; // 가상 경계의 두께
+    // 상단 벽 (searchArea의 최상단)
+    groupInternalObstacles.push({
+      x: searchArea.x,
+      y: searchArea.y,
+      w: searchArea.w,
+      h: boundaryThickness,
+    });
+    // 하단 벽 (searchArea의 최하단)
+    groupInternalObstacles.push({
+      x: searchArea.x,
+      y: searchArea.y + searchArea.h - boundaryThickness,
+      w: searchArea.w,
+      h: boundaryThickness,
+    });
+    // 좌측 벽 (searchArea의 좌측 끝)
+    groupInternalObstacles.push({
+      x: searchArea.x,
+      y: searchArea.y,
+      w: boundaryThickness,
+      h: searchArea.h,
+    });
+    // 우측 벽 (searchArea의 우측 끝)
+    groupInternalObstacles.push({
+      x: searchArea.x + searchArea.w - boundaryThickness,
+      y: searchArea.y,
+      w: boundaryThickness,
+      h: searchArea.h,
+    });
+
+    // 수정된 장애물 목록과 탐색 영역으로 채널을 찾습니다.
     const innerVertical = findCorridors(
       groupInternalObstacles,
-      groupWorld,
+      searchArea, // world 대신 searchArea를 사용
       "vertical",
       minChannelWidth
     );
     const innerHorizontal = findCorridors(
       groupInternalObstacles,
-      groupWorld,
+      searchArea, // world 대신 searchArea를 사용
       "horizontal",
       minChannelWidth
     );
+
     allChannels.push(...innerVertical, ...innerHorizontal);
   }
 
-  // --- 3단계: 생성된 모든 채널을 최적화(통합 및 정리) ---
+  // --- 3단계 & 4단계는 이전과 동일 ---
   const optimizedChannels = optimizeChannels(allChannels);
-
-  // --- [신규] 4단계: 최적화된 채널에 등급 및 비용 할당 ---
   const finalChannelsWithCost = assignLevelAndCost(optimizedChannels, g, cfg);
 
   console.log(
