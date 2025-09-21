@@ -6,10 +6,14 @@ import { cleanupCollinearPoints, smoothPath } from "./pathSmoother";
 import { findBestPortPair, getCandidateSides } from "./portSelector"; // 새로운 '포트 전략가' import
 import { portPosition } from "@layout/port/assign";
 import { setLastBuiltGrid } from "@render/debug";
+import { manhattan } from "@utils/math";
 
 /**
- * [수정] findEntryPoint 함수를 더 안정적인 로직으로 전면 교체합니다.
- * 포트 위치에서 지정된 방향으로 '안전 거리'만큼 떨어진 유효한 셀을 찾습니다.
+ * [핵심 개선] A*의 목표 지점을 노드 경계에 더 가깝게 설정하여 '감싸는' 현상을 해결합니다.
+ * @param grid 라우팅용 그리드
+ * @param pos 실제 포트의 월드 좌표
+ * @param side 포트가 위치한 노드의 면
+ * @returns A* 탐색을 위한 최적의 시작/종료 셀 정보
  */
 function findEntryPoint(
   grid: Grid,
@@ -17,13 +21,15 @@ function findEntryPoint(
   side: PortSide
 ): { cx: number; cy: number; dir: Dir } | null {
   const { cx: initialCx, cy: initialCy } = worldToCell(grid, pos.x, pos.y);
-  const safeDist = 2; // 노드 경계에서 최소 2칸 떨어진 곳을 진입점으로 설정
+
+  // 노드 경계에서 1칸 떨어진 곳을 목표 진입점으로 설정합니다.
+  const safeDist = 1;
 
   let cx = initialCx;
   let cy = initialCy;
   let dir: Dir;
 
-  // 포트 방향에 따라 '안전지대' 좌표를 계산
+  // 포트 방향에 따라 목표 좌표를 계산
   switch (side) {
     case "top":
       cy -= safeDist;
@@ -43,20 +49,23 @@ function findEntryPoint(
       break;
   }
 
-  // 계산된 좌표가 유효한지(맵 안이고, 장애물이 없는지) 확인
-  const cell = cellAt(grid, cx, cy);
+  // 1. 가장 이상적인 목표 지점을 시도합니다.
+  let cell = cellAt(grid, cx, cy);
   if (cell && !cell.blocked) {
     return { cx, cy, dir };
   }
 
-  // 만약 안전지대가 막혀있다면, 원래 위치에서부터 한 칸씩 탐색 (비상 로직)
+  // 2. 만약 막혀있다면, 원래 포트 위치에서부터 해당 방향으로 한 칸씩 탐색합니다.
+  // 이 비상 로직은 A*가 노드 경계에 최대한 가깝게 접근하도록 보장합니다.
   cx = initialCx;
   cy = initialCy;
-  for (let i = 0; i < grid.cols + grid.rows; i++) {
+  const maxSearch = grid.cols + grid.rows; // 무한 루프 방지
+  for (let i = 0; i < maxSearch; i++) {
     if (side === "top") cy--;
     if (side === "bottom") cy++;
     if (side === "left") cx--;
     if (side === "right") cx++;
+
     const fallbackCell = cellAt(grid, cx, cy);
     if (fallbackCell && !fallbackCell.blocked) {
       return { cx, cy, dir };
@@ -76,7 +85,22 @@ export function routeAll(g: Graph, cfg: any): Graph {
   setLastBuiltGrid(grid);
   const costCfg = cfg.cost as CostConfig;
 
-  for (const e of out.edges.values()) {
+  // --- [핵심 수정] 라우팅 순서 최적화 ---
+  // 시작 노드와 끝 노드 사이의 맨해튼 거리가 '먼' 엣지부터 라우팅하도록 정렬합니다.
+  // 이렇게 하면 길고 복잡한 경로가 먼저 자리를 잡고, 짧은 경로들이 이를 피해갈 수 있습니다.
+  const edgesToRoute = Array.from(out.edges.values()).sort((a, b) => {
+    const nodeA_source = out.nodes.get(a.sourceId)!;
+    const nodeA_target = out.nodes.get(a.targetId)!;
+    const distA = manhattan(nodeA_source.bbox, nodeA_target.bbox);
+
+    const nodeB_source = out.nodes.get(b.sourceId)!;
+    const nodeB_target = out.nodes.get(b.targetId)!;
+    const distB = manhattan(nodeB_source.bbox, nodeB_target.bbox);
+
+    return distB - distA; // 거리가 긴 순서대로 (내림차순)
+  });
+
+  for (const e of edgesToRoute) {
     const s = out.nodes.get(e.sourceId)!;
     const t = out.nodes.get(e.targetId)!;
     if (!s || !t) continue;

@@ -123,17 +123,47 @@ export function initialPlacement(g: Graph, cfg: any): Graph {
   // === 3) 루트(그룹 밖) 타일링(이전 그대로)
   const rootNodes: Node[] = [];
   for (const [, n] of out.nodes) if (!n.groupId) rootNodes.push(n);
+
   if (rootNodes.length > 0) {
-    const maxBottom = Math.max(
-      ...Array.from(out.groups.values()).map((gp) => gp.bbox.y + gp.bbox.h),
-      0
-    );
-    const area: Rect = {
-      x: 0,
-      y: snap(maxBottom + 40, grid),
-      w: estimateRootWidth(out, grid),
-      h: Math.max(200, Math.ceil(rootNodes.length / 10) * (6 * grid + gapY)),
-    };
+    // [핵심 수정] 루트 노드를 배치할 영역을 더 안정적으로 계산합니다.
+    const groups = Array.from(out.groups.values());
+    let area: Rect;
+
+    if (groups.length > 0) {
+      // 그룹이 있을 경우, 모든 그룹을 포함하는 전체 경계 상자를 계산합니다.
+      const minX = Math.min(...groups.map((gp) => gp.bbox.x));
+      const maxX = Math.max(...groups.map((gp) => gp.bbox.x + gp.bbox.w));
+      const maxY = Math.max(...groups.map((gp) => gp.bbox.y + gp.bbox.h));
+
+      // 루트 노드 영역을 전체 경계 상자의 '아래' 또는 '오른쪽' 중 더 넓은 공간에 배치합니다.
+      if (maxX > maxY) {
+        // 가로로 넓은 경우: 아래에 배치
+        area = {
+          x: minX,
+          y: snap(maxY + gGapY, grid), // 그룹 간 간격만큼 여유를 둠
+          w: maxX - minX,
+          h: Math.max(
+            200,
+            Math.ceil(rootNodes.length / 10) * (6 * grid + gapY)
+          ),
+        };
+      } else {
+        // 세로로 넓거나 비슷한 경우: 오른쪽에 배치
+        area = {
+          x: snap(maxX + gGapX, grid), // 그룹 간 간격만큼 여유를 둠
+          y: 40, // 최상단 여백
+          w: Math.max(
+            400,
+            Math.ceil(rootNodes.length / 10) * (6 * grid + gapX)
+          ),
+          h: maxY,
+        };
+      }
+    } else {
+      // 그룹이 아예 없는 경우, 기본 영역에 배치합니다.
+      area = { x: 0, y: 40, w: 800, h: 600 };
+    }
+
     tileNodes(out, rootNodes, area, grid, gapX, gapY);
   }
 

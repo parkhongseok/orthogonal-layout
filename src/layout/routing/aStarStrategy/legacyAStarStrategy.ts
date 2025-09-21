@@ -7,6 +7,7 @@ import { initialPlacement } from "@layout/placement/initPlacement";
 import { resolveOverlap } from "@layout/placement/resolveOverlap";
 import { spreadNodes } from "@layout/placement/spread";
 import { sweepCompact } from "@layout/compaction/sweep";
+import { beautifyPath } from "@layout/port/beautifyPath";
 
 export class LegacyAStarStrategy implements RoutingStrategy {
   public execute(graph: Graph, cfg: any): Graph {
@@ -21,8 +22,11 @@ export class LegacyAStarStrategy implements RoutingStrategy {
     // --- 2단계: 라우팅을 위한 포트 할당 ---
     cur = assignPorts(cur, cfg);
 
-   // --- 3단계: 라우팅 ---
+    // --- 3단계: 라우팅 ---
     cur = routeAll(cur, cfg);
+
+    // --- 4단계: 최종 경로 다듬기 ---
+    cur = beautifyPath(cur, cfg);
     return cur;
   }
 }
