@@ -19,14 +19,12 @@ let channelIdCounter = 0;
 export function createBusChannels(g: Graph, cfg: any): BusChannel[] {
   console.log("Creating bus channels...");
   const minChannelWidth = (cfg.bus?.minChannelWidth ?? 3) * cfg.gridSize;
-  const gridSize = cfg.gridSize;
 
   // --- 1단계: 최상위 레벨 (그룹 간) 채널 탐색 ---
+  // [버그 수정 #1] 장애물 목록에 그룹뿐만 아니라 '모든' 노드를 포함하여 노드 관통을 방지합니다.
   const topLevelObstacles: Rect[] = [
     ...Array.from(g.groups.values()).map((grp) => grp.bbox),
-    ...Array.from(g.nodes.values())
-      .filter((n) => !n.groupId)
-      .map((n) => n.bbox),
+    ...Array.from(g.nodes.values()).map((n) => n.bbox),
   ];
   const world = computeWorldBounds(g);
   const topLevelVertical = findCorridors(
@@ -45,56 +43,17 @@ export function createBusChannels(g: Graph, cfg: any): BusChannel[] {
 
   // --- 2단계: 각 그룹 내부 채널 탐색 ---
   for (const group of g.groups.values()) {
-    const childrenNodes = group.children.map(
-      (childId) => g.nodes.get(childId)!
-    );
+    const childrenNodes = group.children
+      .map((childId) => g.nodes.get(childId)!)
+      .filter(Boolean);
     if (childrenNodes.length === 0) continue;
 
-    // [핵심 수정] 탐색 영역(searchArea)은 그룹의 안쪽 여백을 포함한 전체로 설정합니다.
-    const inset = (cfg.layout?.groupInset ?? 2) * gridSize;
-    const searchArea: Rect = {
-      x: group.bbox.x + inset,
-      y: group.bbox.y + inset,
-      w: group.bbox.w - inset * 2,
-      h: group.bbox.h - inset * 2,
-    };
+    const groupInternalObstacles: Rect[] = childrenNodes.map((n) => n.bbox);
 
-    // [핵심 수정] 장애물 목록에는 자식 노드 + 탐색 영역의 '가장자리'에 위치한 가상 벽을 추가합니다.
-    const groupInternalObstacles: Rect[] = [
-      ...childrenNodes.map((n) => n.bbox),
-    ];
+    // [버그 수정 #2] 탐색 영역을 그룹 전체로 확장하고 가상 벽을 제거하여,
+    // 그룹 경계와 노드 사이의 공간(inset)에도 채널이 생성되도록 합니다.
+    const searchArea: Rect = group.bbox;
 
-    const boundaryThickness = 1; // 가상 경계의 두께
-    // 상단 벽 (searchArea의 최상단)
-    groupInternalObstacles.push({
-      x: searchArea.x,
-      y: searchArea.y,
-      w: searchArea.w,
-      h: boundaryThickness,
-    });
-    // 하단 벽 (searchArea의 최하단)
-    groupInternalObstacles.push({
-      x: searchArea.x,
-      y: searchArea.y + searchArea.h - boundaryThickness,
-      w: searchArea.w,
-      h: boundaryThickness,
-    });
-    // 좌측 벽 (searchArea의 좌측 끝)
-    groupInternalObstacles.push({
-      x: searchArea.x,
-      y: searchArea.y,
-      w: boundaryThickness,
-      h: searchArea.h,
-    });
-    // 우측 벽 (searchArea의 우측 끝)
-    groupInternalObstacles.push({
-      x: searchArea.x + searchArea.w - boundaryThickness,
-      y: searchArea.y,
-      w: boundaryThickness,
-      h: searchArea.h,
-    });
-
-    // 수정된 장애물 목록과 탐색 영역으로 채널을 찾습니다.
     const innerVertical = findCorridors(
       groupInternalObstacles,
       searchArea, // world 대신 searchArea를 사용

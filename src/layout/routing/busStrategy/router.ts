@@ -272,9 +272,6 @@ function findBusRoute(
 
   return null; // 경로를 찾지 못함
 }
-/**
- * On-Ramp, Off-Ramp, 채널 경로를 합쳐 하나의 직교 경로(Point 배열)로 만듭니다.
- */
 
 /**
  * [최종본] On-Ramp, Off-Ramp, 채널 경로를 '차선'을 적용하여 직교 경로로 최종 완성합니다.
@@ -385,7 +382,18 @@ function stitchPath(
 
   // --- Off-Ramp 직교 경로 생성 ---
   const offRampChannel = offRamp.channel;
-  const offRampOffset = offRampChannel.lanes.get(edgeId)! * laneWidth; // 이미 할당됨
+
+  // 오프램프 채널의 차선 오프셋을 가져옵니다. 하이웨이 경로 생성 시 이미 할당되었어야 합니다.
+  // 만약 할당되지 않았다면(경로가 단일 채널인 경우 등), 여기서 할당합니다.
+  if (!offRampChannel.lanes.has(edgeId)) {
+    const laneIndex = offRampChannel.lanes.size;
+    offRampChannel.lanes.set(edgeId, laneIndex);
+  }
+  const offRampLaneIndex = offRampChannel.lanes.get(edgeId)!;
+  const offRampTotalLanes = offRampChannel.lanes.size;
+  const offRampOffset =
+    (offRampLaneIndex - (offRampTotalLanes - 1) / 2) * laneWidth;
+
   let offRampProjection = { ...offRamp.projection };
   if (offRampChannel.direction === "horizontal") {
     offRampProjection.y += offRampOffset;
