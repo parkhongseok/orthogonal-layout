@@ -1,5 +1,3 @@
-import { group } from "console";
-
 export const CONFIG = {
   gridSize: 12, // px
   portPerSide: 6, // 면당 기본 포트 후보 수
@@ -7,7 +5,7 @@ export const CONFIG = {
     distance: 3, // 1칸 이동 비용
     bend: 40, // 1번 꺾는 비용 (거리 50칸을 손해 보는 것과 같음)
     obstacle: 1000,
-    congestion: 20, // 이미 다른 엣지가 지나간 길을 피하는 비용
+    congestion: 100, // 이미 다른 엣지가 지나간 길을 피하는 비용
   },
   routing: {
     bboxExpand: 1, // 바운딩 박스 확장(그리드셀 단위)
