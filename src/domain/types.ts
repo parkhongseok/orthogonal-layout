@@ -1,6 +1,7 @@
 export type NodeId = string & { readonly brand: unique symbol };
 export type EdgeId = string & { readonly brand: unique symbol };
 export type GroupId = string & { readonly brand: unique symbol };
+export type BusChannelId = string & { readonly brand: unique symbol };
 export type Dir = "U" | "D" | "L" | "R";
 
 export interface Point {
@@ -48,4 +49,17 @@ export interface NodeRec {
   f: number;
   came?: NodeRec;
   dir?: Dir;
+}
+
+export interface BusChannel {
+  id: BusChannelId;
+  geometry: Rect; // 채널이 차지하는 사각형 영역
+  direction: "horizontal" | "vertical";
+  lanes: Map<EdgeId, number>;
+}
+
+export interface BusNetwork {
+  channels: Map<string, BusChannel>;
+  // 교차점을 그래프의 엣지처럼 표현합니다. <채널 ID, [연결된 채널 ID들]>
+  intersections: Map<string, string[]>;
 }

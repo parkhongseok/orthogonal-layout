@@ -2,7 +2,8 @@
 
 import type { Graph, NodeId, PortSide, Point } from "@domain/types";
 import { portPosition } from "./assign";
-import { cleanupCollinearPoints } from "@layout/routing/pathSmoother";
+import { cleanupCollinearPoints } from "@layout/routing/aStarStrategy/pathSmoother";
+
 
 export function beautifyPath(g: Graph, cfg: any): Graph {
   const out = { ...g, edges: new Map(g.edges) };
@@ -74,7 +75,7 @@ export function beautifyPath(g: Graph, cfg: any): Graph {
               newPath[1].x = newPortPos.x;
             else newPath[1].y = newPortPos.y;
           }
-        } else {
+        } else { // type === 'target'
           const last = newPath.length - 1;
           newPath[last] = newPortPos;
           if (newPath.length > 1) {

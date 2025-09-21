@@ -13,13 +13,6 @@ export function autoLayoutPipeline(
   strategy: RoutingStrategy
 ): Graph {
   let cur = g;
-  // --- 1. 노드 위치 결정 단계 ---
-  cur = initialPlacement(cur, cfg);
-  cur = resolveOverlap(cur, cfg);
-  cur = spreadNodes(cur, cfg);
-  cur = assignPorts(cur, cfg);
-  cur = sweepCompact(cur, cfg);
-
   cur = strategy.execute(cur, cfg);
   return cur;
 }

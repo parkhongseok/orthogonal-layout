@@ -2,7 +2,7 @@ import { THEME } from "./theme";
 import type { Graph, Rect } from "@domain/types";
 import { portPosition } from "@layout/port/assign";
 import { Grid } from "@layout/routing/aStarStrategy/grid";
-import { lastBuiltGrid } from "@layout/routing/aStarStrategy/routeAll";
+import { lastBuiltGrid, lastBusChannels } from "./debug";
 
 let _ctx: CanvasRenderingContext2D;
 let _overlays = { grid: true, obstacles: false, bbox: false };
@@ -49,10 +49,31 @@ export function drawAll(
   drawNodeNames(ctx, g);
   drawPorts(ctx, g);
   drawEdges(ctx, g);
+  drawBusChannels(ctx);
 
   if (_overlays.obstacles && lastBuiltGrid) {
     drawObstacles(ctx, lastBuiltGrid);
   }
+}
+export function drawBusChannels(ctx: CanvasRenderingContext2D) {
+  if (!lastBusChannels) return;
+
+  ctx.save();
+  for (const channel of lastBusChannels) {
+    const { x, y, w, h } = channel.geometry;
+    ctx.fillStyle =
+      channel.direction === "vertical"
+        ? "rgba(22, 163, 74, 0.15)" // Vertical: Green
+        : "rgba(59, 130, 246, 0.15)"; // Horizontal: Blue
+    ctx.strokeStyle =
+      channel.direction === "vertical"
+        ? "rgba(22, 163, 74, 0.4)"
+        : "rgba(59, 130, 246, 0.4)";
+    ctx.lineWidth = 1;
+    ctx.fillRect(x, y, w, h);
+    ctx.strokeRect(x, y, w, h);
+  }
+  ctx.restore();
 }
 
 // [추가] 장애물 그리드를 시각화하는 새로운 함수
