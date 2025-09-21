@@ -1,7 +1,7 @@
 import type { Graph } from "@domain/types";
 import type { RoutingStrategy } from "../strategy";
 import { createBusChannels } from "./channel";
-import { setLastBusChannels } from "@render/debug";
+import { fallbackEdgeIds, setLastBusChannels } from "@render/debug";
 import { buildBusNetworkGraph } from "./network";
 import { routeEdgesOnBus } from "./router";
 import { assignPorts } from "@layout/port/assign";
@@ -10,6 +10,7 @@ import { resolveOverlap } from "@layout/placement/resolveOverlap";
 import { spreadNodes } from "@layout/placement/spread";
 import { sweepCompact } from "@layout/compaction/sweep";
 import { beautifyPath } from "@layout/port/beautifyPath";
+import { routeAll } from "../aStarStrategy/routeAll";
 
 export class BusRoutingStrategy implements RoutingStrategy {
   public execute(graph: Graph, cfg: any): Graph {
@@ -30,9 +31,34 @@ export class BusRoutingStrategy implements RoutingStrategy {
     setLastBusChannels(channels);
     // 채널을 탐색 가능한 네트워크 그래프로 변환
     const network = buildBusNetworkGraph(channels);
-
-    //  네트워크를 이용해 모든 엣지 라우팅
     cur = routeEdgesOnBus(cur, network, cfg);
+
+    // --- 4단계: 하이브리드 라우팅 (Fallback) ---
+    const failedEdges = Array.from(cur.edges.values()).filter(
+      (e) => !e.path || e.path.length <= 1
+    );
+
+    if (failedEdges.length > 0) {
+      console.warn(
+        `Bus routing failed for ${failedEdges.length} edges. Running fallback A*...`
+      );
+      // 실패한 엣지들만으로 구성된 임시 그래프를 만듭니다.
+      const fallbackGraph: Graph = {
+        ...cur,
+        edges: new Map(failedEdges.map((e) => [e.id, e])),
+      };
+
+      // A* 라우팅을 실패한 엣지에 대해서만 실행합니다.
+      const reroutedGraph = routeAll(fallbackGraph, cfg);
+
+      // 결과를 원래 그래프에 다시 합칩니다.
+      for (const reroutedEdge of reroutedGraph.edges.values()) {
+        cur.edges.set(reroutedEdge.id, reroutedEdge);
+        fallbackEdgeIds.add(reroutedEdge.id); // 디버깅을 위해 ID 기록
+      }
+    }
+
+    // --- 5단계: 최종 경로 다듬기 ---
     cur = beautifyPath(cur, cfg);
     return cur;
   }
