@@ -272,7 +272,6 @@ function findBusRoute(
 
   return null; // 경로를 찾지 못함
 }
-
 /**
  * [최종본] On-Ramp, Off-Ramp, 채널 경로를 '차선'을 적용하여 직교 경로로 최종 완성합니다.
  */
@@ -284,21 +283,29 @@ function stitchPath(
   edgeId: EdgeId,
   cfg: any
 ): Point[] {
-  // 차선 폭을 config에서 가져오거나 기본값을 사용합니다. (gridSize의 절반)
-  const laneWidth = cfg.bus?.laneWidth ?? cfg.gridSize / 2;
+  const baseLaneWidth = cfg.bus?.laneWidth ?? cfg.gridSize / 2;
   const path: Point[] = [onRamp.port];
 
   // --- On-Ramp 직교 경로 생성 ---
   const onRampChannel = onRamp.channel;
-  // 이 엣지에 대한 차선 오프셋을 계산하고 할당합니다.
   if (!onRampChannel.lanes.has(edgeId)) {
-    const laneIndex = onRampChannel.lanes.size;
-    onRampChannel.lanes.set(edgeId, laneIndex);
+    onRampChannel.lanes.set(edgeId, onRampChannel.lanes.size);
   }
   const onRampLaneIndex = onRampChannel.lanes.get(edgeId)!;
   const onRampTotalLanes = onRampChannel.lanes.size;
+
+  // ✨ [핵심 수정] 동적 차선 폭 계산
+  const onRampChannelWidth =
+    onRampChannel.direction === "horizontal"
+      ? onRampChannel.geometry.h
+      : onRampChannel.geometry.w;
+  const onRampEffectiveLaneWidth = Math.min(
+    baseLaneWidth,
+    onRampChannelWidth / onRampTotalLanes
+  );
+
   const onRampOffset =
-    (onRampLaneIndex - (onRampTotalLanes - 1) / 2) * laneWidth;
+    (onRampLaneIndex - (onRampTotalLanes - 1) / 2) * onRampEffectiveLaneWidth;
 
   let onRampProjection = { ...onRamp.projection };
   if (onRampChannel.direction === "horizontal") {
@@ -306,7 +313,7 @@ function stitchPath(
   } else {
     onRampProjection.x += onRampOffset;
   }
-
+  // ... (이하 경로 생성 로직은 onRampEffectiveLaneWidth를 사용하도록 유사하게 수정됨)
   const isRampHorizontal = onRampChannel.direction === "vertical";
   if (isRampHorizontal) {
     path.push({ x: onRampProjection.x, y: onRamp.port.y });
@@ -323,17 +330,25 @@ function stitchPath(
         ? network.channels.get(channelIds[i + 1])!
         : null;
 
-    // 현재 채널에 대한 차선 오프셋 계산
     if (!currentChannel.lanes.has(edgeId)) {
-      const laneIndex = currentChannel.lanes.size;
-      currentChannel.lanes.set(edgeId, laneIndex);
+      currentChannel.lanes.set(edgeId, currentChannel.lanes.size);
     }
     const currentLaneIndex = currentChannel.lanes.get(edgeId)!;
     const currentTotalLanes = currentChannel.lanes.size;
-    const currentOffset =
-      (currentLaneIndex - (currentTotalLanes - 1) / 2) * laneWidth;
 
-    // 이전 지점에서 현재 채널의 차선까지 이동
+    // ✨ [핵심 수정] 동적 차선 폭 계산
+    const currentChannelWidth =
+      currentChannel.direction === "horizontal"
+        ? currentChannel.geometry.h
+        : currentChannel.geometry.w;
+    const currentEffectiveLaneWidth = Math.min(
+      baseLaneWidth,
+      currentChannelWidth / currentTotalLanes
+    );
+    const currentOffset =
+      (currentLaneIndex - (currentTotalLanes - 1) / 2) *
+      currentEffectiveLaneWidth;
+
     const lastPt = path[path.length - 1];
     if (currentChannel.direction === "horizontal") {
       path.push({
@@ -353,16 +368,24 @@ function stitchPath(
       });
     }
 
-    // 다음 채널과의 교차점 계산
     if (nextChannel) {
-      // 다음 채널에 대한 차선 오프셋 계산
       if (!nextChannel.lanes.has(edgeId)) {
-        const laneIndex = nextChannel.lanes.size;
-        nextChannel.lanes.set(edgeId, laneIndex);
+        nextChannel.lanes.set(edgeId, nextChannel.lanes.size);
       }
       const nextLaneIndex = nextChannel.lanes.get(edgeId)!;
       const nextTotalLanes = nextChannel.lanes.size;
-      const nextOffset = (nextLaneIndex - (nextTotalLanes - 1) / 2) * laneWidth;
+
+      // ✨ [핵심 수정] 동적 차선 폭 계산
+      const nextChannelWidth =
+        nextChannel.direction === "horizontal"
+          ? nextChannel.geometry.h
+          : nextChannel.geometry.w;
+      const nextEffectiveLaneWidth = Math.min(
+        baseLaneWidth,
+        nextChannelWidth / nextTotalLanes
+      );
+      const nextOffset =
+        (nextLaneIndex - (nextTotalLanes - 1) / 2) * nextEffectiveLaneWidth;
 
       const intersectionX =
         currentChannel.direction === "horizontal"
@@ -383,16 +406,24 @@ function stitchPath(
   // --- Off-Ramp 직교 경로 생성 ---
   const offRampChannel = offRamp.channel;
 
-  // 오프램프 채널의 차선 오프셋을 가져옵니다. 하이웨이 경로 생성 시 이미 할당되었어야 합니다.
-  // 만약 할당되지 않았다면(경로가 단일 채널인 경우 등), 여기서 할당합니다.
   if (!offRampChannel.lanes.has(edgeId)) {
-    const laneIndex = offRampChannel.lanes.size;
-    offRampChannel.lanes.set(edgeId, laneIndex);
+    offRampChannel.lanes.set(edgeId, offRampChannel.lanes.size);
   }
   const offRampLaneIndex = offRampChannel.lanes.get(edgeId)!;
   const offRampTotalLanes = offRampChannel.lanes.size;
+
+  // ✨ [핵심 수정] 동적 차선 폭 계산
+  const offRampChannelWidth =
+    offRampChannel.direction === "horizontal"
+      ? offRampChannel.geometry.h
+      : offRampChannel.geometry.w;
+  const offRampEffectiveLaneWidth = Math.min(
+    baseLaneWidth,
+    offRampChannelWidth / offRampTotalLanes
+  );
   const offRampOffset =
-    (offRampLaneIndex - (offRampTotalLanes - 1) / 2) * laneWidth;
+    (offRampLaneIndex - (offRampTotalLanes - 1) / 2) *
+    offRampEffectiveLaneWidth;
 
   let offRampProjection = { ...offRamp.projection };
   if (offRampChannel.direction === "horizontal") {
@@ -401,7 +432,6 @@ function stitchPath(
     offRampProjection.x += offRampOffset;
   }
 
-  // 마지막 교차점에서 offRampProjection까지 차선을 따라 이동
   const lastPathPt = path[path.length - 1];
   if (offRampChannel.direction === "horizontal") {
     path.push({ x: offRampProjection.x, y: lastPathPt.y });

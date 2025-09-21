@@ -45,8 +45,8 @@ export function buildGrid(graph: Graph, cfg: any): Grid {
   const worldBounds = computeWorldBounds(graph);
 
   // 1. 그리드의 전체 크기와 기준점을 계산합니다.
-  // 월드 경계보다 사방으로 10칸씩 여유를 주어 경로 탐색이 막히지 않도록 합니다.
-  const margin = gridSize * 10;
+  // 월드 경계보다 사방으로 3칸씩 여유를 주어 경로 탐색이 막히지 않도록 합니다.
+  const margin = gridSize * 3;
   const originX = Math.floor((worldBounds.x - margin) / gridSize) * gridSize;
   const originY = Math.floor((worldBounds.y - margin) / gridSize) * gridSize;
   const worldWidth = worldBounds.w + margin * 2;
