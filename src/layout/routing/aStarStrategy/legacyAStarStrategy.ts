@@ -12,7 +12,16 @@ export class LegacyAStarStrategy implements RoutingStrategy {
   public execute(graph: Graph, cfg: any): Graph {
     console.log("Executing: Legacy A* Strategy");
     let cur = graph;
+    // --- 1. 노드 위치 결정 단계 ---
+    cur = initialPlacement(cur, cfg);
+    cur = resolveOverlap(cur, cfg);
+    cur = spreadNodes(cur, cfg);
+    cur = sweepCompact(cur, cfg);
+
+    // --- 2단계: 라우팅을 위한 포트 할당 ---
     cur = assignPorts(cur, cfg);
+
+   // --- 3단계: 라우팅 ---
     cur = routeAll(cur, cfg);
     return cur;
   }

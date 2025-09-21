@@ -1,3 +1,4 @@
+import { busChannelId } from "@domain/id";
 import type { Graph, Rect, BusChannel, Node, Group } from "@domain/types";
 import { computeWorldBounds } from "@render/world";
 
@@ -173,9 +174,10 @@ function createChannel(
   direction: "vertical" | "horizontal"
 ): BusChannel {
   return {
-    id: `ch-${channelIdCounter++}`,
+    id: busChannelId(channelIdCounter++),
     geometry: { x, y, w, h },
     direction,
+    lanes: new Map(),
   };
 }
 /**
@@ -213,5 +215,5 @@ function optimizeChannels(channels: BusChannel[]): BusChannel[] {
   }
 
   // ID를 재정렬하여 반환합니다.
-  return optimized.map((ch, i) => ({ ...ch, id: `ch-${i}` }));
+  return optimized.map((ch, i) => ({ ...ch, id: busChannelId(i) }));
 }
