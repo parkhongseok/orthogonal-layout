@@ -11,10 +11,7 @@ export const CONFIG = {
     bboxExpand: 1, // 바운딩 박스 확장(그리드셀 단위)
     maxExpandSteps: 3,
   },
-  bus: {
-    // [추가] Bus 라우팅 전용 설정
-    laneWidth: 4, // 차선 하나당 폭 (px)
-  },
+
   layout: {
     nodeGapX: 4, // 노드 간 가로 간격(격자 셀 수)
     nodeGapY: 4, // 노드 간 세로 간격(격자 셀 수)
