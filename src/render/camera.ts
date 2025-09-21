@@ -5,8 +5,19 @@ export function makeCamera(): Camera {
   return { scale: 1, tx: 0, ty: 0 };
 }
 
-export function applyCamera(ctx: CanvasRenderingContext2D, dpr: number, cam: Camera) {
-  ctx.setTransform(cam.scale * dpr, 0, 0, cam.scale * dpr, cam.tx * dpr, cam.ty * dpr);
+export function applyCamera(
+  ctx: CanvasRenderingContext2D,
+  dpr: number,
+  cam: Camera
+) {
+  ctx.setTransform(
+    cam.scale * dpr,
+    0,
+    0,
+    cam.scale * dpr,
+    cam.tx * dpr,
+    cam.ty * dpr
+  );
 }
 
 export function zoomAt(cam: Camera, mx: number, my: number, zoom: number) {
@@ -45,6 +56,6 @@ export function fitTopLeft(
   const sx = (viewW - pad * 2) / world.w;
   const sy = (viewH - pad * 2) / world.h;
   cam.scale = Math.max(0.05, Math.min(sx, sy));
-  cam.tx = pad - world.x * cam.scale;  // 좌측 여백 pad
-  cam.ty = pad - world.y * cam.scale;  // 상단 여백 pad
+  cam.tx = pad - world.x * cam.scale; // 좌측 여백 pad
+  cam.ty = pad - world.y * cam.scale; // 상단 여백 pad
 }

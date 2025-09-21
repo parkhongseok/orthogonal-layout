@@ -1,11 +1,19 @@
+import { Camera } from "./camera";
 import { THEME } from "./theme";
 import type { Graph, Rect } from "@domain/types";
 import { portPosition } from "@layout/port/assign";
 import { Grid } from "@layout/routing/aStarStrategy/grid";
 import { lastBuiltGrid, lastBusChannels } from "./debug";
 
+export let OPTIONS = {
+  grid: true,
+  obstacles: true,
+  channels: true,
+  bbox: true,
+};
+
+let _overlays = OPTIONS;
 let _ctx: CanvasRenderingContext2D;
-let _overlays = { grid: true, obstacles: false, bbox: false };
 
 export function initCanvas(canvas: HTMLCanvasElement) {
   const dpr = Math.max(1, window.devicePixelRatio || 1);
@@ -41,18 +49,19 @@ export function drawAll(
   cfg: any
 ) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-  if (_overlays.grid) drawGrid(ctx, cfg.gridSize);
-  // [추가] 'Obstacles' 체크박스가 켜져 있으면 장애물 맵을 그립니다.
+  if (_overlays.grid) drawGrid(ctx, cfg.gridSize, opts.camera);
 
   drawGroups(ctx, g);
   drawNodes(ctx, g);
   drawNodeNames(ctx, g);
   drawPorts(ctx, g);
   drawEdges(ctx, g);
-  drawBusChannels(ctx);
 
   if (_overlays.obstacles && lastBuiltGrid) {
     drawObstacles(ctx, lastBuiltGrid);
+  }
+  if (_overlays.channels && lastBusChannels) {
+    drawBusChannels(ctx);
   }
 }
 export function drawBusChannels(ctx: CanvasRenderingContext2D) {
@@ -198,21 +207,36 @@ export function drawPorts(ctx: CanvasRenderingContext2D, graph: Graph) {
   ctx.restore();
 }
 
-function drawGrid(ctx: CanvasRenderingContext2D, grid: number) {
-  const w = ctx.canvas.width,
-    h = ctx.canvas.height;
+function drawGrid(ctx: CanvasRenderingContext2D, grid: number, cam: Camera) {
+  const viewW = ctx.canvas.width / (window.devicePixelRatio || 1);
+  const viewH = ctx.canvas.height / (window.devicePixelRatio || 1);
+
+  // 화면 좌표(0,0)와 (viewW, viewH)가 월드 좌표의 어디에 해당하는지 계산
+  const worldX1 = (0 - cam.tx) / cam.scale;
+  const worldY1 = (0 - cam.ty) / cam.scale;
+  const worldX2 = (viewW - cam.tx) / cam.scale;
+  const worldY2 = (viewH - cam.ty) / cam.scale;
+
   ctx.save();
   ctx.strokeStyle = THEME.grid;
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 1 / cam.scale; // 줌 아웃해도 선 두께가 일정하게 보이도록 보정
+
   ctx.beginPath();
-  for (let x = 0; x < w; x += grid) {
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, h);
+
+  // 보이는 영역에 대해서만 세로선 그리기
+  const startX = Math.floor(worldX1 / grid) * grid;
+  for (let x = startX; x < worldX2; x += grid) {
+    ctx.moveTo(x, worldY1);
+    ctx.lineTo(x, worldY2);
   }
-  for (let y = 0; y < h; y += grid) {
-    ctx.moveTo(0, y);
-    ctx.lineTo(w, y);
+
+  // 보이는 영역에 대해서만 가로선 그리기
+  const startY = Math.floor(worldY1 / grid) * grid;
+  for (let y = startY; y < worldY2; y += grid) {
+    ctx.moveTo(worldX1, y);
+    ctx.lineTo(worldX2, y);
   }
+
   ctx.stroke();
   ctx.restore();
 }
