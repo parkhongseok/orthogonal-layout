@@ -80,16 +80,29 @@ export function createInitialGraph(
 
   // ====== 3) 엣지 생성: 그룹 내/간/루트 노드 섞어서 랜덤 연결 ======
   const nodeIds = Array.from(nodes.keys()) as NodeId[];
+  const existingEdgePairs = new Set<string>(); // ✨ [핵심 추가] 중복 엣지를 체크하기 위한 Set
+
   let e = 0;
-  while (e < nEdges && nodeIds.length > 1) {
+  while (
+    e < nEdges &&
+    existingEdgePairs.size < (nodeIds.length * (nodeIds.length - 1)) / 2
+  ) {
     const s = nodeIds[Math.floor(Math.random() * nodeIds.length)];
     let t = s;
     while (t === s) {
       t = nodeIds[Math.floor(Math.random() * nodeIds.length)];
     }
+
+    // ✨ [핵심 추가] 중복 체크 로직
+    // 노드 ID를 정렬하여 "n-1 -> n-2"와 "n-2 -> n-1"을 동일한 연결로 취급
+    const pairKey = [s, t].sort().join("-");
+    if (existingEdgePairs.has(pairKey)) {
+      continue; // 이미 존재하는 엣지면 건너뛰기
+    }
+    existingEdgePairs.add(pairKey);
+
     const eid = edgeId(e++);
 
-    // [수정] 초기 렌더링을 위해 간단한 직선 경로를 생성합니다.
     const sourceNode = nodes.get(s)!;
     const targetNode = nodes.get(t)!;
 
@@ -106,7 +119,7 @@ export function createInitialGraph(
       id: eid,
       sourceId: s,
       targetId: t,
-      path: [sourceCenter, targetCenter], // path 속성을 기본값으로 추가
+      path: [sourceCenter, targetCenter],
     });
   }
 
