@@ -8,6 +8,8 @@ import type {
   EdgeId,
 } from "@domain/types";
 import { portPosition } from "@layout/port/assign";
+import { PriorityQueue } from "@utils/priorityQueue";
+import { manhattan } from "@utils/math";
 
 /**
  * BusNetwork를 이용해 그래프의 모든 엣지에 대한 직교 경로를 계산합니다.
@@ -39,63 +41,59 @@ function findPathForEdge(
   const sourceNode = g.nodes.get(edge.sourceId)!;
   const targetNode = g.nodes.get(edge.targetId)!;
 
-  // 1. On-Ramp: 소스 노드에서 가장 효율적인 시작 채널(과 포트) 찾기
-  const onRamp = findBestRamp(sourceNode, network, "source");
-
-  // 2. Off-Ramp: 타겟 노드에서 가장 효율적인 도착 채널(과 포트) 찾기
-  const offRamp = findBestRamp(targetNode, network, "target");
-
-  if (!onRamp || !offRamp) {
-    // 적절한 진입/진출로를 찾지 못하면, 임시 직선 경로 반환
+  // 1. [개선] Off-Ramp 후보군을 먼저 찾습니다.
+  const offRampCandidates = findRampCandidates(targetNode, network);
+  if (offRampCandidates.length === 0)
     return createFallbackPath(sourceNode, targetNode);
-  }
 
-  // 3. Highway: 네트워크 그래프에서 BFS로 최단 채널 경로 탐색
+  // 2. [개선] On-Ramp를 찾을 때, 각 후보에서 Off-Ramp 후보군까지의 총 예상 비용을 계산합니다.
+  const onRamp = findBestRamp(sourceNode, network, offRampCandidates);
+  if (!onRamp) return createFallbackPath(sourceNode, targetNode);
+
+  // 3. [개선] 선택된 On-Ramp를 기준으로 최적의 Off-Ramp를 최종 결정합니다.
+  const offRamp = findBestOffRamp(onRamp, network, offRampCandidates);
+  if (!offRamp) return createFallbackPath(sourceNode, targetNode);
+
+  // 4. Highway: 네트워크 그래프에서 A*로 최단 비용 채널 경로 탐색
   const channelPath = findBusRoute(
     onRamp.channel.id,
     offRamp.channel.id,
     network
   );
 
-  // 4. 경로 조합: 찾은 세 조각을 합쳐 최종 직교 경로 생성
+  // 5. 경로 조합: 찾은 세 조각을 합쳐 최종 직교 경로 생성
   if (channelPath) {
     return stitchPath(onRamp, offRamp, channelPath, network, edge.id, cfg);
   } else {
-    // 채널 간 경로가 없는 경우 (네트워크가 분리된 경우 등)
     return createFallbackPath(sourceNode, targetNode);
   }
 }
 
-// --- Helper Functions ---
+// --- 타입 및 인터페이스 정의 ---
 
 interface Ramp {
   port: Point;
   channel: BusChannel;
   projection: Point; // 포트에서 채널로 내린 수선의 발
+  cost: number; // 노드 포트에서 projection까지의 맨해튼 거리 비용
 }
 
 /**
- * 노드에서 버스 네트워크로 진입/진출하기 위한 최적의 Ramp를 찾습니다.
+ * [신규] 노드에 연결될 수 있는 모든 유효한 Ramp 후보를 찾아 비용과 함께 반환합니다.
+ * @param node 대상 노드
+ * @param network 버스 네트워크
+ * @returns Ramp 후보 배열
  */
-function findBestRamp(
-  node: Node,
-  network: BusNetwork,
-  type: "source" | "target"
-): Ramp | null {
-  let bestRamp: Ramp | null = null;
-  let minCost = Infinity;
-
-  // 디버깅 로그 1: 노드에 포트가 제대로 할당되었는지 확인
+function findRampCandidates(node: Node, network: BusNetwork): Ramp[] {
+  const candidates: Ramp[] = [];
   if (!node.ports || node.ports.length === 0) {
     console.warn(`Node ${node.id} has no ports!`);
-    return null;
+    return [];
   }
 
-  for (const portInfo of node.ports || []) {
+  for (const portInfo of node.ports) {
     const portPos = portPosition(node, portInfo.side, portInfo.offset);
-
     for (const channel of network.channels.values()) {
-      // 포트 방향과 채널 방향이 수직이어야 직접 연결 가능
       const isPortHorizontal =
         portInfo.side === "left" || portInfo.side === "right";
       const isChannelHorizontal = channel.direction === "horizontal";
@@ -103,25 +101,101 @@ function findBestRamp(
 
       const projection = getProjection(portPos, channel);
       if (projection) {
-        // 디버깅 로그 2: 유효한 진입로 후보를 찾았는지 확인
-        console.log(
-          `Found a potential ramp for Node ${node.id} from port ${portInfo.side} to channel ${channel.id}`
-        );
-        const cost =
-          Math.abs(portPos.x - projection.x) +
-          Math.abs(portPos.y - projection.y);
-        if (cost < minCost) {
-          minCost = cost;
-          bestRamp = { port: portPos, channel, projection };
-        }
+        const cost = manhattan(portPos, projection);
+        candidates.push({ port: portPos, channel, projection, cost });
       }
     }
   }
-  // 디버깅 로그 3: 최종적으로 선택된 Ramp가 있는지 확인
-  if (!bestRamp) {
-    console.error(`Could not find any valid ramp for Node ${node.id}`);
+  return candidates;
+}
+
+/**
+ * [신규] 여러 On-Ramp 후보 중에서, Off-Ramp 후보군까지의 총 예상 비용이 가장 낮은 최적의 On-Ramp를 찾습니다.
+ * @param node 소스 노드
+ * @param network 버스 네트워크
+ * @param offRampCandidates 타겟 노드의 모든 Off-Ramp 후보
+ * @returns 최적의 On-Ramp
+ */
+function findBestRamp(
+  node: Node,
+  network: BusNetwork,
+  offRampCandidates: Ramp[]
+): Ramp | null {
+  const onRampCandidates = findRampCandidates(node, network);
+  if (onRampCandidates.length === 0) return null;
+
+  let bestOnRamp: Ramp | null = null;
+  let minTotalCost = Infinity;
+
+  for (const onRamp of onRampCandidates) {
+    // 이 On-Ramp에서 가장 저렴한 Off-Ramp까지의 예상 비용을 계산
+    const { cost: highwayCost } = findCheapestRouteToCandidates(
+      onRamp,
+      offRampCandidates,
+      network
+    );
+    const totalCost = onRamp.cost + highwayCost;
+
+    if (totalCost < minTotalCost) {
+      minTotalCost = totalCost;
+      bestOnRamp = onRamp;
+    }
   }
-  return bestRamp;
+
+  return bestOnRamp;
+}
+
+/**
+ * [신규] 주어진 On-Ramp에 대해, 총 경로 비용이 가장 낮은 최적의 Off-Ramp를 최종 선택합니다.
+ * @param onRamp 확정된 On-Ramp
+ * @param network 버스 네트워크
+ * @param offRampCandidates 타겟 노드의 모든 Off-Ramp 후보
+ * @returns 최적의 Off-Ramp
+ */
+function findBestOffRamp(
+  onRamp: Ramp,
+  network: BusNetwork,
+  offRampCandidates: Ramp[]
+): Ramp | null {
+  const { bestTargetRamp } = findCheapestRouteToCandidates(
+    onRamp,
+    offRampCandidates,
+    network
+  );
+  return bestTargetRamp;
+}
+
+/**
+ * [신규] 특정 On-Ramp에서 여러 Off-Ramp 후보군까지의 경로 중 가장 저렴한 경로 비용과 해당 Off-Ramp를 찾습니다.
+ * @param onRamp 출발 Ramp
+ * @param offRampCandidates 도착 Ramp 후보군
+ * @param network 버스 네트워크
+ * @returns 가장 저렴한 경로의 비용과 그 때의 Off-Ramp
+ */
+function findCheapestRouteToCandidates(
+  onRamp: Ramp,
+  offRampCandidates: Ramp[],
+  network: BusNetwork
+): { cost: number; bestTargetRamp: Ramp | null } {
+  let minCost = Infinity;
+  let bestTargetRamp: Ramp | null = null;
+
+  for (const offRamp of offRampCandidates) {
+    const path = findBusRoute(onRamp.channel.id, offRamp.channel.id, network);
+    if (path) {
+      // 경로의 총 비용 = A* 채널 비용 + 진출로 비용
+      const highwayCost = path.reduce(
+        (sum, channelId) => sum + (network.channels.get(channelId)!.cost || 0),
+        0
+      );
+      const totalCost = highwayCost + offRamp.cost;
+      if (totalCost < minCost) {
+        minCost = totalCost;
+        bestTargetRamp = offRamp;
+      }
+    }
+  }
+  return { cost: minCost, bestTargetRamp };
 }
 
 /**
@@ -130,20 +204,19 @@ function findBestRamp(
 function getProjection(point: Point, channel: BusChannel): Point | null {
   const { x, y, w, h } = channel.geometry;
   if (channel.direction === "horizontal") {
-    if (point.x >= x && point.x <= x + w) {
-      return { x: point.x, y: y + h / 2 };
-    }
+    if (point.x >= x && point.x <= x + w) return { x: point.x, y: y + h / 2 };
   } else {
-    // vertical
-    if (point.y >= y && point.y <= y + h) {
-      return { x: x + w / 2, y: point.y };
-    }
+    if (point.y >= y && point.y <= y + h) return { x: x + w / 2, y: point.y };
   }
   return null;
 }
 
 /**
- * BFS를 사용하여 두 채널 사이의 최단 경로(채널 ID 목록)를 찾습니다.
+ * [개선] A* 알고리즘을 사용하여 두 채널 사이의 최저 비용 경로(채널 ID 목록)를 찾습니다.
+ * @param startChannelId 시작 채널 ID
+ * @param endChannelId 도착 채널 ID
+ * @param network 버스 네트워크
+ * @returns 최저 비용의 채널 ID 배열
  */
 function findBusRoute(
   startChannelId: string,
@@ -152,29 +225,53 @@ function findBusRoute(
 ): string[] | null {
   if (startChannelId === endChannelId) return [startChannelId];
 
-  const queue: string[][] = [[startChannelId]];
-  const visited = new Set<string>([startChannelId]);
+  type PathNode = { id: string; g: number; f: number; cameFrom: string | null };
+  const openSet = new PriorityQueue<PathNode>((a, b) => a.f - b.f);
+  const allNodes = new Map<string, PathNode>();
 
-  while (queue.length > 0) {
-    const path = queue.shift()!;
-    const lastChannelId = path[path.length - 1];
+  const startNode = { id: startChannelId, g: 0, f: 0, cameFrom: null };
+  openSet.push(startNode);
+  allNodes.set(startChannelId, startNode);
 
-    if (lastChannelId === endChannelId) {
-      return path;
+  const endChannel = network.channels.get(endChannelId)!;
+
+  while (openSet.size > 0) {
+    const current = openSet.pop()!;
+
+    if (current.id === endChannelId) {
+      // 경로 복원
+      const path: string[] = [];
+      let p: PathNode | undefined = current;
+      while (p) {
+        path.push(p.id);
+        p = p.cameFrom ? allNodes.get(p.cameFrom) : undefined;
+      }
+      return path.reverse();
     }
 
-    const neighbors = network.intersections.get(lastChannelId) || [];
+    const neighbors = network.intersections.get(current.id) || [];
     for (const neighborId of neighbors) {
-      if (!visited.has(neighborId)) {
-        visited.add(neighborId);
-        const newPath = [...path, neighborId];
-        queue.push(newPath);
+      const channel = network.channels.get(neighborId)!;
+      const gNew = current.g + (channel.cost || 1);
+
+      const existing = allNodes.get(neighborId);
+      if (!existing || gNew < existing.g) {
+        const h = manhattan(channel.geometry, endChannel.geometry); // 휴리스틱
+        const fNew = gNew + h;
+        const newNode: PathNode = {
+          id: neighborId,
+          g: gNew,
+          f: fNew,
+          cameFrom: current.id,
+        };
+        allNodes.set(neighborId, newNode);
+        openSet.push(newNode);
       }
     }
   }
+
   return null; // 경로를 찾지 못함
 }
-
 /**
  * On-Ramp, Off-Ramp, 채널 경로를 합쳐 하나의 직교 경로(Point 배열)로 만듭니다.
  */

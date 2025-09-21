@@ -56,6 +56,8 @@ export interface BusChannel {
   geometry: Rect; // 채널이 차지하는 사각형 영역
   direction: "horizontal" | "vertical";
   lanes: Map<EdgeId, number>;
+  level?: number; // << 0: 간선도로, 1: 지역도로
+  cost?: number;  // << 이 채널을 통과하는 라우팅 비용
 }
 
 export interface BusNetwork {
