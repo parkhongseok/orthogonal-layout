@@ -65,3 +65,17 @@ export interface BusNetwork {
   // 교차점을 그래프의 엣지처럼 표현합니다. <채널 ID, [연결된 채널 ID들]>
   intersections: Map<string, string[]>;
 }
+
+// --- 가시성 그래프를 위한 타입 추가 ---
+export interface VisibilityGraph {
+  vertices: RoutingVertex[];
+  // 인접 리스트: 각 정점(인덱스)에서 연결된 다른 정점들의 인덱스 목록
+  adjacency: Map<number, number[]>; 
+  // 간선 사용량: 두 정점을 잇는 간선이 몇 번 사용되었는지 기록 (e.g., "0-1")
+  edgeUsage: Map<string, number>;
+}
+
+export interface RoutingVertex extends Point {
+  id: number; // 고유 ID (배열 인덱스)
+  owner?: GroupId; // 이 정점이 속한 그룹의 ID (최상위 레벨은 undefined)
+}

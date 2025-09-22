@@ -31,7 +31,7 @@ export const CONFIG = {
     level0Weight: 1, // 간선도로 가중치
     level1Weight: 3, // 지역도로 가중치
     widthFactor: 80, // 채널 폭에 대한 비용 계수
-    congestionPenalty: 10, // 채널 혼잡도 1당 추가될 비용 [미사용]
+    congestionPenalty: 50, // 채널 혼잡도 1당 추가될 비용 
     laneWidth: 10, // 차선 폭 (px)
   },
 };

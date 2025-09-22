@@ -1,9 +1,14 @@
 import { Camera } from "./camera";
 import { THEME } from "./theme";
-import type { Graph, Rect } from "@domain/types";
+import type { Graph, Point, Rect, VisibilityGraph } from "@domain/types";
 import { portPosition } from "@layout/port/assign";
 import { Grid } from "@layout/routing/aStarStrategy/grid";
-import { lastBuiltGrid, lastBusChannels } from "./debug";
+import {
+  lastBuiltGrid,
+  lastBusChannels,
+  lastRoutingVertices,
+  lastVisibilityGraph,
+} from "./debug";
 
 export let OPTIONS = {
   grid: true,
@@ -60,10 +65,57 @@ export function drawAll(
   if (_overlays.obstacles && lastBuiltGrid) {
     drawObstacles(ctx, lastBuiltGrid);
   }
-  if (_overlays.channels && lastBusChannels) {
-    drawBusChannels(ctx);
+  // if (_overlays.channels && lastBusChannels) {
+  //   drawBusChannels(ctx);
+  // }
+  // 💡 라우팅 정점 그리기 로직 추가
+  if (_overlays.channels && lastRoutingVertices) {
+    drawRoutingVertices(ctx, lastRoutingVertices);
+  }
+  // 💡 가시성 그래프(네트워크) 그리기 로직 추가
+  if (_overlays.channels && lastVisibilityGraph) {
+    // 'channels' 옵션을 재활용
+    drawVisibilityGraph(ctx, lastVisibilityGraph);
   }
 }
+
+// 💡 파일 하단에 새 함수 추가
+function drawVisibilityGraph(
+  ctx: CanvasRenderingContext2D,
+  graph: VisibilityGraph
+) {
+  ctx.save();
+  ctx.strokeStyle = "rgba(219, 248, 32, 0.4)"; // 반투명 파란색
+  ctx.lineWidth = 3;
+
+  for (const [vIdx, neighbors] of graph.adjacency.entries()) {
+    const v1 = graph.vertices[vIdx];
+    for (const neighborIdx of neighbors) {
+      // 중복해서 그리지 않도록 인덱스가 더 큰 경우에만 그림
+      if (vIdx < neighborIdx) {
+        const v2 = graph.vertices[neighborIdx];
+        ctx.beginPath();
+        ctx.moveTo(v1.x, v1.y);
+        ctx.lineTo(v2.x, v2.y);
+        ctx.stroke();
+      }
+    }
+  }
+  ctx.restore();
+}
+
+// 💡 라우팅 정점을 작은 점으로 시각화하는 함수
+function drawRoutingVertices(ctx: CanvasRenderingContext2D, vertices: Point[]) {
+  ctx.save();
+  ctx.fillStyle = "rgba(74, 222, 128, 0.7)"; // 반투명 녹색
+  for (const v of vertices) {
+    ctx.beginPath();
+    ctx.arc(v.x, v.y, 2, 0, 2 * Math.PI); // 반지름 2px 원
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
 export function drawBusChannels(ctx: CanvasRenderingContext2D) {
   if (!lastBusChannels) return;
 
@@ -179,7 +231,7 @@ export function drawNodeNames(ctx: CanvasRenderingContext2D, g: Graph) {
 export function drawEdges(ctx: CanvasRenderingContext2D, g: Graph) {
   // edges (if path exists, draw orthogonal polyline)
   ctx.strokeStyle = THEME.edgeStroke;
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   for (const [, e] of g.edges) {
     if (!e.path || e.path.length === 0) continue;
     ctx.beginPath();
