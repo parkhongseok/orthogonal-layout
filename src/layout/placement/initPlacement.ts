@@ -74,12 +74,19 @@ export function initialPlacement(g: Graph, cfg: any): Graph {
     const yOffsets: number[] = [];
     for (let c = 0, x = 0; c < cols; c++) {
       xOffsets[c] = snap(x, grid);
-      x += colWidths[c] + gGapX;
+      x += colWidths[c]; // 먼저 현재 컬럼의 너비를 더하고,
+      if (c < cols - 1) {
+        // 마지막 컬럼이 아닐 경우에만 간격을 더합니다.
+        x += gGapX;
+      }
     }
     for (let r = 0, y = 40; r < rows; r++) {
-      // 화면 상단 여백 40
       yOffsets[r] = snap(y, grid);
-      y += rowHeights[r] + gGapY;
+      y += rowHeights[r]; // 먼저 현재 로우의 높이를 더하고,
+      if (r < rows - 1) {
+        // 마지막 로우가 아닐 경우에만 간격을 더합니다.
+        y += gGapY;
+      }
     }
 
     // 실제 그룹 위치/크기 적용
