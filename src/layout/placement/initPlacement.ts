@@ -140,15 +140,19 @@ export function initialPlacement(g: Graph, cfg: any): Graph {
       // 그룹이 있을 경우, 모든 그룹을 포함하는 전체 경계 상자를 계산합니다.
       const minX = Math.min(...groups.map((gp) => gp.bbox.x));
       const maxX = Math.max(...groups.map((gp) => gp.bbox.x + gp.bbox.w));
+      const minY = Math.min(...groups.map((gp) => gp.bbox.y));
       const maxY = Math.max(...groups.map((gp) => gp.bbox.y + gp.bbox.h));
 
+      const width = maxX - minX;
+      const height = maxY - minY;
+
       // 루트 노드 영역을 전체 경계 상자의 '아래' 또는 '오른쪽' 중 더 넓은 공간에 배치합니다.
-      if (maxX > maxY) {
+      if (width > height) {
         // 가로로 넓은 경우: 아래에 배치
         area = {
           x: minX,
           y: snap(maxY + gGapY, grid), // 그룹 간 간격만큼 여유를 둠
-          w: maxX - minX,
+          w: width,
           h: Math.max(
             200,
             Math.ceil(rootNodes.length / 10) * (6 * grid + gapY)
@@ -158,12 +162,12 @@ export function initialPlacement(g: Graph, cfg: any): Graph {
         // 세로로 넓거나 비슷한 경우: 오른쪽에 배치
         area = {
           x: snap(maxX + gGapX, grid), // 그룹 간 간격만큼 여유를 둠
-          y: 40, // 최상단 여백
+          y: minY,
           w: Math.max(
             400,
             Math.ceil(rootNodes.length / 10) * (6 * grid + gapX)
           ),
-          h: maxY,
+          h: height,
         };
       }
     } else {
