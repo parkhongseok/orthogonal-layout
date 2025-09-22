@@ -21,6 +21,7 @@ export class BusRoutingStrategy implements RoutingStrategy {
     cur = initialPlacement(cur, cfg);
     cur = resolveOverlap(cur, cfg);
     cur = spreadNodes(cur, cfg);
+    cur = resolveOverlap(cur, cfg);
     cur = sweepCompact(cur, cfg);
 
     // --- 2단계: 라우팅을 위한 포트 할당 ---
