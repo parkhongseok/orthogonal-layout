@@ -1,5 +1,6 @@
 import type { Graph, NodeId, EdgeId, GroupId, Rect } from "@domain/types";
 import { nodeId, edgeId, groupId } from "@domain/id";
+import { CONFIG } from "@app/config";
 
 /**
  * nNodes 중 일부는 그룹에 배정, 일부는 루트 레벨(그룹 밖)에 둔다.
@@ -16,20 +17,19 @@ export function createInitialGraph(
   const nodes = new Map();
   const edges = new Map();
   const groups = new Map();
-
   // ====== 1) 그룹 배치(타일 형태) ======
   const gw = Math.ceil(Math.sqrt(nGroups));
   const gh = Math.ceil(nGroups / gw);
-  const groupW = 20 * grid,
-    groupH = 14 * grid,
-    gap = 4 * grid;
+  const groupW = (CONFIG.layout.groupGapX | 4) * grid,
+    groupH = (CONFIG.layout.groupGapY | 4) * grid,
+    gap = (CONFIG.layout.groupInset | 4) * grid;
 
   for (let i = 0; i < nGroups; i++) {
     const gx = i % gw,
       gy = Math.floor(i / gw);
     const rect: Rect = {
       x: snap(gx * (groupW + gap), grid),
-      y: snap(gy * (groupH + gap) + 40, grid),
+      y: snap(gy * (groupH + gap), grid),
       w: snap(groupW, grid),
       h: snap(groupH, grid),
     };

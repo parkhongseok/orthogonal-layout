@@ -8,12 +8,12 @@ import {
   setMetrics,
 } from "@render/canvasLayer";
 import { CONFIG } from "./config";
-
 import { makeCamera, applyCamera, zoomAt, fitTopLeft } from "@render/camera";
 import { computeWorldBounds } from "@render/world";
 import { Graph } from "@domain/types";
 import { LegacyAStarStrategy } from "@layout/routing/aStarStrategy/legacyAStarStrategy";
 import { clearDebugData } from "@render/debug";
+
 
 const canvas = document.getElementById("stage") as HTMLCanvasElement;
 const metricsEl = document.getElementById("metrics")!;
@@ -29,6 +29,7 @@ const numEdgesInput = document.getElementById("num-edges") as HTMLInputElement;
 // 카메라 요소
 const chkGrid = document.getElementById("chk-grid") as HTMLInputElement;
 const chkObs = document.getElementById("chk-obstacles") as HTMLInputElement;
+const chkChnn = document.getElementById("chk-chnn") as HTMLInputElement;
 const chkBox = document.getElementById("chk-bbox") as HTMLInputElement;
 
 // ===== 카메라 상태 =====
@@ -100,9 +101,11 @@ function render() {
     {
       showGrid: chkGrid.checked,
       showObstacles: chkObs.checked,
+      showChennals: chkChnn.checked,
       showBBox: chkBox.checked,
+      camera: camera, 
     },
-    CONFIG
+    CONFIG,
   );
 }
 
@@ -145,11 +148,12 @@ btnAuto.addEventListener("click", () => {
 btnReset.addEventListener("click", regenerateGraph);
 
 // ===== 오버레이 토글 =====
-[chkGrid, chkObs, chkBox].forEach((el) =>
+[chkGrid, chkObs, chkChnn, chkBox].forEach((el) =>
   el.addEventListener("change", () => {
     setOverlaysVisible({
       grid: chkGrid.checked,
       obstacles: chkObs.checked,
+      channels: chkChnn.checked,
       bbox: chkBox.checked,
     });
     render();
