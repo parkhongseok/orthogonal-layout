@@ -11,18 +11,18 @@ export function createInitialGraph(
   nNodes: number,
   nEdges: number,
   nGroups: number,
-  grid: number,
-  ungroupedRatio = 0.1 // 기본 10%는 그룹 밖
+  grid: number  
 ): Graph {
   const nodes = new Map();
   const edges = new Map();
   const groups = new Map();
   // ====== 1) 그룹 배치(타일 형태) ======
   const gw = Math.ceil(Math.sqrt(nGroups));
-  const gh = Math.ceil(nGroups / gw);
-  const groupW = (CONFIG.layout.groupGapX | 4) * grid,
-    groupH = (CONFIG.layout.groupGapY | 4) * grid,
-    gap = (CONFIG.layout.groupInset | 4) * grid;
+  // const gh = Math.ceil(nGroups / gw);
+  const groupW = (CONFIG.layout.groupGapX | 4) * grid;
+  const groupH = (CONFIG.layout.groupGapY | 4) * grid;
+  const gap = (CONFIG.layout.groupInset | 4) * grid;
+  const ungroupedRatio = (CONFIG.init.ungroupedRatio | 0.1);
 
   for (let i = 0; i < nGroups; i++) {
     const gx = i % gw,

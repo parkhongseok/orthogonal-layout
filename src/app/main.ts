@@ -14,7 +14,6 @@ import { Graph } from "@domain/types";
 import { LegacyAStarStrategy } from "@layout/routing/aStarStrategy/legacyAStarStrategy";
 import { clearDebugData } from "@render/debug";
 
-
 const canvas = document.getElementById("stage") as HTMLCanvasElement;
 const metricsEl = document.getElementById("metrics")!;
 const infoPanelEl = document.getElementById("info-panel")!; // 정보 패널
@@ -25,6 +24,9 @@ const btnBusAuto = document.getElementById("btn-bus-auto")!;
 const btnReset = document.getElementById("btn-reset")!;
 const numNodesInput = document.getElementById("num-nodes") as HTMLInputElement;
 const numEdgesInput = document.getElementById("num-edges") as HTMLInputElement;
+const numGroupsInput = document.getElementById(
+  "num-groups"
+) as HTMLInputElement;
 
 // 카메라 요소
 const chkGrid = document.getElementById("chk-grid") as HTMLInputElement;
@@ -36,11 +38,9 @@ const chkBox = document.getElementById("chk-bbox") as HTMLInputElement;
 const camera = makeCamera();
 
 const ctx = initCanvas(canvas);
-const nNodes = 7;
-const nEdges = 3;
-const nGroups = 2;
-const initPadding = 10;
-let graph: Graph = createInitialGraph(nNodes, nEdges, nGroups, CONFIG.gridSize);
+const initPadding = CONFIG.init.padding;
+
+let graph: Graph;
 
 // 정포 페널 갱신 함수
 function updateInfoPanel(g: Graph) {
@@ -68,6 +68,7 @@ function regenerateGraph() {
   clearDebugData();
   const nNodes = parseInt(numNodesInput.value, 10) || 12;
   const nEdges = parseInt(numEdgesInput.value, 10) || 18;
+  const nGroups = parseInt(numGroupsInput.value, 10) || 18;
 
   graph = createInitialGraph(nNodes, nEdges, nGroups, CONFIG.gridSize);
 
@@ -103,9 +104,9 @@ function render() {
       showObstacles: chkObs.checked,
       showChennals: chkChnn.checked,
       showBBox: chkBox.checked,
-      camera: camera, 
+      camera: camera,
     },
-    CONFIG,
+    CONFIG
   );
 }
 
