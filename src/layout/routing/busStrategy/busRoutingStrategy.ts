@@ -3,6 +3,7 @@ import type { RoutingStrategy } from "../strategy";
 import { createBusChannels } from "./channel";
 import {
   fallbackEdgeIds,
+  lastVisibilityGraph,
   setLastBusChannels,
   setLastRoutingVertices,
   setLastVisibilityGraph,
@@ -18,6 +19,7 @@ import { beautifyPath } from "@layout/port/beautifyPath";
 import { routeAll } from "../aStarStrategy/routeAll";
 import { buildVisibilityGraph, createRoutingVertices } from "./visibility";
 import { routeOnVisibilityGraph } from "./router";
+import { separatedPaths } from "./lane";
 
 export class BusRoutingStrategy implements RoutingStrategy {
   public execute(graph: Graph, cfg: any): Graph {
@@ -76,7 +78,8 @@ export class BusRoutingStrategy implements RoutingStrategy {
     // }
 
     // --- 5단계: 최종 경로 다듬기 ---
-    cur = beautifyPath(cur, cfg);
+    cur = separatedPaths(cur, lastVisibilityGraph, cfg);
+    // cur = beautifyPath(cur, cfg);
     return cur;
   }
 }
