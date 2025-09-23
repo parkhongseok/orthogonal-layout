@@ -14,6 +14,8 @@ export let OPTIONS = {
   grid: true,
   obstacles: true,
   channels: true,
+  vertices: true,
+  networks: true,
   bbox: true,
 };
 
@@ -65,18 +67,18 @@ export function drawAll(
   if (_overlays.obstacles && lastBuiltGrid) {
     drawObstacles(ctx, lastBuiltGrid);
   }
-  // if (_overlays.channels && lastBusChannels) {
-  //   drawBusChannels(ctx);
-  // }
+  if (_overlays.channels && lastBusChannels) {
+    drawBusChannels(ctx);
+  }
 
   // 💡 가시성 그래프(네트워크) 그리기 로직 추가
-  if (_overlays.obstacles && lastVisibilityGraph) {
+  if (_overlays.networks && lastVisibilityGraph) {
     // 'channels' 옵션을 재활용
     drawVisibilityGraph(ctx, lastVisibilityGraph);
   }
 
   // 💡 라우팅 정점 그리기 로직 추가
-  if (_overlays.channels && lastRoutingVertices) {
+  if (_overlays.vertices && lastRoutingVertices) {
     drawRoutingVertices(ctx, lastRoutingVertices);
   }
 }

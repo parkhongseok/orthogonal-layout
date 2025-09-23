@@ -1,4 +1,4 @@
-import { BusRoutingStrategy } from "./../layout/routing/busStrategy/busRoutingStrategy";
+import { VerticesRoutingStrategy } from "../layout/routing/verticesStrategy/verticesRoutingStrategy";
 import { createInitialGraph } from "@domain/scenario/generator";
 import { autoLayoutPipeline } from "@layout/pipeline";
 import {
@@ -13,6 +13,7 @@ import { computeWorldBounds } from "@render/world";
 import { Graph } from "@domain/types";
 import { LegacyAStarStrategy } from "@layout/routing/aStarStrategy/legacyAStarStrategy";
 import { clearDebugData } from "@render/debug";
+import { BusRoutingStrategy } from "@layout/routing/busStrategy/busRoutingStrategy";
 
 const canvas = document.getElementById("stage") as HTMLCanvasElement;
 const metricsEl = document.getElementById("metrics")!;
@@ -32,6 +33,8 @@ const numGroupsInput = document.getElementById(
 // 카메라 요소
 const chkGrid = document.getElementById("chk-grid") as HTMLInputElement;
 const chkObs = document.getElementById("chk-obstacles") as HTMLInputElement;
+const chkVer = document.getElementById("chk-vertices") as HTMLInputElement;
+const chkNet = document.getElementById("chk-networks") as HTMLInputElement;
 const chkChnn = document.getElementById("chk-chnn") as HTMLInputElement;
 const chkBox = document.getElementById("chk-bbox") as HTMLInputElement;
 
@@ -103,6 +106,8 @@ function render() {
     {
       showGrid: chkGrid.checked,
       showObstacles: chkObs.checked,
+      showVertices: chkVer.checked,
+      showNetworks: chkNet.checked,
       showChennals: chkChnn.checked,
       showBBox: chkBox.checked,
       camera: camera,
@@ -115,10 +120,10 @@ function render() {
 
 btnVerAuto.addEventListener("click", () => {
   const t0 = performance.now();
-  const busRoutingStrategy = new BusRoutingStrategy();
+  const verticesRoutingStrategy = new VerticesRoutingStrategy();
 
   // 파이프라인에 전략을 전달
-  graph = autoLayoutPipeline(graph, CONFIG, busRoutingStrategy);
+  graph = autoLayoutPipeline(graph, CONFIG, verticesRoutingStrategy);
   const t1 = performance.now();
   setMetrics(metricsEl, { elapsedMs: (t1 - t0).toFixed(1) });
 
@@ -168,7 +173,7 @@ btnAuto.addEventListener("click", () => {
 btnReset.addEventListener("click", regenerateGraph);
 
 // ===== 오버레이 토글 =====
-[chkGrid, chkObs, chkChnn, chkBox].forEach((el) =>
+[chkGrid, chkObs, chkVer, chkNet, chkChnn, chkBox].forEach((el) =>
   el.addEventListener("change", () => {
     setOverlaysVisible({
       grid: chkGrid.checked,
