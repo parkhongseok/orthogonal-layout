@@ -21,6 +21,7 @@ const infoPanelEl = document.getElementById("info-panel")!; // 정보 패널
 // 컨트롤 요소들
 const btnAuto = document.getElementById("btn-auto")!;
 const btnBusAuto = document.getElementById("btn-bus-auto")!;
+const btnVerAuto = document.getElementById("btn-ver-auto")!;
 const btnReset = document.getElementById("btn-reset")!;
 const numNodesInput = document.getElementById("num-nodes") as HTMLInputElement;
 const numEdgesInput = document.getElementById("num-edges") as HTMLInputElement;
@@ -111,6 +112,24 @@ function render() {
 }
 
 // ===== Auto Layout =====
+
+btnVerAuto.addEventListener("click", () => {
+  const t0 = performance.now();
+  const busRoutingStrategy = new BusRoutingStrategy();
+
+  // 파이프라인에 전략을 전달
+  graph = autoLayoutPipeline(graph, CONFIG, busRoutingStrategy);
+  const t1 = performance.now();
+  setMetrics(metricsEl, { elapsedMs: (t1 - t0).toFixed(1) });
+
+  const rect = canvas.getBoundingClientRect();
+  const world = computeWorldBounds(graph);
+  fitTopLeft(camera, rect.width, rect.height, world, initPadding);
+
+  updateInfoPanel(graph); // 레이아웃 후 정보 패널 업데이트
+  render();
+});
+
 btnBusAuto.addEventListener("click", () => {
   const t0 = performance.now();
   const busRoutingStrategy = new BusRoutingStrategy();

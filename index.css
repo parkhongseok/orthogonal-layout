@@ -3,58 +3,107 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
+  font-family: system-ui, sans-serif;
+  overflow: hidden; /* Prevent body scrollbars */
 }
 
-/* [수정] 앱 전체를 Flexbox 컨테이너로 만듭니다. */
 #app {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* 뷰포트 전체 높이를 차지하도록 설정 */
+  height: 100vh; /* Full viewport height */
 }
 
-#header-container {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: white; /* 스크롤 시 캔버스 내용이 비치지 않도록 배경색 지정 */
-}
-
-label {
-  user-select: none;
-}
-
-#toolbar {
-  /* [수정] 여러 줄의 컨트롤을 허용하도록 flex-wrap 추가 */
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px; /* 세로 간격, 가로 간격 */
-  align-items: center;
-  padding: 8px;
+#app-header {
+  padding: 8px 16px;
   border-bottom: 1px solid #ddd;
-  font-family: system-ui, sans-serif;
+  background-color: white;
+  z-index: 10;
 }
-/* [추가] 컨트롤 그룹 스타일 */
+
+#app-header h1 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+#main-container {
+  display: flex;
+  flex-grow: 1; /* Takes up remaining vertical space */
+  height: 0; /* Prevents container from overflowing, flex-grow will handle height */
+}
+
+#side-panel {
+  flex-basis: 280px; /* Width of the side panel, changed from 1/8th for better fit */
+  flex-shrink: 0;
+  padding: 16px;
+  border-right: 1px solid #ddd;
+  background-color: #f8f9fa;
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel-section-header {
+  font-weight: bold;
+  font-size: 0.9em;
+  color: #6c757d;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 8px;
+}
+
 .control-group {
   display: flex;
   gap: 8px;
   align-items: center;
 }
-/* [추가] 숫자 입력 필드 크기 조절 */
-#num-nodes,
-#num-edges {
-  width: 50px;
-}
-/* [수정] 캔버스 높이 계산 변경 (툴바 높이가 유동적으로 변하므로) */
-#stage {
-  display: block;
-  width: 100%; /* vw 대신 % 사용 */
-  height: calc(100vh - 84px); /* 툴바 높이를 넉넉하게 2줄 기준으로 조절 */
+
+.control-group.vertical {
+  flex-direction: column;
+  align-items: flex-start;
 }
 
+.control-group.vertical label {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+input[type="number"] {
+  width: 60px;
+}
+
+button {
+  width: 100%;
+}
+
+.control-group:not(.vertical) button {
+  flex-grow: 1;
+}
+
+#canvas-container {
+  flex-grow: 1;
+  position: relative; /* For canvas positioning */
+}
+
+#stage {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#metrics,
 #info-panel {
-  background-color: #f8f9fa;
-  border-bottom: 1px solid #ddd;
-  font-family: system-ui, sans-serif;
   font-size: 12px;
   color: #495057;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #f8f9fa;
 }

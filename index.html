@@ -11,8 +11,8 @@
       <div id="header-container">
         <div id="toolbar">
           <span class="control-group">
-            <button id="btn-auto">Auto Layout</button>
-            <button id="btn-bus-auto">Auto Layout with Bus</button>
+            <span> 1. CREATE </span>
+
             <button id="btn-reset">Regenerate</button>
           </span>
           <span class="control-group">
@@ -25,8 +25,20 @@
             <label
               >Groups: <input type="number" id="num-groups" value="4"
             /></label>
+          </div>
+          <div>
+            <span> 2. AUTO LAYOUT </span>
+            
+            <button id="btn-auto">Auto Layout</button>
+            <button id="btn-bus-auto">Auto Layout with Bus</button>
+          </div>
+          <div>
+            <span> 3. VISUALIZE </span>
+                      <span class="control-group">
+            <button id="btn-zoom-in">+</button>
+            <button id="btn-zoom-out">−</button>
+            <button id="btn-fit">Fit</button>
           </span>
-          <span class="control-group">
             <label><input type="checkbox" id="chk-grid" checked /> Grid</label>
             <label
               ><input type="checkbox" id="chk-obstacles" checked />
@@ -36,16 +48,13 @@
               ><input type="checkbox" id="chk-chnn" checked /> Channel
             </label>
             <label><input type="checkbox" id="chk-bbox" /> Bounding Box</label>
-          </span>
-          <span class="control-group">
-            <button id="btn-zoom-in">+</button>
-            <button id="btn-zoom-out">−</button>
-            <button id="btn-fit">Fit</button>
-          </span>
-        </div>
-        <div id="toolbar">
-          <span id="metrics"></span>
-          <span id="info-panel"></span>
+          </div>
+          <div id="control-group">
+            <span> 4. INFO </span>
+            <span id="metrics"></span>
+            <span id="info-panel"></span>
+          </div>
+
         </div>
       </div>
 
