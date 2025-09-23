@@ -37,7 +37,7 @@ export class BusRoutingStrategy implements RoutingStrategy {
     cur = assignPorts(cur, cfg);
 
     // --- 💡 3단계: 가시성 그래프 네트워크 구축 ---
-    const vertices = createRoutingVertices(cur);
+    const vertices = createRoutingVertices(cur, cfg);
     setLastRoutingVertices(vertices); // 디버깅: 정점 시각화
     // 💡 buildVisibilityGraph 호출 시 전체 그래프(cur)를 전달하도록 수정
     const visibilityGraph = buildVisibilityGraph(vertices, cur);
