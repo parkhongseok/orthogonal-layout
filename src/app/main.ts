@@ -1,4 +1,4 @@
-import { BusRoutingStrategy } from "./../layout/routing/busStrategy/busRoutingStrategy";
+import { VerticesRoutingStrategy } from "../layout/routing/verticesStrategy/verticesRoutingStrategy";
 import { createInitialGraph } from "@domain/scenario/generator";
 import { autoLayoutPipeline } from "@layout/pipeline";
 import {
@@ -13,6 +13,7 @@ import { computeWorldBounds } from "@render/world";
 import { Graph } from "@domain/types";
 import { LegacyAStarStrategy } from "@layout/routing/aStarStrategy/legacyAStarStrategy";
 import { clearDebugData } from "@render/debug";
+import { BusRoutingStrategy } from "@layout/routing/busStrategy/busRoutingStrategy";
 
 const canvas = document.getElementById("stage") as HTMLCanvasElement;
 const metricsEl = document.getElementById("metrics")!;
@@ -21,6 +22,7 @@ const infoPanelEl = document.getElementById("info-panel")!; // 정보 패널
 // 컨트롤 요소들
 const btnAuto = document.getElementById("btn-auto")!;
 const btnBusAuto = document.getElementById("btn-bus-auto")!;
+const btnVerAuto = document.getElementById("btn-ver-auto")!;
 const btnReset = document.getElementById("btn-reset")!;
 const numNodesInput = document.getElementById("num-nodes") as HTMLInputElement;
 const numEdgesInput = document.getElementById("num-edges") as HTMLInputElement;
@@ -31,8 +33,15 @@ const numGroupsInput = document.getElementById(
 // 카메라 요소
 const chkGrid = document.getElementById("chk-grid") as HTMLInputElement;
 const chkObs = document.getElementById("chk-obstacles") as HTMLInputElement;
+const chkVer = document.getElementById("chk-vertices") as HTMLInputElement;
+const chkNet = document.getElementById("chk-networks") as HTMLInputElement;
 const chkChnn = document.getElementById("chk-chnn") as HTMLInputElement;
-const chkBox = document.getElementById("chk-bbox") as HTMLInputElement;
+
+// 체크박스 라벨 요소들
+const labelObs = chkObs.parentElement as HTMLLabelElement;
+const labelVer = chkVer.parentElement as HTMLLabelElement;
+const labelNet = chkNet.parentElement as HTMLLabelElement;
+const labelChnn = chkChnn.parentElement as HTMLLabelElement;
 
 // ===== 카메라 상태 =====
 const camera = makeCamera();
@@ -58,7 +67,7 @@ function updateInfoPanel(g: Graph) {
     <span><b>Total Nodes:</b> ${nodeCount}</span>
     <span><b>Total Edges:</b> ${edgeCount}</span>
     <span><b>Total Groups:</b> ${groupCount}</span>
-    <span><b>Nodes per Group:</b> ${groupInfo}</span>
+    <span><b>Nodes per Group:</b></span> ${groupInfo}
   `;
 }
 
@@ -77,6 +86,25 @@ function regenerateGraph() {
   fitTopLeft(camera, rect.width, rect.height, world, initPadding);
 
   updateInfoPanel(graph); // 정보 패널 업데이트
+
+  render();
+}
+
+type Strategy = "ASTAR" | "VERTICES" | "BUS";
+
+function updateVisualizeControls(strategy: Strategy) {
+  clearDebugData(); // 이전 레이아웃의 디버그 정보를 지웁니다.
+
+  labelObs.hidden = strategy !== "ASTAR";
+  labelVer.hidden = strategy !== "VERTICES";
+  labelNet.hidden = strategy !== "VERTICES";
+  labelChnn.hidden = strategy !== "BUS";
+
+  // 체크박스 상태도 업데이트
+  chkObs.checked = strategy === "ASTAR";
+  chkVer.checked = strategy === "VERTICES";
+  chkNet.checked = strategy === "VERTICES";
+  chkChnn.checked = strategy === "BUS";
 
   render();
 }
@@ -102,8 +130,9 @@ function render() {
     {
       showGrid: chkGrid.checked,
       showObstacles: chkObs.checked,
+      showVertices: chkVer.checked,
+      showNetworks: chkNet.checked,
       showChennals: chkChnn.checked,
-      showBBox: chkBox.checked,
       camera: camera,
     },
     CONFIG
@@ -111,7 +140,27 @@ function render() {
 }
 
 // ===== Auto Layout =====
+
+btnVerAuto.addEventListener("click", () => {
+  updateVisualizeControls("VERTICES");
+  const t0 = performance.now();
+  const verticesRoutingStrategy = new VerticesRoutingStrategy();
+
+  // 파이프라인에 전략을 전달
+  graph = autoLayoutPipeline(graph, CONFIG, verticesRoutingStrategy);
+  const t1 = performance.now();
+  setMetrics(metricsEl, { elapsedMs: (t1 - t0).toFixed(1) });
+
+  const rect = canvas.getBoundingClientRect();
+  const world = computeWorldBounds(graph);
+  fitTopLeft(camera, rect.width, rect.height, world, initPadding);
+
+  updateInfoPanel(graph); // 레이아웃 후 정보 패널 업데이트
+  render();
+});
+
 btnBusAuto.addEventListener("click", () => {
+  updateVisualizeControls("BUS");
   const t0 = performance.now();
   const busRoutingStrategy = new BusRoutingStrategy();
 
@@ -129,6 +178,7 @@ btnBusAuto.addEventListener("click", () => {
 });
 
 btnAuto.addEventListener("click", () => {
+  updateVisualizeControls("ASTAR");
   const t0 = performance.now();
   const legacyStrategy = new LegacyAStarStrategy();
 
@@ -149,13 +199,14 @@ btnAuto.addEventListener("click", () => {
 btnReset.addEventListener("click", regenerateGraph);
 
 // ===== 오버레이 토글 =====
-[chkGrid, chkObs, chkChnn, chkBox].forEach((el) =>
+[chkGrid, chkObs, chkVer, chkNet, chkChnn].forEach((el) =>
   el.addEventListener("change", () => {
     setOverlaysVisible({
       grid: chkGrid.checked,
       obstacles: chkObs.checked,
+      vertices: chkVer.checked,
+      networks: chkNet.checked,
       channels: chkChnn.checked,
-      bbox: chkBox.checked,
     });
     render();
   })
@@ -217,6 +268,7 @@ document.getElementById("btn-fit")?.addEventListener("click", () => {
 // ===== 초기 1회 Fit + 렌더 =====
 // ===== 초기 실행 =====
 regenerateGraph();
+updateVisualizeControls("ASTAR"); // 초기 상태 설정
 
 // ===== 리사이즈 대응 =====
 window.addEventListener("resize", render);

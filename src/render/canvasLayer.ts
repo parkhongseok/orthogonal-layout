@@ -14,6 +14,8 @@ export let OPTIONS = {
   grid: true,
   obstacles: true,
   channels: true,
+  vertices: true,
+  networks: true,
   bbox: true,
 };
 
@@ -44,7 +46,7 @@ export function setOverlaysVisible(v: Partial<typeof _overlays>) {
 }
 
 export function setMetrics(el: HTMLElement, m: { elapsedMs: string }) {
-  el.textContent = `elapsed: ${m.elapsedMs} ms`;
+  el.innerHTML = `<span><b>ELAPSED TIME</b>: ${m.elapsedMs} ms<span/>`;
 }
 
 export function drawAll(
@@ -57,28 +59,29 @@ export function drawAll(
   if (_overlays.grid) drawGrid(ctx, cfg.gridSize, opts.camera);
 
   drawGroups(ctx, g);
-  drawNodes(ctx, g);
-  drawNodeNames(ctx, g);
-  drawPorts(ctx, g);
-  drawEdges(ctx, g);
 
   if (_overlays.obstacles && lastBuiltGrid) {
     drawObstacles(ctx, lastBuiltGrid);
   }
-  // if (_overlays.channels && lastBusChannels) {
-  //   drawBusChannels(ctx);
-  // }
+  if (_overlays.channels && lastBusChannels) {
+    drawBusChannels(ctx);
+  }
 
   // 💡 가시성 그래프(네트워크) 그리기 로직 추가
-  if (_overlays.obstacles && lastVisibilityGraph) {
+  if (_overlays.networks && lastVisibilityGraph) {
     // 'channels' 옵션을 재활용
     drawVisibilityGraph(ctx, lastVisibilityGraph);
   }
 
   // 💡 라우팅 정점 그리기 로직 추가
-  if (_overlays.channels && lastRoutingVertices) {
+  if (_overlays.vertices && lastRoutingVertices) {
     drawRoutingVertices(ctx, lastRoutingVertices);
   }
+
+  drawNodes(ctx, g);
+  drawNodeNames(ctx, g);
+  // drawPorts(ctx, g);
+  drawEdges(ctx, g);
 }
 
 // 💡 파일 하단에 새 함수 추가
@@ -87,7 +90,7 @@ function drawVisibilityGraph(
   graph: VisibilityGraph
 ) {
   ctx.save();
-  ctx.strokeStyle = "rgba(219, 248, 32, 0.4)"; // 반투명 파란색
+  ctx.strokeStyle = THEME.network;
   ctx.lineWidth = 1;
 
   for (const [vIdx, neighbors] of graph.adjacency.entries()) {
@@ -109,10 +112,11 @@ function drawVisibilityGraph(
 // 💡 라우팅 정점을 작은 점으로 시각화하는 함수
 function drawRoutingVertices(ctx: CanvasRenderingContext2D, vertices: Point[]) {
   ctx.save();
-  ctx.fillStyle = "rgba(74, 222, 128, 0.4)"; // 반투명 녹색
+  const radius = 1.5;
+  ctx.fillStyle = THEME.vertices;
   for (const v of vertices) {
     ctx.beginPath();
-    ctx.arc(v.x, v.y, 1, 0, 2 * Math.PI); // 반지름 1px 원
+    ctx.arc(v.x, v.y, radius, 0, 2 * Math.PI); // 반지름 1px 원
     ctx.fill();
   }
   ctx.restore();
@@ -126,15 +130,11 @@ export function drawBusChannels(ctx: CanvasRenderingContext2D) {
     const { x, y, w, h } = channel.geometry;
     ctx.fillStyle =
       channel.direction === "vertical"
-        ? "rgba(22, 163, 74, 0.15)" // Vertical: Green
-        : "rgba(59, 130, 246, 0.15)"; // Horizontal: Blue
-    ctx.strokeStyle =
-      channel.direction === "vertical"
-        ? "rgba(22, 163, 74, 0.4)"
-        : "rgba(59, 130, 246, 0.4)";
+        ? THEME.channelVertical
+        : THEME.channelHorizontal; // Horizontal: Blue
+
     ctx.lineWidth = 1;
     ctx.fillRect(x, y, w, h);
-    ctx.strokeRect(x, y, w, h);
   }
   ctx.restore();
 }
@@ -142,7 +142,7 @@ export function drawBusChannels(ctx: CanvasRenderingContext2D) {
 // [추가] 장애물 그리드를 시각화하는 새로운 함수
 function drawObstacles(ctx: CanvasRenderingContext2D, grid: Grid) {
   ctx.save();
-  ctx.fillStyle = "rgba(255, 0, 0, 0.2)"; // 반투명 빨간색
+  ctx.fillStyle = THEME.obstacles;
   for (let y = 0; y < grid.rows; y++) {
     for (let x = 0; x < grid.cols; x++) {
       const cell = grid.cells[y * grid.cols + x];
@@ -253,7 +253,7 @@ export function drawPorts(ctx: CanvasRenderingContext2D, graph: Graph) {
       const pos = portPosition(n, p.side, p.offset);
       ctx.beginPath();
       ctx.rect(pos.x - 2, pos.y - 2, 4, 4); // 작은 정사각형 포트
-      ctx.fillStyle = "#c1ccddff";
+      ctx.fillStyle = THEME.port;
       ctx.fill();
       // ctx.stroke();
     }

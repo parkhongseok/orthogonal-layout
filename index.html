@@ -4,52 +4,83 @@
     <meta charset="UTF-8" />
     <title>Orthogonal Auto Layout</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="/src/index.css" />
+    <link rel="stylesheet" href="/index.css" />
   </head>
   <body>
     <div id="app">
-      <div id="header-container">
-        <div id="toolbar">
-          <span class="control-group">
-            <button id="btn-auto">Auto Layout</button>
-            <button id="btn-bus-auto">Auto Layout with Bus</button>
-            <button id="btn-reset">Regenerate</button>
-          </span>
-          <span class="control-group">
-            <label
-              >Nodes: <input type="number" id="num-nodes" value="12"
-            /></label>
-            <label
-              >Edges: <input type="number" id="num-edges" value="18"
-            /></label>
-            <label
-              >Groups: <input type="number" id="num-groups" value="4"
-            /></label>
-          </span>
-          <span class="control-group">
-            <label><input type="checkbox" id="chk-grid" checked /> Grid</label>
-            <label
-              ><input type="checkbox" id="chk-obstacles" checked />
-              Obstacles</label
-            >
-            <label
-              ><input type="checkbox" id="chk-chnn" checked /> Channel
-            </label>
-            <label><input type="checkbox" id="chk-bbox" /> Bounding Box</label>
-          </span>
-          <span class="control-group">
-            <button id="btn-zoom-in">+</button>
-            <button id="btn-zoom-out">−</button>
-            <button id="btn-fit">Fit</button>
-          </span>
+      <header id="app-header">
+        <h1>Orthogonal Layout</h1>
+      </header>
+      <div id="main-container">
+        <div id="side-panel">
+          <div class="panel-section">
+            <div class="panel-section-header">1. CREATE</div>
+            <div class="control-group">
+              <button id="btn-reset">Regenerate</button>
+            </div>
+            <div class="control-group vertical">
+              <label
+                >Nodes: <input type="number" id="num-nodes" value="12"
+              /></label>
+              <label
+                >Edges: <input type="number" id="num-edges" value="18"
+              /></label>
+              <label
+                >Groups: <input type="number" id="num-groups" value="4"
+              /></label>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-section-header">2. AUTO LAYOUT</div>
+            <div class="control-group vertical">
+              <button id="btn-auto">A-STAR Only</button>
+              <button id="btn-ver-auto">VERTICES Network</button>
+              <button id="btn-bus-auto">BUS Channel</button>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-section-header">3. VISUALIZE</div>
+            <div class="control-group">
+              <button id="btn-zoom-in">+</button>
+              <button id="btn-zoom-out">−</button>
+              <button id="btn-fit">Fit</button>
+            </div>
+            <div class="control-group vertical">
+              <label
+                ><input type="checkbox" id="chk-grid" checked /> Grid</label
+              >
+              <label
+                ><input type="checkbox" id="chk-obstacles" checked />
+                Obstacles</label
+              >
+              <label
+                ><input type="checkbox" id="chk-vertices" checked />
+                Vertices</label
+              >
+              <label
+                ><input type="checkbox" id="chk-networks" checked />
+                Networks</label
+              >
+
+              <label
+                ><input type="checkbox" id="chk-chnn" checked /> Channel</label
+              >
+
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <div class="panel-section-header">4. INFO</div>
+            <div id="metrics"></div>
+            <div id="info-panel"></div>
+          </div>
         </div>
-        <div id="toolbar">
-          <span id="metrics"></span>
-          <span id="info-panel"></span>
+        <div id="canvas-container">
+          <canvas id="stage"></canvas>
         </div>
       </div>
-
-      <canvas id="stage"></canvas>
     </div>
     <script type="module" src="/src/app/main.ts"></script>
   </body>
