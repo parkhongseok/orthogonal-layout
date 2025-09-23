@@ -106,7 +106,7 @@ function extractAllAxes(
  * [Phase 2] '통합 축' 기반 하이브리드 정점 생성
  */
 export function createRoutingVertices(g: Graph, cfg: any): RoutingVertex[] {
-  const margin = (cfg.routing.bboxExpand * cfg.gridSize) ;
+  const margin = cfg.routing.bboxExpand * cfg.gridSize;
   const finalVertices: RoutingVertex[] = [];
   const vertexKeys = new Set<string>();
   let vertexIdCounter = 0;
@@ -120,7 +120,9 @@ export function createRoutingVertices(g: Graph, cfg: any): RoutingVertex[] {
 
   const allGroups = Array.from(g.groups.values());
   const allNodes = Array.from(g.nodes.values());
-  const allNodeObstacles = allNodes.map((n) => n.bbox);
+  // 장애물 경계 상자를 생성할 때 미리 margin 만큼 확장합니다.
+  const allNodeObstacles = allNodes.map((n) => inflateRect(n.bbox, margin));
+  // 그룹 경계는 라우팅이 통과할 수 있으므로 확장에서 제외하거나, 필요시 별도 margin 적용
   const worldObstacles = [...allNodeObstacles, ...allGroups.map((g) => g.bbox)];
 
   // 1. 통합 축 추출
@@ -133,9 +135,10 @@ export function createRoutingVertices(g: Graph, cfg: any): RoutingVertex[] {
       const ownerGroup = allGroups.find((g) => isPointInRect(p, g.bbox));
 
       if (ownerGroup) {
-        const internalObstacles = ownerGroup.children.map(
-          (id) => g.nodes.get(id)!.bbox
-        );
+        // 그룹 내부 장애물도 동일하게 확장합니다.
+        const internalObstacles = ownerGroup.children
+          .map((id) => g.nodes.get(id)!)
+          .map((n) => inflateRect(n.bbox, margin));
         if (!isObstructed(p, internalObstacles)) {
           addVertex(p, ownerGroup.id);
         }
@@ -291,4 +294,16 @@ function connectAlignedVertices(
       }
     }
   }
+}
+
+/**
+ * 사각형을 지정된 margin만큼 확장(inflate)합니다.
+ */
+function inflateRect(rect: Rect, margin: number): Rect {
+  return {
+    x: rect.x - margin,
+    y: rect.y - margin,
+    w: rect.w + margin * 2,
+    h: rect.h + margin * 2,
+  };
 }
