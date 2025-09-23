@@ -8,10 +8,134 @@ import type {
   PortSide,
 } from "@domain/types";
 import { manhattan } from "@utils/math";
-import { portPosition } from "@layout/port/assign";
+import { assignPorts, portPosition } from "@layout/port/assign";
 import { PriorityQueue } from "@utils/priorityQueue";
 import { cleanupCollinearPoints } from "../aStarStrategy/pathSmoother";
 import { getCandidateSides } from "../aStarStrategy/portSelector"; // 💡 포트 후보군 탐색 함수 임포트
+import { initialPlacement } from "@layout/placement/initPlacement";
+import { sweepCompact } from "@layout/compaction/sweep";
+import { resolveOverlap } from "@layout/placement/resolveOverlap";
+import { RoutingStrategy } from "../strategy";
+import { buildVisibilityGraph, createRoutingVertices } from "./visibility";
+import { setLastRoutingVertices, setLastVisibilityGraph } from "@render/debug";
+
+export class BusRoutingStrategy implements RoutingStrategy {
+  public execute(graph: Graph, cfg: any): Graph {
+    let cur = graph;
+    console.log("Executing Final: Axis-based Bus Routing Strategy");
+
+    // 1. 노드 위치 결정
+    cur = initialPlacement(cur, cfg);
+    cur = resolveOverlap(cur, cfg);
+    cur = sweepCompact(cur, cfg);
+
+    // 2. 포트 할당
+    cur = assignPorts(cur, cfg);
+
+    // 3. 라우팅 네트워크 구축 (Phase 1, 2, 3)
+    const vertices = createRoutingVertices(cur, cfg);
+    setLastRoutingVertices(vertices);
+    const visibilityGraph = buildVisibilityGraph(vertices, cur);
+    setLastVisibilityGraph(visibilityGraph);
+
+    // 4. 경로 탐색 및 직교화 (Phase 4A)
+    cur = routeOnVisibilityGraph(cur, visibilityGraph, cfg);
+
+    // 5. 최종 경로 분리 및 다듬기 (Phase 4B)
+    cur = finalizePaths(cur, visibilityGraph, cfg);
+
+    return cur;
+  }
+}
+
+/**
+ * [Phase 4B: 최종] 경로들을 순회하며, 겹치는 경로 세그먼트에 '차선'을 할당하여 시각적으로 분리
+ */
+function finalizePaths(
+  g: Graph,
+  visibilityGraph: VisibilityGraph,
+  cfg: any
+): Graph {
+  const out = { ...g, edges: new Map(g.edges) };
+  const laneWidth = cfg.bus?.laneWidth ?? 8;
+
+  // 1. 어떤 경로 세그먼트(v1-v2)를 어떤 엣지들이 사용하는지 집계
+  const segmentUsage = new Map<string, string[]>();
+  for (const edge of out.edges.values()) {
+    if (!edge.vertexPath) continue;
+    for (let i = 0; i < edge.vertexPath.length - 1; i++) {
+      const segKey = [edge.vertexPath[i], edge.vertexPath[i + 1]]
+        .sort()
+        .join("-");
+      if (!segmentUsage.has(segKey)) segmentUsage.set(segKey, []);
+      segmentUsage.get(segKey)!.push(edge.id);
+    }
+  }
+
+  // 2. 각 엣지별로 사용할 차선(오프셋)을 미리 계산
+  const laneAssignments = new Map<string, number>();
+  segmentUsage.forEach((edgeIds, segKey) => {
+    edgeIds.sort(); // ID 기준 정렬로 차선 할당 순서 고정
+    const totalLanes = edgeIds.length;
+    edgeIds.forEach((edgeId, index) => {
+      const offset = (index - (totalLanes - 1) / 2) * laneWidth;
+      laneAssignments.set(`${edgeId}-${segKey}`, offset);
+    });
+  });
+
+  // 3. 오프셋을 적용하여 모든 엣지의 경로를 재계산
+  for (const edge of out.edges.values()) {
+    if (!edge.vertexPath || !edge.path || edge.path.length < 2) continue;
+
+    const newPath: Point[] = [edge.path[0]];
+    const vertices = visibilityGraph.vertices;
+
+    for (let i = 0; i < edge.vertexPath.length; i++) {
+      const vCurrId = edge.vertexPath[i];
+      const vCurr = { ...vertices[vCurrId] }; // 원본 수정을 막기 위해 복사
+
+      if (i > 0) {
+        // 들어오는 세그먼트 오프셋 적용
+        const vPrevId = edge.vertexPath[i - 1];
+        const segKey = [vPrevId, vCurrId].sort().join("-");
+        const offset = laneAssignments.get(`${edge.id}-${segKey}`) || 0;
+        if (Math.abs(vertices[vPrevId].y - vCurr.y) < 1)
+          vCurr.y += offset; // Horizontal
+        else vCurr.x += offset; // Vertical
+      }
+
+      if (i < edge.vertexPath.length - 1) {
+        // 나가는 세그먼트 오프셋 적용
+        const vNextId = edge.vertexPath[i + 1];
+        const segKey = [vCurrId, vNextId].sort().join("-");
+        const offset = laneAssignments.get(`${edge.id}-${segKey}`) || 0;
+        if (Math.abs(vertices[vNextId].y - vCurr.y) < 1)
+          vCurr.y += offset; // Horizontal
+        else vCurr.x += offset; // Vertical
+      }
+
+      const lastPoint = newPath[newPath.length - 1];
+      if (
+        Math.abs(lastPoint.x - vCurr.x) > 1 &&
+        Math.abs(lastPoint.y - vCurr.y) > 1
+      ) {
+        const prevVertex = i > 0 ? vertices[edge.vertexPath[i - 1]] : lastPoint;
+        if (Math.abs(prevVertex.y - vCurr.y) > 1) {
+          newPath.push({ x: vCurr.x, y: lastPoint.y });
+        } else {
+          newPath.push({ x: lastPoint.x, y: vCurr.y });
+        }
+      }
+      newPath.push(vCurr);
+    }
+
+    newPath.push(edge.path[edge.path.length - 1]);
+
+    out.edges.set(edge.id, { ...edge, path: cleanupCollinearPoints(newPath) });
+  }
+
+  return out;
+}
 
 type AStarNode = {
   vertexId: number;
@@ -284,4 +408,3 @@ export function routeOnVisibilityGraph(
 
   return out;
 }
-
