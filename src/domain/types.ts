@@ -34,6 +34,7 @@ export interface Edge {
   sourceId: NodeId;
   targetId: NodeId;
   path?: ReadonlyArray<Point>;
+  vertexPath?: ReadonlyArray<number>;
 }
 
 export interface Graph {
@@ -57,7 +58,7 @@ export interface BusChannel {
   direction: "horizontal" | "vertical";
   lanes: Map<EdgeId, number>;
   level?: number; // << 0: 간선도로, 1: 지역도로
-  cost?: number;  // << 이 채널을 통과하는 라우팅 비용
+  cost?: number; // << 이 채널을 통과하는 라우팅 비용
 }
 
 export interface BusNetwork {
@@ -70,7 +71,7 @@ export interface BusNetwork {
 export interface VisibilityGraph {
   vertices: RoutingVertex[];
   // 인접 리스트: 각 정점(인덱스)에서 연결된 다른 정점들의 인덱스 목록
-  adjacency: Map<number, number[]>; 
+  adjacency: Map<number, number[]>;
   // 간선 사용량: 두 정점을 잇는 간선이 몇 번 사용되었는지 기록 (e.g., "0-1")
   edgeUsage: Map<string, number>;
 }

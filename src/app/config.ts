@@ -9,9 +9,9 @@ export const CONFIG = {
     ungroupedRatio: 0.1, // 10%는 그룹 바깥에 생성
   },
   layout: {
-    nodeGapX: 4, // 노드 간 가로 간격(격자 셀 수)
-    nodeGapY: 4, // 노드 간 세로 간격(격자 셀 수)
-    groupInset: 4, // 그룹 안쪽 여백(격자 셀 수)
+    nodeGapX: 8, // 노드 간 가로 간격(격자 셀 수)
+    nodeGapY: 8, // 노드 간 세로 간격(격자 셀 수)
+    groupInset: 8, // 그룹 안쪽 여백(격자 셀 수)
     groupGapX: 8,
     groupGapY: 8,
     spreadIterations: 20, // 스프레드 반복 횟수

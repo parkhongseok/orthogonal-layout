@@ -263,7 +263,13 @@ export function routeOnVisibilityGraph(
         );
 
         const finalPath = stitchPath(startInfo.port, endInfo.port, vertexPath);
-        out.edges.set(edge.id, { ...edge, path: finalPath });
+
+        // 경로와 함께 정점 리스트(vertexIdPath)도 엣지에 저장
+        out.edges.set(edge.id, {
+          ...edge,
+          path: finalPath,
+          vertexPath: vertexIdPath,
+        });
         continue;
       }
     }
@@ -278,3 +284,4 @@ export function routeOnVisibilityGraph(
 
   return out;
 }
+
