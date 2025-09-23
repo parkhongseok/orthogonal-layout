@@ -12,5 +12,5 @@ yarn-error.log*
 # Editor
 .idea/
 .vscode/
-docs/
+docs/etc
 config.md

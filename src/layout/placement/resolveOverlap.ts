@@ -8,7 +8,7 @@ export function resolveOverlap(g: Graph, cfg: any): Graph {
   const gap = (cfg.layout?.nodeGapX ?? 2) * cfg.gridSize;
 
   const out = cloneGraph(g);
-  // Map을 새로 만들어 내부 객체들이 확실히 참조되도록 보장합니다.
+  // Map을 새로 만들어 내부 객체들이 확실히 참조되도록 보장
   out.nodes = new Map(out.nodes);
   out.groups = new Map(out.groups);
 
@@ -16,21 +16,21 @@ export function resolveOverlap(g: Graph, cfg: any): Graph {
   for (let i = 0; i < maxIterations; i++) {
     let movedCount = 0;
 
-    // 1단계: 그룹과 루트 노드(상위 레벨)들의 겹침을 해결합니다.
+    // 1단계: 그룹과 루트 노드(상위 레벨)들의 겹침을 해결
     const topLevelItems: (Group | Node)[] = [
       ...Array.from(out.groups.values()),
       ...Array.from(out.nodes.values()).filter((n) => !n.groupId),
     ];
     const deltas = sweepAndPush(topLevelItems, gap);
 
-    // 2단계: 계산된 이동량을 그룹과 그 자식 노드들, 그리고 루트 노드에 적용합니다.
+    // 2단계: 계산된 이동량을 그룹과 그 자식 노드들, 그리고 루트 노드에 적용
     deltas.forEach((delta, item) => {
       if (Math.abs(delta.dx) > 0.1 || Math.abs(delta.dy) > 0.1) {
         movedCount++;
         item.bbox.x += delta.dx;
         item.bbox.y += delta.dy;
 
-        // 아이템이 그룹일 경우, 자식 노드들도 똑같이 이동시킵니다.
+        // 아이템이 그룹일 경우, 자식 노드들도 똑같이 이동
         if ("children" in item) {
           item.children.forEach((childId) => {
             const childNode = out.nodes.get(childId);
@@ -43,7 +43,7 @@ export function resolveOverlap(g: Graph, cfg: any): Graph {
       }
     });
 
-    // 3단계: 각 그룹 내부의 자식 노드들끼리 겹침을 해결합니다.
+    // 3단계: 각 그룹 내부의 자식 노드들끼리 겹침을 해결
     for (const group of out.groups.values()) {
       const children = group.children
         .map((id) => out.nodes.get(id)!)
@@ -60,10 +60,10 @@ export function resolveOverlap(g: Graph, cfg: any): Graph {
       }
     }
 
-    // 4단계: 모든 이동이 끝난 후, 그룹 경계 상자를 자식에 맞게 다시 조절합니다.
+    // 4단계: 모든 이동이 끝난 후, 그룹 경계 상자를 자식에 맞게 다시 조절
     updateAllGroupBBoxes(out, grid, inset);
 
-    // 변경 사항이 없으면 루프를 조기 종료하여 최적화합니다.
+    // 변경 사항이 없으면 루프를 조기 종료하여 최적화
     if (movedCount === 0) {
       break;
     }
@@ -73,8 +73,8 @@ export function resolveOverlap(g: Graph, cfg: any): Graph {
 }
 
 /**
- * 주어진 아이템 리스트의 겹침을 해결하고, 각 아이템의 이동량(delta)을 Map 형태로 반환합니다.
- * [중요] 이 함수는 전달된 아이템의 bbox를 직접 수정하지 않습니다.
+ * 주어진 아이템 리스트의 겹침을 해결하고, 각 아이템의 이동량(delta)을 Map 형태로 반환
+ * 이 함수는 전달된 아이템의 bbox를 직접 수정하지 않음
  */
 function sweepAndPush(
   items: (Node | Group)[],
@@ -82,7 +82,7 @@ function sweepAndPush(
 ): Map<Node | Group, { dx: number; dy: number }> {
   const deltas = new Map(items.map((it) => [it, { dx: 0, dy: 0 }]));
 
-  // 안정성을 위해 스윕-푸시를 여러 번(e.g., 4번) 실행합니다.
+  // 안정성을 위해 스윕-푸시를 여러 번(e.g., 4번) 실행
   for (let iter = 0; iter < 4; iter++) {
     items.sort((a, b) => a.bbox.y - b.bbox.y || a.bbox.x - b.bbox.x);
     for (let i = 0; i < items.length; i++) {
@@ -101,7 +101,7 @@ function sweepAndPush(
   return deltas;
 }
 
-/** 두 아이템이 겹칠 경우 밀어낼 힘을 계산하여 delta에 누적합니다. */
+/** 두 아이템이 겹칠 경우 밀어낼 힘을 계산하여 delta에 누적 */
 function push(
   a: Node | Group,
   b: Node | Group,

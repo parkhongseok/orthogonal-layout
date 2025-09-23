@@ -1,7 +1,4 @@
-// src/layout/port/beautifyPath.ts
-
 import type { Graph, NodeId, PortSide, Point } from "@domain/types";
-import { portPosition } from "./assign";
 import { cleanupCollinearPoints } from "@layout/routing/aStarStrategy/pathSmoother";
 
 /**

@@ -1,4 +1,3 @@
-// src/layout/routing/aStarStrategy/legacyAStarStrategy.ts
 import type { Graph } from "@domain/types";
 import { assignPorts } from "@layout/port/assign";
 import type { RoutingStrategy } from "../strategy"; // 한 단계 상위의 strategy.ts

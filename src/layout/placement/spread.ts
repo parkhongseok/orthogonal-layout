@@ -1,5 +1,3 @@
-// src/layout/placement/spread.ts
-
 import type { Graph, Node, Group, Rect, NodeId, GroupId } from "@domain/types";
 import { snap } from "@utils/math";
 

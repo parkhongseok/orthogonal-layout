@@ -67,13 +67,13 @@ export function drawAll(
     drawBusChannels(ctx);
   }
 
-  // 💡 가시성 그래프(네트워크) 그리기 로직 추가
+  // 가시성 그래프(네트워크) 그리기 로직 추가
   if (_overlays.networks && lastVisibilityGraph) {
     // 'channels' 옵션을 재활용
     drawVisibilityGraph(ctx, lastVisibilityGraph);
   }
 
-  // 💡 라우팅 정점 그리기 로직 추가
+  // 라우팅 정점 그리기 로직 추가
   if (_overlays.vertices && lastRoutingVertices) {
     drawRoutingVertices(ctx, lastRoutingVertices);
   }
@@ -84,7 +84,6 @@ export function drawAll(
   drawEdges(ctx, g);
 }
 
-// 💡 파일 하단에 새 함수 추가
 function drawVisibilityGraph(
   ctx: CanvasRenderingContext2D,
   graph: VisibilityGraph
@@ -139,7 +138,7 @@ export function drawBusChannels(ctx: CanvasRenderingContext2D) {
   ctx.restore();
 }
 
-// [추가] 장애물 그리드를 시각화하는 새로운 함수
+// 장애물 그리드를 시각화하는 새로운 함수
 function drawObstacles(ctx: CanvasRenderingContext2D, grid: Grid) {
   ctx.save();
   ctx.fillStyle = THEME.obstacles;
@@ -160,10 +159,10 @@ export function drawGroups(ctx: CanvasRenderingContext2D, g: Graph) {
   ctx.strokeStyle = THEME.groupStroke;
   ctx.lineWidth = 1;
   for (const [, grp] of g.groups) {
-    // 1. 그룹의 메인 사각형을 먼저 그립니다.
+    // 1. 그룹의 메인 사각형을 먼저 그림
     strokeRect(ctx, grp.bbox);
 
-    // [추가] 그룹 이름 라벨을 그리는 로직
+    // 그룹 이름 라벨을 그리는 로직
     const labelHeight = 12;
     const labelPadding = 5;
     // 라벨의 너비를 텍스트 길이에 맞게 동적으로 계산
@@ -179,11 +178,11 @@ export function drawGroups(ctx: CanvasRenderingContext2D, g: Graph) {
       h: labelHeight,
     };
 
-    // 2. 라벨 배경을 흰색으로 칠해서 그룹 테두리를 가립니다.
+    // 2. 라벨 배경을 흰색으로 칠해서 그룹 테두리를 가리기
     ctx.fillStyle = "white";
     ctx.fillRect(labelRect.x, labelRect.y - 1, labelRect.w, labelRect.h + 2);
 
-    // 3. 라벨 테두리를 다시 그립니다.
+    // 3. 라벨 테두리를 다시 그림
     strokeRect(ctx, labelRect);
 
     // 4. 라벨 텍스트를 씁니다.
@@ -231,7 +230,6 @@ export function drawNodeNames(ctx: CanvasRenderingContext2D, g: Graph) {
 }
 
 export function drawEdges(ctx: CanvasRenderingContext2D, g: Graph) {
-  // edges (if path exists, draw orthogonal polyline)
   ctx.strokeStyle = THEME.edgeStroke;
   ctx.lineWidth = 1;
   for (const [, e] of g.edges) {
@@ -255,7 +253,6 @@ export function drawPorts(ctx: CanvasRenderingContext2D, graph: Graph) {
       ctx.rect(pos.x - 2, pos.y - 2, 4, 4); // 작은 정사각형 포트
       ctx.fillStyle = THEME.port;
       ctx.fill();
-      // ctx.stroke();
     }
   }
   ctx.restore();

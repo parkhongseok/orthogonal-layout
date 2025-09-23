@@ -11,7 +11,7 @@ import { computeWorldBounds } from "@render/world";
 let channelIdCounter = 0;
 
 /**
- * [개선] 그룹 내/외부를 포함한 완전한 버스 채널 네트워크를 생성하고, 등급과 비용을 할당합니다.
+ * 그룹 내/외부를 포함한 완전한 버스 채널 네트워크를 생성하고, 등급과 비용을 할당
  * @param g 노드 배치가 완료된 그래프
  * @param cfg 설정 객체
  * @returns 생성된 BusChannel의 배열
@@ -21,7 +21,7 @@ export function createBusChannels(g: Graph, cfg: any): BusChannel[] {
   const minChannelWidth = (cfg.bus?.minChannelWidth ?? 3) * cfg.gridSize;
 
   // --- 1단계: 최상위 레벨 (그룹 간) 채널 탐색 ---
-  // [버그 수정 #1] 장애물 목록에 그룹뿐만 아니라 '모든' 노드를 포함하여 노드 관통을 방지합니다.
+  // 장애물 목록에 그룹뿐만 아니라 '모든' 노드를 포함하여 노드 관통을 방지
   const topLevelObstacles: Rect[] = [
     ...Array.from(g.groups.values()).map((grp) => grp.bbox),
     ...Array.from(g.nodes.values()).map((n) => n.bbox),
@@ -51,7 +51,7 @@ export function createBusChannels(g: Graph, cfg: any): BusChannel[] {
     const groupInternalObstacles: Rect[] = childrenNodes.map((n) => n.bbox);
 
     // [버그 수정 #2] 탐색 영역을 그룹 전체로 확장하고 가상 벽을 제거하여,
-    // 그룹 경계와 노드 사이의 공간(inset)에도 채널이 생성되도록 합니다.
+    // 그룹 경계와 노드 사이의 공간(inset)에도 채널이 생성되도록 함
     const searchArea: Rect = group.bbox;
 
     const innerVertical = findCorridors(
@@ -81,7 +81,7 @@ export function createBusChannels(g: Graph, cfg: any): BusChannel[] {
 }
 
 /**
- * [신규] 채널 목록에 등급(level)과 비용(cost)을 할당합니다.
+ * [신규] 채널 목록에 등급(level)과 비용(cost)을 할당
  * @param channels 등급/비용을 할당할 채널 목록
  * @param g 전체 그래프 (그룹 위치 확인용)
  * @param cfg 설정 객체
@@ -128,7 +128,7 @@ function assignLevelAndCost(
 }
 
 /**
- * 주어진 장애물 사이의 빈 공간(Corridor)을 찾아 채널로 반환합니다.
+ * 주어진 장애물 사이의 빈 공간(Corridor)을 찾아 채널로 반환
  * @param obstacles 모든 노드와 그룹의 bbox 배열
  * @param world 전체 그래프 영역
  * @param direction 수직('vertical') 또는 수평('horizontal') 채널 탐색 방향
@@ -155,14 +155,14 @@ function findCorridors(
 
   const corridors: BusChannel[] = [];
 
-  // 2. 인접한 두 경계선 사이의 '슬라이스'를 순회합니다.
+  // 2. 인접한 두 경계선 사이의 '슬라이스'를 순회
   for (let i = 0; i < sortedBoundaries.length - 1; i++) {
     const start = sortedBoundaries[i];
     const end = sortedBoundaries[i + 1];
 
     if (end - start < minSize) continue;
 
-    // 3. 해당 슬라이스와 교차하는 장애물을 찾습니다.
+    // 3. 해당 슬라이스와 교차하는 장애물 탐색
     const intersectingObs = obstacles
       .filter((obs) =>
         isVertical
@@ -171,7 +171,7 @@ function findCorridors(
       )
       .sort((a, b) => (isVertical ? a.y : a.x) - (isVertical ? b.y : b.x));
 
-    // 4. 장애물 사이의 빈 공간을 찾아 채널로 추가합니다.
+    // 4. 장애물 사이의 빈 공간을 찾아 채널로 추가
     let currentPos = isVertical ? world.y : world.x;
     const worldEnd = isVertical ? world.y + world.h : world.x + world.w;
 
@@ -210,22 +210,22 @@ function findCorridors(
   return corridors;
 }
 /**
- * [신규] 생성된 채널 목록을 최적화합니다.
- * 1. 다른 채널에 완전히 포함되는 중복 채널을 제거합니다.
- * 2. 인접하거나 겹치는 채널들을 하나로 통합(Merge)합니다.
+ * 생성된 채널 목록을 최적화
+ * 1. 다른 채널에 완전히 포함되는 중복 채널을 제거
+ * 2. 인접하거나 겹치는 채널들을 하나로 통합
  * @param channels 최적화할 BusChannel 배열
  * @returns 최적화된 BusChannel 배열
  */
 function optimizeChannels(channels: BusChannel[]): BusChannel[] {
-  // 1. 방향에 따라 채널을 분리합니다.
+  // 1. 방향에 따라 채널을 분리
   const horizontals = channels.filter((c) => c.direction === "horizontal");
   const verticals = channels.filter((c) => c.direction === "vertical");
 
-  // 2. 각 방향별로 채널 통합을 수행합니다.
+  // 2. 각 방향별로 채널 통합을 수행
   const mergedHorizontals = mergeChannels(horizontals);
   const mergedVerticals = mergeChannels(verticals);
 
-  // 3. 통합된 채널 목록을 합치고, 중복 포함 관계를 마지막으로 정리합니다.
+  // 3. 통합된 채널 목록을 합치고, 중복 포함 관계를 마지막으로 정리
   let combined = [...mergedHorizontals, ...mergedVerticals];
 
   const finalChannels: BusChannel[] = [];
@@ -253,12 +253,12 @@ function optimizeChannels(channels: BusChannel[]): BusChannel[] {
     }
   }
 
-  // 4. 최종 ID를 재할당하여 반환합니다.
+  // 4. 최종 ID를 재할당하여 반환
   return finalChannels.map((ch, i) => ({ ...ch, id: busChannelId(i) }));
 }
 
 /**
- * 동일한 방향의 채널 목록을 받아, 합칠 수 있는 채널들을 모두 통합합니다.
+ * 동일한 방향의 채널 목록을 받아, 합칠 수 있는 채널들을 모두 통합
  * @param channels 동일한 방향을 가진 BusChannel 배열
  * @returns 통합된 BusChannel 배열
  */
@@ -336,7 +336,7 @@ function mergeChannels(channels: BusChannel[]): BusChannel[] {
 }
 
 /**
- * BusChannel 객체를 생성하고 고유 ID를 부여합니다.
+ * BusChannel 객체를 생성하고 고유 ID를 부여
  */
 function createChannel(
   x: number,

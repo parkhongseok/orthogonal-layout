@@ -4,7 +4,7 @@ import { portPosition } from "@layout/port/assign";
 function center(n: Node) {
   return { x: n.bbox.x + n.bbox.w / 2, y: n.bbox.y + n.bbox.h / 2 };
 }
-// [수정] 두 노드의 상대 위치에 따라 가능한 연결 면(side) 조합을 반환합니다.
+// 두 노드의 상대 위치에 따라 가능한 연결 면(side) 조합을 반환
 export function getCandidateSides(a: Node, b: Node): [PortSide, PortSide][] {
   const ca = center(a),
     cb = center(b);
@@ -41,7 +41,7 @@ export function getCandidateSides(a: Node, b: Node): [PortSide, PortSide][] {
 }
 
 /**
- * 두 노드를 연결할 최적의 포트 '쌍'을 찾습니다.
+ * 두 노드를 연결할 최적의 포트 '쌍'을 탐색
  * @returns { sourcePort: Point, targetPort: Point, sourceSide: PortSide, targetSide: PortSide }
  */
 export function findBestPortPair(sourceNode: Node, targetNode: Node) {
@@ -64,7 +64,7 @@ export function findBestPortPair(sourceNode: Node, targetNode: Node) {
         const tPos = portPosition(targetNode, tPortInfo.side, tPortInfo.offset);
 
         // 비용 = 맨해튼 거리 + (축이 어긋난 정도 * 페널티)
-        // 이 비용 함수가 좋은 포트 선택의 핵심입니다.
+        // 이 비용 함수가 좋은 포트 선택의 핵심
         const distance = Math.abs(sPos.x - tPos.x) + Math.abs(sPos.y - tPos.y);
         let alignmentPenalty = 0;
         if (sourceSide === "left" || sourceSide === "right") {
@@ -88,7 +88,7 @@ export function findBestPortPair(sourceNode: Node, targetNode: Node) {
     }
   }
 
-  // 만약 적절한 포트 쌍을 찾지 못하면, 노드 중앙을 사용합니다.
+  // 만약 적절한 포트 쌍을 찾지 못하면, 노드 중앙 사용
   if (!bestPair) {
     const sSide = candidateSides[0][0];
     const tSide = candidateSides[0][1];

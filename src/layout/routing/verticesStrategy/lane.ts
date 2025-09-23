@@ -3,7 +3,7 @@ import { cleanupCollinearPoints } from "../aStarStrategy/pathSmoother";
 import { Graph, Point, VisibilityGraph } from "@domain/types";
 
 /**
- * [최종 개선] 경로들을 순회하며, 차선을 할당하고 기하학적 오류를 모두 교정합니다.
+ * 경로들을 순회하며, 차선을 할당하고 기하학적 오류를 모두 교정
  */
 export function finalizePaths(
   g: Graph,
@@ -74,7 +74,7 @@ export function finalizePaths(
       y: firstVertex.y + firstCornerOffsetY,
     };
 
-    // 💡 포트 방향성에 따라 첫 분기점을 명시적으로 생성
+    // 포트 방향성에 따라 첫 분기점을 명시적으로 생성
     if (startPortSide === "left" || startPortSide === "right") {
       // 수평으로 먼저 나가야 함
       if (Math.abs(startPort.y - firstCorner.y) > 1) {
@@ -110,7 +110,7 @@ export function finalizePaths(
       const outTotalLanes = segmentUsage.get(outSegKey)!.length;
       const outOffset = (outLaneIndex - (outTotalLanes - 1) / 2) * laneWidth;
 
-      // 💡 들어오는 방향과 나가는 방향을 명확히 구분하여 새 코너 생성
+      // 들어오는 방향과 나가는 방향을 명확히 구분하여 새 코너 생성
       const isPrevHorizontal = Math.abs(v_prev.y - v_curr.y) < 1;
       let newCornerX, newCornerY;
 

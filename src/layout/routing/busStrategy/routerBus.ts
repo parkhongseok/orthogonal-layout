@@ -12,7 +12,7 @@ import { PriorityQueue } from "@utils/priorityQueue";
 import { manhattan } from "@utils/math";
 
 /**
- * BusNetwork를 이용해 그래프의 모든 엣지에 대한 직교 경로를 계산합니다.
+ * BusNetwork를 이용해 그래프의 모든 엣지에 대한 직교 경로를 계산
  */
 export function routeEdgesOnBus(
   g: Graph,
@@ -30,7 +30,7 @@ export function routeEdgesOnBus(
 }
 
 /**
- * 단일 엣지에 대한 최적의 버스 경로를 찾습니다.
+ * 단일 엣지에 대한 최적의 버스 경로 탐색
  */
 function findPathForEdge(
   edge: Edge,
@@ -41,16 +41,16 @@ function findPathForEdge(
   const sourceNode = g.nodes.get(edge.sourceId)!;
   const targetNode = g.nodes.get(edge.targetId)!;
 
-  // 1. [개선] Off-Ramp 후보군을 먼저 찾습니다.
+  // 1. Off-Ramp 후보군을 먼저 탐색
   const offRampCandidates = findRampCandidates(targetNode, network);
   if (offRampCandidates.length === 0)
     return createFallbackPath(sourceNode, targetNode);
 
-  // 2. [개선] On-Ramp를 찾을 때, 각 후보에서 Off-Ramp 후보군까지의 총 예상 비용을 계산합니다.
+  // 2. On-Ramp를 찾을 때, 각 후보에서 Off-Ramp 후보군까지의 총 예상 비용을 계산
   const onRamp = findBestRamp(sourceNode, network, offRampCandidates);
   if (!onRamp) return createFallbackPath(sourceNode, targetNode);
 
-  // 3. [개선] 선택된 On-Ramp를 기준으로 최적의 Off-Ramp를 최종 결정합니다.
+  // 3. 선택된 On-Ramp를 기준으로 최적의 Off-Ramp를 최종 결정
   const offRamp = findBestOffRamp(onRamp, network, offRampCandidates);
   if (!offRamp) return createFallbackPath(sourceNode, targetNode);
 
@@ -79,7 +79,7 @@ interface Ramp {
 }
 
 /**
- * [신규] 노드에 연결될 수 있는 모든 유효한 Ramp 후보를 찾아 비용과 함께 반환합니다.
+ * 노드에 연결될 수 있는 모든 유효한 Ramp 후보를 찾아 비용과 함께 반환
  * @param node 대상 노드
  * @param network 버스 네트워크
  * @returns Ramp 후보 배열
@@ -110,7 +110,7 @@ function findRampCandidates(node: Node, network: BusNetwork): Ramp[] {
 }
 
 /**
- * [신규] 여러 On-Ramp 후보 중에서, Off-Ramp 후보군까지의 총 예상 비용이 가장 낮은 최적의 On-Ramp를 찾습니다.
+ * 여러 On-Ramp 후보 중에서, Off-Ramp 후보군까지의 총 예상 비용이 가장 낮은 최적의 On-Ramp 탐색
  * @param node 소스 노드
  * @param network 버스 네트워크
  * @param offRampCandidates 타겟 노드의 모든 Off-Ramp 후보
@@ -146,7 +146,7 @@ function findBestRamp(
 }
 
 /**
- * [신규] 주어진 On-Ramp에 대해, 총 경로 비용이 가장 낮은 최적의 Off-Ramp를 최종 선택합니다.
+ * 주어진 On-Ramp에 대해, 총 경로 비용이 가장 낮은 최적의 Off-Ramp를 최종 선택
  * @param onRamp 확정된 On-Ramp
  * @param network 버스 네트워크
  * @param offRampCandidates 타겟 노드의 모든 Off-Ramp 후보
@@ -166,7 +166,7 @@ function findBestOffRamp(
 }
 
 /**
- * [신규] 특정 On-Ramp에서 여러 Off-Ramp 후보군까지의 경로 중 가장 저렴한 경로 비용과 해당 Off-Ramp를 찾습니다.
+ * 특정 On-Ramp에서 여러 Off-Ramp 후보군까지의 경로 중 가장 저렴한 경로 비용과 해당 Off-Ramp 탐색
  * @param onRamp 출발 Ramp
  * @param offRampCandidates 도착 Ramp 후보군
  * @param network 버스 네트워크
@@ -199,7 +199,7 @@ function findCheapestRouteToCandidates(
 }
 
 /**
- * 점에서 채널로 내린 수선의 발(projection)을 계산합니다. 점이 채널 범위 내에 있을 때만 유효합니다.
+ * 점에서 채널로 내린 수선의 발(projection)을 계산합니다. 점이 채널 범위 내에 있을 때만 유효
  */
 function getProjection(point: Point, channel: BusChannel): Point | null {
   const { x, y, w, h } = channel.geometry;
@@ -212,7 +212,7 @@ function getProjection(point: Point, channel: BusChannel): Point | null {
 }
 
 /**
- * [개선] A* 알고리즘을 사용하여 두 채널 사이의 최저 비용 경로(채널 ID 목록)를 찾습니다.
+ * [개선] A* 알고리즘을 사용하여 두 채널 사이의 최저 비용 경로(채널 ID 목록) 탐색
  * @param startChannelId 시작 채널 ID
  * @param endChannelId 도착 채널 ID
  * @param network 버스 네트워크
@@ -273,7 +273,7 @@ function findBusRoute(
   return null; // 경로를 찾지 못함
 }
 /**
- * [최종본] On-Ramp, Off-Ramp, 채널 경로를 '차선'을 적용하여 직교 경로로 최종 완성합니다.
+ * On-Ramp, Off-Ramp, 채널 경로를 '차선'을 적용하여 직교 경로로 최종 완성
  */
 function stitchPath(
   onRamp: Ramp,
@@ -294,7 +294,7 @@ function stitchPath(
   const onRampLaneIndex = onRampChannel.lanes.get(edgeId)!;
   const onRampTotalLanes = onRampChannel.lanes.size;
 
-  // ✨ [핵심 수정] 동적 차선 폭 계산
+  // 동적 차선 폭 계산
   const onRampChannelWidth =
     onRampChannel.direction === "horizontal"
       ? onRampChannel.geometry.h
@@ -313,7 +313,6 @@ function stitchPath(
   } else {
     onRampProjection.x += onRampOffset;
   }
-  // ... (이하 경로 생성 로직은 onRampEffectiveLaneWidth를 사용하도록 유사하게 수정됨)
   const isRampHorizontal = onRampChannel.direction === "vertical";
   if (isRampHorizontal) {
     path.push({ x: onRampProjection.x, y: onRamp.port.y });
@@ -336,7 +335,7 @@ function stitchPath(
     const currentLaneIndex = currentChannel.lanes.get(edgeId)!;
     const currentTotalLanes = currentChannel.lanes.size;
 
-    // ✨ [핵심 수정] 동적 차선 폭 계산
+    // 동적 차선 폭 계산
     const currentChannelWidth =
       currentChannel.direction === "horizontal"
         ? currentChannel.geometry.h
@@ -375,7 +374,7 @@ function stitchPath(
       const nextLaneIndex = nextChannel.lanes.get(edgeId)!;
       const nextTotalLanes = nextChannel.lanes.size;
 
-      // ✨ [핵심 수정] 동적 차선 폭 계산
+      // 동적 차선 폭 계산
       const nextChannelWidth =
         nextChannel.direction === "horizontal"
           ? nextChannel.geometry.h
@@ -412,7 +411,7 @@ function stitchPath(
   const offRampLaneIndex = offRampChannel.lanes.get(edgeId)!;
   const offRampTotalLanes = offRampChannel.lanes.size;
 
-  // ✨ [핵심 수정] 동적 차선 폭 계산
+  // 동적 차선 폭 계산
   const offRampChannelWidth =
     offRampChannel.direction === "horizontal"
       ? offRampChannel.geometry.h
@@ -453,7 +452,7 @@ function stitchPath(
 }
 
 /**
- * 라우팅 실패 시 사용할 비상용 직선 경로를 생성합니다.
+ * 라우팅 실패 시 사용할 비상용 직선 경로를 생성
  */
 function createFallbackPath(sourceNode: Node, targetNode: Node): Point[] {
   const sourcePort = {

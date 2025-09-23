@@ -1,7 +1,4 @@
 // [수정] 우선순위큐 사용을 통한 O(logN)으로 개선, 기존 배열 사용 시 O(N)
-
-// src/layout/routing/aStar.ts
-
 import { cellAt, Grid } from "./grid";
 import { CostConfig, hManhattan, isTurn } from "./cost";
 import { PriorityQueue } from "@utils/priorityQueue";
@@ -24,7 +21,7 @@ export function aStarGrid(
   costCfg: CostConfig,
   startDir: Dir
 ): NodeRec[] | null {
-  // [수정 1] 시작점 또는 도착점이 장애물에 막혀있는 경우, 즉시 실패 처리합니다.
+  // [수정 1] 시작점 또는 도착점이 장애물에 막혀있는 경우, 즉시 실패 처리
   const startCell = cellAt(grid, start.cx, start.cy);
   const goalCell = cellAt(grid, goal.cx, goal.cy);
   if (!startCell || startCell.blocked || !goalCell || goalCell.blocked) {
@@ -65,7 +62,7 @@ export function aStarGrid(
 
     for (const nb of neighbors(cur.cx, cur.cy)) {
       const c = cellAt(grid, nb.cx, nb.cy);
-      if (!c || c.blocked) continue; // ✨ [핵심 수정] 맵 경계 밖이거나 장애물이면 즉시 무시
+      if (!c || c.blocked) continue; // 맵 경계 밖이거나 장애물이면 즉시 무시
 
       const k = key(nb.cx, nb.cy);
       if (closed.has(k)) continue;

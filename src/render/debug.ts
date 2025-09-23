@@ -7,7 +7,7 @@ export let lastBuiltGrid: Grid | null = null;
 // 버스 전략의 채널 네트워크
 export let lastBusChannels: BusChannel[] | null = null;
 
-// [신규] Bus 라우팅 실패 후 A*로 대체된 엣지 ID 목록
+// Bus 라우팅 실패 후 A*로 대체된 엣지 ID 목록
 export const fallbackEdgeIds = new Set<EdgeId>();
 // 새로운 방식 버스 라우팅 (정점 기반)
 export let lastRoutingVertices: Point[] | null = null;
