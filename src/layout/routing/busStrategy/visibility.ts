@@ -101,12 +101,38 @@ function extractAllAxes(
     sortedYAxes: Array.from(yAxes).sort((a, b) => a - b),
   };
 }
+/**
+ * 축 목록을 순회하며 간격이 넓은 곳에 새로운 축을 추가하여 세분화합니다.
+ * @param axes 정렬된 축 좌표 배열
+ * @param threshold 이 값보다 간격이 크면 새로운 축을 추가합니다.
+ * @returns 세분화된 축 좌표 배열
+ */
+function subdivideAxes(axes: number[], threshold: number): number[] {
+  let newAxes = [...axes];
+  let subdivided = true;
 
+  while (subdivided) {
+    subdivided = false;
+    const tempAxes: number[] = [newAxes[0]];
+    for (let i = 0; i < newAxes.length - 1; i++) {
+      const current = newAxes[i];
+      const next = newAxes[i + 1];
+      if (next - current > threshold) {
+        // 두 축의 중간 지점에 새로운 축을 추가
+        tempAxes.push((current + next) / 2);
+        subdivided = true;
+      }
+      tempAxes.push(next);
+    }
+    newAxes = tempAxes.sort((a, b) => a - b);
+  }
+  return newAxes;
+}
 /**
  * [Phase 2] '통합 축' 기반 하이브리드 정점 생성
  */
 export function createRoutingVertices(g: Graph, cfg: any): RoutingVertex[] {
-  const margin = (cfg.routing.bboxExpand * cfg.gridSize) ;
+  const margin = cfg.routing.bboxExpand * cfg.gridSize;
   const finalVertices: RoutingVertex[] = [];
   const vertexKeys = new Set<string>();
   let vertexIdCounter = 0;
@@ -120,22 +146,30 @@ export function createRoutingVertices(g: Graph, cfg: any): RoutingVertex[] {
 
   const allGroups = Array.from(g.groups.values());
   const allNodes = Array.from(g.nodes.values());
-  const allNodeObstacles = allNodes.map((n) => n.bbox);
+  // 장애물 경계 상자를 생성할 때 미리 margin 만큼 확장합니다.
+  const allNodeObstacles = allNodes.map((n) => inflateRect(n.bbox, margin));
+  // 그룹 경계는 라우팅이 통과할 수 있으므로 확장에서 제외하거나, 필요시 별도 margin 적용
   const worldObstacles = [...allNodeObstacles, ...allGroups.map((g) => g.bbox)];
 
   // 1. 통합 축 추출
   const { sortedXAxes, sortedYAxes } = extractAllAxes(g, margin);
+  // 넓은 공간을 채우기 위해 축을 세분화합니다.
+  // 임계값은 예를 들어 노드 평균 너비의 2배 정도로 설정할 수 있습니다.
+  const subdivisionThreshold = (cfg.layout?.nodeGapX ?? 8) * cfg.gridSize / 2;
+  const finalXAxes = subdivideAxes(sortedXAxes, subdivisionThreshold);
+  const finalYAxes = subdivideAxes(sortedYAxes, subdivisionThreshold);
 
   // 2. 교차점 기반 하이브리드 정점 생성
-  for (const x of sortedXAxes) {
-    for (const y of sortedYAxes) {
+  for (const x of finalXAxes) {
+    for (const y of finalYAxes) {
       const p = { x, y };
       const ownerGroup = allGroups.find((g) => isPointInRect(p, g.bbox));
 
       if (ownerGroup) {
-        const internalObstacles = ownerGroup.children.map(
-          (id) => g.nodes.get(id)!.bbox
-        );
+        // 그룹 내부 장애물도 동일하게 확장합니다.
+        const internalObstacles = ownerGroup.children
+          .map((id) => g.nodes.get(id)!)
+          .map((n) => inflateRect(n.bbox, margin));
         if (!isObstructed(p, internalObstacles)) {
           addVertex(p, ownerGroup.id);
         }
@@ -162,14 +196,14 @@ export function createRoutingVertices(g: Graph, cfg: any): RoutingVertex[] {
       if (port.side === "left" || port.side === "right") {
         const targetX =
           port.side === "left"
-            ? sortedXAxes.filter((x) => x < pPos.x).pop()
-            : sortedXAxes.find((x) => x > pPos.x);
+            ? finalXAxes.filter((x) => x < pPos.x).pop()
+            : finalXAxes.find((x) => x > pPos.x);
         if (targetX !== undefined) entryPoint = { x: targetX, y: pPos.y };
       } else {
         const targetY =
           port.side === "top"
-            ? sortedYAxes.filter((y) => y < pPos.y).pop()
-            : sortedYAxes.find((y) => y > pPos.y);
+            ? finalYAxes.filter((y) => y < pPos.y).pop()
+            : finalYAxes.find((y) => y > pPos.y);
         if (targetY !== undefined) entryPoint = { x: pPos.x, y: targetY };
       }
 
@@ -291,4 +325,16 @@ function connectAlignedVertices(
       }
     }
   }
+}
+
+/**
+ * 사각형을 지정된 margin만큼 확장(inflate)합니다.
+ */
+function inflateRect(rect: Rect, margin: number): Rect {
+  return {
+    x: rect.x - margin,
+    y: rect.y - margin,
+    w: rect.w + margin * 2,
+    h: rect.h + margin * 2,
+  };
 }
