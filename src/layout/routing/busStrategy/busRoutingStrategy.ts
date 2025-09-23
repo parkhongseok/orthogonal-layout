@@ -8,18 +8,15 @@ import {
   setLastRoutingVertices,
   setLastVisibilityGraph,
 } from "@render/debug";
-import { buildBusNetworkGraph } from "./network";
-import { routeEdgesOnBus } from "./routerBus";
+
 import { assignPorts } from "@layout/port/assign";
 import { initialPlacement } from "@layout/placement/initPlacement";
 import { resolveOverlap } from "@layout/placement/resolveOverlap";
 import { spreadNodes } from "@layout/placement/spread";
 import { sweepCompact } from "@layout/compaction/sweep";
-import { beautifyPath } from "@layout/port/beautifyPath";
-import { routeAll } from "../aStarStrategy/routeAll";
+
 import { buildVisibilityGraph, createRoutingVertices } from "./visibility";
 import { routeOnVisibilityGraph } from "./router";
-import { cleanupCollinearPoints } from "../aStarStrategy/pathSmoother";
 import { finalizePaths } from "./lane";
 
 export class BusRoutingStrategy implements RoutingStrategy {
@@ -84,3 +81,5 @@ export class BusRoutingStrategy implements RoutingStrategy {
     return cur;
   }
 }
+
+

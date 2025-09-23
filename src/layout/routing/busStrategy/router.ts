@@ -209,7 +209,9 @@ function findRampInfo(
   // 만약 이상적인 면에서 유효한 경로를 찾지 못했다면 null을 반환합니다.
   return null;
 }
-
+/**
+ * [수정] 정점 경로를 받아, 포트와 직교로 연결되는 단순하고 안정적인 기본 경로를 생성합니다.
+ */
 function stitchPath(
   startPort: Point,
   endPort: Point,
@@ -224,11 +226,15 @@ function stitchPath(
     const prev = path[path.length - 1];
     const curr = waypoints[i];
 
+    // 이전 지점과 현재 지점이 수평/수직이 아니면, 직교 코너를 만듭니다.
     if (Math.abs(prev.x - curr.x) > 1 && Math.abs(prev.y - curr.y) > 1) {
+      // 이전 경로 세그먼트의 방향을 확인하여 코너를 추가합니다.
       const prevPrev = path.length > 1 ? path[path.length - 2] : prev;
       if (Math.abs(prevPrev.y - prev.y) < 1) {
+        // 이전이 수평이었으면, (현재 x, 이전 y) 코너
         path.push({ x: curr.x, y: prev.y });
       } else {
+        // 이전이 수직이었으면, (이전 x, 현재 y) 코너
         path.push({ x: prev.x, y: curr.y });
       }
     }
@@ -263,7 +269,6 @@ export function routeOnVisibilityGraph(
     const sourceNode = out.nodes.get(edge.sourceId)!;
     const targetNode = out.nodes.get(edge.targetId)!;
 
-    // findRampInfo 호출 시 상대 노드를 함께 전달합니다.
     const startInfo = findRampInfo(
       sourceNode,
       targetNode,
@@ -298,18 +303,19 @@ export function routeOnVisibilityGraph(
           (id) => visibilityGraph.vertices[id]
         );
 
+        // 수정된 stitchPath 호출
         const finalPath = stitchPath(startInfo.port, endInfo.port, vertexPath);
 
-        // 경로와 함께 정점 리스트(vertexIdPath)도 엣지에 저장
         out.edges.set(edge.id, {
           ...edge,
           path: finalPath,
-          vertexPath: vertexIdPath,
+          vertexPath: vertexIdPath, // 다음 단계를 위해 정점 경로 저장
         });
         continue;
       }
     }
 
+    // Fallback path
     const sPos = startInfo?.port || portPosition(sourceNode, "right", 0.5);
     const tPos = endInfo?.port || portPosition(targetNode, "left", 0.5);
     out.edges.set(edge.id, {

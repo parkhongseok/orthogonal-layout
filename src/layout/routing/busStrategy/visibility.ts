@@ -7,8 +7,6 @@ import {
   VisibilityGraph,
   RoutingVertex,
   GroupId,
-  Node,
-  Group,
 } from "@domain/types";
 import { portPosition } from "@layout/port/assign";
 
@@ -108,7 +106,7 @@ function extractAllAxes(
  * [Phase 2] '통합 축' 기반 하이브리드 정점 생성
  */
 export function createRoutingVertices(g: Graph, cfg: any): RoutingVertex[] {
-  const margin = (cfg.gridSize ?? 12) / 2;
+  const margin = (cfg.routing.bboxExpand * cfg.gridSize) ;
   const finalVertices: RoutingVertex[] = [];
   const vertexKeys = new Set<string>();
   let vertexIdCounter = 0;
