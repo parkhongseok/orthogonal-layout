@@ -19,8 +19,9 @@ export let lastVisibilityGraph: VisibilityGraph | null = null;
 export function clearDebugData() {
   lastBuiltGrid = null;
   lastBusChannels = null;
-  lastVisibilityGraph = null; 
-  fallbackEdgeIds.clear(); 
+  lastVisibilityGraph = null;
+  lastRoutingVertices = null; // 누락된 부분 추가
+  fallbackEdgeIds.clear();
 }
 
 /**

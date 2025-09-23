@@ -36,7 +36,12 @@ const chkObs = document.getElementById("chk-obstacles") as HTMLInputElement;
 const chkVer = document.getElementById("chk-vertices") as HTMLInputElement;
 const chkNet = document.getElementById("chk-networks") as HTMLInputElement;
 const chkChnn = document.getElementById("chk-chnn") as HTMLInputElement;
-const chkBox = document.getElementById("chk-bbox") as HTMLInputElement;
+
+// 체크박스 라벨 요소들
+const labelObs = chkObs.parentElement as HTMLLabelElement;
+const labelVer = chkVer.parentElement as HTMLLabelElement;
+const labelNet = chkNet.parentElement as HTMLLabelElement;
+const labelChnn = chkChnn.parentElement as HTMLLabelElement;
 
 // ===== 카메라 상태 =====
 const camera = makeCamera();
@@ -62,7 +67,7 @@ function updateInfoPanel(g: Graph) {
     <span><b>Total Nodes:</b> ${nodeCount}</span>
     <span><b>Total Edges:</b> ${edgeCount}</span>
     <span><b>Total Groups:</b> ${groupCount}</span>
-    <span><b>Nodes per Group:</b> ${groupInfo}</span>
+    <span><b>Nodes per Group:</b></span> ${groupInfo}
   `;
 }
 
@@ -81,6 +86,25 @@ function regenerateGraph() {
   fitTopLeft(camera, rect.width, rect.height, world, initPadding);
 
   updateInfoPanel(graph); // 정보 패널 업데이트
+
+  render();
+}
+
+type Strategy = "ASTAR" | "VERTICES" | "BUS";
+
+function updateVisualizeControls(strategy: Strategy) {
+  clearDebugData(); // 이전 레이아웃의 디버그 정보를 지웁니다.
+
+  labelObs.hidden = strategy !== "ASTAR";
+  labelVer.hidden = strategy !== "VERTICES";
+  labelNet.hidden = strategy !== "VERTICES";
+  labelChnn.hidden = strategy !== "BUS";
+
+  // 체크박스 상태도 업데이트
+  chkObs.checked = strategy === "ASTAR";
+  chkVer.checked = strategy === "VERTICES";
+  chkNet.checked = strategy === "VERTICES";
+  chkChnn.checked = strategy === "BUS";
 
   render();
 }
@@ -109,7 +133,6 @@ function render() {
       showVertices: chkVer.checked,
       showNetworks: chkNet.checked,
       showChennals: chkChnn.checked,
-      showBBox: chkBox.checked,
       camera: camera,
     },
     CONFIG
@@ -119,6 +142,7 @@ function render() {
 // ===== Auto Layout =====
 
 btnVerAuto.addEventListener("click", () => {
+  updateVisualizeControls("VERTICES");
   const t0 = performance.now();
   const verticesRoutingStrategy = new VerticesRoutingStrategy();
 
@@ -136,6 +160,7 @@ btnVerAuto.addEventListener("click", () => {
 });
 
 btnBusAuto.addEventListener("click", () => {
+  updateVisualizeControls("BUS");
   const t0 = performance.now();
   const busRoutingStrategy = new BusRoutingStrategy();
 
@@ -153,6 +178,7 @@ btnBusAuto.addEventListener("click", () => {
 });
 
 btnAuto.addEventListener("click", () => {
+  updateVisualizeControls("ASTAR");
   const t0 = performance.now();
   const legacyStrategy = new LegacyAStarStrategy();
 
@@ -173,13 +199,14 @@ btnAuto.addEventListener("click", () => {
 btnReset.addEventListener("click", regenerateGraph);
 
 // ===== 오버레이 토글 =====
-[chkGrid, chkObs, chkVer, chkNet, chkChnn, chkBox].forEach((el) =>
+[chkGrid, chkObs, chkVer, chkNet, chkChnn].forEach((el) =>
   el.addEventListener("change", () => {
     setOverlaysVisible({
       grid: chkGrid.checked,
       obstacles: chkObs.checked,
+      vertices: chkVer.checked,
+      networks: chkNet.checked,
       channels: chkChnn.checked,
-      bbox: chkBox.checked,
     });
     render();
   })
@@ -241,6 +268,7 @@ document.getElementById("btn-fit")?.addEventListener("click", () => {
 // ===== 초기 1회 Fit + 렌더 =====
 // ===== 초기 실행 =====
 regenerateGraph();
+updateVisualizeControls("ASTAR"); // 초기 상태 설정
 
 // ===== 리사이즈 대응 =====
 window.addEventListener("resize", render);
