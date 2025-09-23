@@ -9,7 +9,7 @@ import { setLastBuiltGrid } from "@render/debug";
 import { manhattan } from "@utils/math";
 
 /**
- * [1단계 성능 개선] A*의 목표 지점을 노드 경계에 더 가깝게 설정하여 '감싸는' 현상을 해결합니다.
+ * [1단계 성능 개선] A*의 목표 지점을 노드 경계에 더 가깝게 설정하여 '감싸는' 현상을 해결
  * @param grid 라우팅용 그리드
  * @param node 대상 노드
  * @param side 진입/진출할 노드의 면
@@ -20,7 +20,7 @@ function findEntryPointNearNode(
   node: Node,
   side: PortSide
 ): { cx: number; cy: number; dir: Dir } | null {
-  // 노드의 중앙에서 시작점을 찾습니다.
+  // 노드의 중앙에서 시작점 탐색
   const nodeCenter = {
     x: node.bbox.x + node.bbox.w / 2,
     y: node.bbox.y + node.bbox.h / 2,
@@ -59,13 +59,13 @@ function findEntryPointNearNode(
       break;
   }
 
-  // 가장 이상적인 목표 지점을 시도합니다.
+  // 가장 이상적인 목표 지점을 시도
   let cell = cellAt(grid, cx, cy);
   if (cell && !cell.blocked) {
     return { cx, cy, dir };
   }
 
-  // 만약 막혀있다면, 원래 포트 위치에서부터 해당 방향으로 한 칸씩 탐색합니다.
+  // 만약 막혀있다면, 원래 포트 위치에서부터 해당 방향으로 한 칸씩 탐색
   const maxSearch = grid.cols + grid.rows;
   for (let i = 0; i < maxSearch; i++) {
     if (side === "top") cy--;
@@ -83,8 +83,8 @@ function findEntryPointNearNode(
 }
 
 /**
- * [1단계 성능 개선] 그래프의 모든 엣지에 대한 직교 경로를 계산하고 적용합니다.
- * A* 호출을 엣지당 1회로 최소화하여 성능을 최적화합니다.
+ * [1단계 성능 개선] 그래프의 모든 엣지에 대한 직교 경로를 계산하고 적용
+ * A* 호출을 엣지당 1회로 최소화하여 성능을 최적화
  */
 export function routeAll(g: Graph, cfg: any): Graph {
   const out = { ...g, edges: new Map(g.edges) };
@@ -110,11 +110,11 @@ export function routeAll(g: Graph, cfg: any): Graph {
     const t = out.nodes.get(e.targetId)!;
     if (!s || !t) continue;
 
-    // 1. 최적의 연결 방향(side)을 결정합니다.
+    // 1. 최적의 연결 방향(side)을 결정
     const candidateSides = getCandidateSides(s, t);
     const [sourceSide, targetSide] = candidateSides[0]; // 가장 우선순위가 높은 후보를 사용
 
-    // 2. A* 탐색을 위한 시작점과 목표점을 노드 경계 근처에서 찾습니다.
+    // 2. A* 탐색을 위한 시작점과 목표점을 노드 경계 근처에서 탐색
     const start = findEntryPointNearNode(grid, s, sourceSide);
     const goal = findEntryPointNearNode(grid, t, targetSide);
 
@@ -126,13 +126,12 @@ export function routeAll(g: Graph, cfg: any): Graph {
       continue;
     }
 
-    // 3. [핵심] 엣지당 단 한번의 A* 탐색을 실행합니다.
+    // 3. 엣지당 단 한번의 A* 탐색을 실행
     const aStarPath = aStarGrid(grid, start, goal, costCfg, start.dir);
 
     let finalPath: Point[];
     if (aStarPath) {
-      // 4. 경로 후처리: A* 경로를 실제 포트 위치와 연결하고 다듬습니다.
-      // (이 부분은 2단계에서 집중적으로 개선될 예정입니다.)
+      // 4. 경로 후처리: A* 경로를 실제 포트 위치와 연결하고 다듬기
       const tempSourcePort = portPosition(s, sourceSide, 0.5);
       const tempTargetPort = portPosition(t, targetSide, 0.5);
 
@@ -145,7 +144,7 @@ export function routeAll(g: Graph, cfg: any): Graph {
         targetSide
       );
 
-      // 그리드에 혼잡도(congestion)를 업데이트합니다.
+      // 그리드에 혼잡도(congestion)를 업데이트
       for (const node of aStarPath) {
         const cell = cellAt(grid, node.cx, node.cy);
         if (cell) cell.congestion++;

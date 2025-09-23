@@ -63,7 +63,7 @@ export interface BusChannel {
 
 export interface BusNetwork {
   channels: Map<string, BusChannel>;
-  // 교차점을 그래프의 엣지처럼 표현합니다. <채널 ID, [연결된 채널 ID들]>
+  // 교차점을 그래프의 엣지처럼 표현 <채널 ID, [연결된 채널 ID들]>
   intersections: Map<string, string[]>;
 }
 

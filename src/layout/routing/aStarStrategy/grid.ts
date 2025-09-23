@@ -16,14 +16,15 @@ export interface Grid {
 }
 
 /**
- * 그리드 좌표(cx, cy)를 1차원 배열 인덱스로 변환합니다.
+ * 그리드 좌표(cx, cy)를 1차원 배열 인덱스로 변환
  */
 function getCellIndex(grid: Grid, cx: number, cy: number): number {
   return cy * grid.cols + cx;
 }
 
 /**
- * 그리드 좌표로 해당 셀의 데이터를 가져옵니다. 맵 밖이면 undefined를 반환합니다.
+ * 그리드 좌표로 해당 셀의 데이터를 가져옴
+ * 맵 밖이면 undefined를 반환
  */
 export function cellAt(
   grid: Grid,
@@ -37,15 +38,15 @@ export function cellAt(
 }
 
 /**
- * 그래프의 모든 노드와 그룹을 장애물로 등록한 최종 '지도' Grid를 생성합니다.
- * 이 함수는 라우팅 파이프라인의 핵심 준비 단계입니다.
+ * 그래프의 모든 노드와 그룹을 장애물로 등록한 최종 '지도' Grid를 생성
+ * 이 함수는 라우팅 파이프라인의 핵심 준비 단계
  */
 export function buildGrid(graph: Graph, cfg: any): Grid {
   const gridSize = cfg.gridSize;
   const worldBounds = computeWorldBounds(graph);
 
-  // 1. 그리드의 전체 크기와 기준점을 계산합니다.
-  // 월드 경계보다 사방으로 3칸씩 여유를 주어 경로 탐색이 막히지 않도록 합니다.
+  // 1. 그리드의 전체 크기와 기준점을 계산
+  // 월드 경계보다 사방으로 3칸씩 여유를 주어 경로 탐색이 막히지 않도록 함
   const margin = gridSize * 3;
   const originX = Math.floor((worldBounds.x - margin) / gridSize) * gridSize;
   const originY = Math.floor((worldBounds.y - margin) / gridSize) * gridSize;
@@ -64,18 +65,14 @@ export function buildGrid(graph: Graph, cfg: any): Grid {
   const grid: Grid = { cols, rows, size: gridSize, originX, originY, cells };
 
   // 3. [핵심 강화] 노드를 장애물로 등록합니다.
-  // cfg.routing.bboxExpand 값만큼 노드 주변에 '안전 여백'을 추가하여 장애물로 만듭니다.
+  // cfg.routing.bboxExpand 값만큼 노드 주변에 '안전 여백'을 추가하여 장애물로 설정
   const nodeExpand = cfg.routing?.bboxExpand ?? 1; // 기본값 1로 설정
   for (const node of graph.nodes.values()) {
     markRectAsBlocked(grid, node.bbox, nodeExpand);
   }
 
-  // // 4. 그룹 경계도 장애물로 등록합니다. (여백 없이)
-  // for (const group of graph.groups.values()) {
-  //   markRectAsBlocked(grid, group.bbox, 0);
-  // }
-
-  // [디버깅] 블록 처리된 셀의 총 개수를 로그로 남깁니다.
+  // // 4. 그룹 경계도 장애물로 등록 (여백 없이)
+  // [디버깅] 블록 처리된 셀의 총 개수를 로그
   const blockedCount = cells.filter((c) => c.blocked).length;
   console.log(
     `Grid created: ${cols}x${rows}. Blocked cells: ${blockedCount} (${(
@@ -122,7 +119,7 @@ export function worldToCell(
   return { cx, cy };
 }
 
-/** 그리드 셀 좌표를 해당 셀의 중앙 월드 좌표(px)로 변환합니다. */
+/** 그리드 셀 좌표를 해당 셀의 중앙 월드 좌표(px)로 변환 */
 export function cellCenterToWorld(
   grid: Grid,
   cx: number,

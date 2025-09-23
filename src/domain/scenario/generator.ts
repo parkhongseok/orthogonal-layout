@@ -3,9 +3,9 @@ import { nodeId, edgeId, groupId } from "@domain/id";
 import { CONFIG } from "@app/config";
 
 /**
- * nNodes 중 일부는 그룹에 배정, 일부는 루트 레벨(그룹 밖)에 둔다.
- * - 각 그룹은 최소 1개 이상의 노드를 반드시 가진다.
- * - ungroupedRatio(0~1)로 루트 레벨 비율 조정.
+ * nNodes 중 일부는 그룹에 배정, 일부는 루트 레벨(그룹 밖)
+ * - 각 그룹은 최소 1개 이상의 노드를 반드시 가짐
+ * - ungroupedRatio(0~1)로 루트 레벨 비율 조정
  */
 export function createInitialGraph(
   nNodes: number,
@@ -80,7 +80,7 @@ export function createInitialGraph(
 
   // ====== 3) 엣지 생성: 그룹 내/간/루트 노드 섞어서 랜덤 연결 ======
   const nodeIds = Array.from(nodes.keys()) as NodeId[];
-  const existingEdgePairs = new Set<string>(); // ✨ [핵심 추가] 중복 엣지를 체크하기 위한 Set
+  const existingEdgePairs = new Set<string>(); // 중복 엣지를 체크하기 위한 Set
 
   let e = 0;
   while (
@@ -93,7 +93,7 @@ export function createInitialGraph(
       t = nodeIds[Math.floor(Math.random() * nodeIds.length)];
     }
 
-    // ✨ [핵심 추가] 중복 체크 로직
+    // 중복 체크 로직
     // 노드 ID를 정렬하여 "n-1 -> n-2"와 "n-2 -> n-1"을 동일한 연결로 취급
     const pairKey = [s, t].sort().join("-");
     if (existingEdgePairs.has(pairKey)) {
@@ -140,7 +140,7 @@ function randomNodeRectInGroup(gbox: Rect, grid: number): Rect {
 
 function randomNodeRectInRoot(groups: Map<GroupId, any>, grid: number): Rect {
   // 루트 레벨은 그룹 블록들 아래쪽 여백에 대충 배치 (초기)
-  // 나중에 initPlacement가 root 영역 타일링으로 재배치함.
+  // 나중에 initPlacement가 root 영역 타일링으로 재배치함
   const marginY = 40;
   const maxBottom = Math.max(
     ...Array.from(groups.values()).map((g) => g.bbox.y + g.bbox.h)

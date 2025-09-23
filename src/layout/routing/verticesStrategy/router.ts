@@ -11,7 +11,7 @@ import { manhattan } from "@utils/math";
 import { assignPorts, portPosition } from "@layout/port/assign";
 import { PriorityQueue } from "@utils/priorityQueue";
 import { cleanupCollinearPoints } from "../aStarStrategy/pathSmoother";
-import { getCandidateSides } from "../aStarStrategy/portSelector"; // 💡 포트 후보군 탐색 함수 임포트
+import { getCandidateSides } from "../aStarStrategy/portSelector";
 import { initialPlacement } from "@layout/placement/initPlacement";
 import { sweepCompact } from "@layout/compaction/sweep";
 import { resolveOverlap } from "@layout/placement/resolveOverlap";
@@ -156,7 +156,7 @@ function findPathOnGraph(
 }
 
 /**
- * [1단계 개선] 노드와 타겟 노드의 상대 위치를 고려하여 최적의 '진입 지점' 정보를 찾습니다.
+ * [1단계 개선] 노드와 타겟 노드의 상대 위치를 고려하여 최적의 '진입 지점' 정보 탐색
  */
 function findRampInfo(
   node: Node,
@@ -177,12 +177,12 @@ function findRampInfo(
       obs.h !== node.bbox.h
   );
 
-  // 두 노드의 상대 위치를 기반으로 가장 이상적인 포트 면(side)부터 순서대로 가져옵니다.
+  // 두 노드의 상대 위치를 기반으로 가장 이상적인 포트 면(side)부터 순서대로 가져옴
   const candidateSides = getCandidateSides(node, targetNode).map(
     (sides) => sides[0]
   );
 
-  // 이상적인 면부터 차례대로 탐색합니다.
+  // 이상적인 면부터 차례대로 탐색
   for (const side of candidateSides) {
     const portsOnSide = (node.ports || []).filter((p) => p.side === side);
     for (const portInfo of portsOnSide) {
@@ -200,17 +200,17 @@ function findRampInfo(
         }
       }
     }
-    // 현재 면에서 최적의 경로를 찾았다면, 더 낮은 우선순위의 면은 탐색하지 않고 바로 반환합니다.
+    // 현재 면에서 최적의 경로를 찾았다면, 더 낮은 우선순위의 면은 탐색하지 않고 바로 반환
     if (bestVertex) {
       return { vertex: bestVertex, port: bestPort!, side: bestSide! };
     }
   }
 
-  // 만약 이상적인 면에서 유효한 경로를 찾지 못했다면 null을 반환합니다.
+  // 만약 이상적인 면에서 유효한 경로를 찾지 못했다면 null을 반환
   return null;
 }
 /**
- * [수정] 정점 경로를 받아, 포트와 직교로 연결되는 단순하고 안정적인 기본 경로를 생성합니다.
+ * 정점 경로를 받아, 포트와 직교로 연결되는 단순하고 안정적인 기본 경로를 생성
  */
 function stitchPath(
   startPort: Point,
@@ -226,9 +226,9 @@ function stitchPath(
     const prev = path[path.length - 1];
     const curr = waypoints[i];
 
-    // 이전 지점과 현재 지점이 수평/수직이 아니면, 직교 코너를 만듭니다.
+    // 이전 지점과 현재 지점이 수평/수직이 아니면, 직교 코너를 생성
     if (Math.abs(prev.x - curr.x) > 1 && Math.abs(prev.y - curr.y) > 1) {
-      // 이전 경로 세그먼트의 방향을 확인하여 코너를 추가합니다.
+      // 이전 경로 세그먼트의 방향을 확인하여 코너를 추가
       const prevPrev = path.length > 1 ? path[path.length - 2] : prev;
       if (Math.abs(prevPrev.y - prev.y) < 1) {
         // 이전이 수평이었으면, (현재 x, 이전 y) 코너

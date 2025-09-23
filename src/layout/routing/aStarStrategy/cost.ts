@@ -1,14 +1,11 @@
 import { Dir } from "@domain/types";
 
-// src/layout/routing/cost.ts
 export interface CostConfig {
   distance: number;   // 한 스텝(인접 셀) 이동 비용 가중치
   bend: number;       // 진행 방향이 바뀔 때(코너) 가중치
   obstacle: number;   // 장애물 셀로 진입 시(실제로는 금지 or 큰 페널티)
   congestion: number; // 혼잡 셀(이미 경로가 많은 셀)의 가중치
 }
-
-
 
 /** 맨해튼 휴리스틱 */
 export function hManhattan(ax: number, ay: number, bx: number, by: number, dist = 1) {

@@ -1,11 +1,11 @@
 import type { Point, PortSide, NodeRec } from "@domain/types";
 import type { Grid } from "./grid";
 import { cellCenterToWorld } from "./grid";
-import { isTurn, dirFrom } from "./cost"; // Dir 타입과 헬퍼 함수 import
+import { isTurn, dirFrom } from "./cost";
 
 /**
- * A*가 반환한 셀 목록에서 코너 지점만 정확히 추출합니다.
- * 'isTurn' 헬퍼 함수를 재사용하여 코드의 일관성을 높입니다.
+ * A*가 반환한 셀 목록에서 코너 지점만 정확히 추출
+ * 'isTurn' 헬퍼 함수를 재사용하여 코드의 일관성을 높임
  */
 function findCorners(nodes: NodeRec[], grid: Grid): Point[] {
   if (nodes.length < 2) {
@@ -38,7 +38,7 @@ function findCorners(nodes: NodeRec[], grid: Grid): Point[] {
 }
 
 /**
- * 경로에서 연속된 세 점이 한 직선 위에 있을 경우, 중간 점을 제거합니다.
+ * 경로에서 연속된 세 점이 한 직선 위에 있을 경우, 중간 점을 제거
  */
 export function cleanupCollinearPoints(path: Point[]): Point[] {
   if (path.length < 3) return path;
@@ -60,8 +60,8 @@ export function cleanupCollinearPoints(path: Point[]): Point[] {
   return cleaned;
 }
 /**
- * [수정] A* 경로와 포트 정보를 받아, 불필요한 꺾임을 최소화한
- * 최종 렌더링 경로를 생성합니다.
+ * A* 경로와 포트 정보를 받아, 불필요한 꺾임을 최소화한
+ * 최종 렌더링 경로를 생성
  */
 export function smoothPath(
   aStarPath: NodeRec[],

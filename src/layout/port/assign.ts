@@ -5,11 +5,8 @@ import type { Graph, Node, PortSide, NodeId } from "@domain/types";
  * - 현재는 edge 수와 관계없이 기본 개수만 배치
  * - 추후 edge 연결 수에 따라 동적으로 늘릴 수도 있음
  */
-// src/layout/ports/assign.ts
-
 export function assignPorts(g: Graph, cfg: any): Graph {
   const portsPerSide = cfg.portPerSide;
-  // console.log("[assignPorts] start, nodes:", g.nodes.size);
 
   const out: Graph = {
     nodes: new Map(g.nodes),
@@ -19,7 +16,7 @@ export function assignPorts(g: Graph, cfg: any): Graph {
 
   let edited = 0;
   for (const [id, n] of out.nodes) {
-    // ✅ out.nodes 기준으로 순회
+    // out.nodes 기준으로 순회
     const ports: { side: PortSide; offset: number }[] = [];
 
     (["top", "bottom", "left", "right"] as PortSide[]).forEach((side) => {
@@ -31,17 +28,6 @@ export function assignPorts(g: Graph, cfg: any): Graph {
     out.nodes.set(id, { ...n, ports });
     edited++;
   }
-
-  // const first = out.nodes.values().next().value as Node | undefined;
-  // console.log(
-  //   "[assignPorts] edited nodes:",
-  //   edited,
-  //   "| first.ports len:",
-  //   first?.ports?.length,
-  //   "| first sample:",
-  //   first?.ports?.slice?.(0, 2)
-  // );
-
   return out;
 }
 

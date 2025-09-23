@@ -1,7 +1,7 @@
 import type { Graph, BusChannel, BusNetwork, Rect } from "@domain/types";
 
 /**
- * 채널 목록을 분석하여, 채널 간 교차점을 포함한 BusNetwork 그래프를 생성합니다.
+ * 채널 목록을 분석하여, 채널 간 교차점을 포함한 BusNetwork 그래프를 생성
  */
 export function buildBusNetworkGraph(channels: BusChannel[]): BusNetwork {
   const network: BusNetwork = {

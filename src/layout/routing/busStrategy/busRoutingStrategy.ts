@@ -1,12 +1,6 @@
 import type { Graph, Point, VisibilityGraph } from "@domain/types";
 import type { RoutingStrategy } from "../strategy";
-import {
-  fallbackEdgeIds,
-  lastVisibilityGraph,
-  setLastBusChannels,
-  setLastRoutingVertices,
-  setLastVisibilityGraph,
-} from "@render/debug";
+import { fallbackEdgeIds, setLastBusChannels } from "@render/debug";
 
 import { assignPorts } from "@layout/port/assign";
 import { initialPlacement } from "@layout/placement/initPlacement";
@@ -50,16 +44,16 @@ export class BusRoutingStrategy implements RoutingStrategy {
       console.warn(
         `Bus routing failed for ${failedEdges.length} edges. Running fallback A*...`
       );
-      // 실패한 엣지들만으로 구성된 임시 그래프를 만듭니다.
+      // 실패한 엣지들만으로 구성된 임시 그래프 생성
       const fallbackGraph: Graph = {
         ...cur,
         edges: new Map(failedEdges.map((e) => [e.id, e])),
       };
 
-      // A* 라우팅을 실패한 엣지에 대해서만 실행합니다.
+      // A* 라우팅을 실패한 엣지에 대해서만 실행
       const reroutedGraph = routeAll(fallbackGraph, cfg);
 
-      // 결과를 원래 그래프에 다시 합칩니다.
+      // 결과를 원래 그래프에 다시 병합
       for (const reroutedEdge of reroutedGraph.edges.values()) {
         cur.edges.set(reroutedEdge.id, reroutedEdge);
         fallbackEdgeIds.add(reroutedEdge.id); // 디버깅을 위해 ID 기록
@@ -72,5 +66,3 @@ export class BusRoutingStrategy implements RoutingStrategy {
     return cur;
   }
 }
-
-

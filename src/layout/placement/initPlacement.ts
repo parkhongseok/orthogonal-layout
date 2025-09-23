@@ -132,7 +132,7 @@ export function initialPlacement(g: Graph, cfg: any): Graph {
   for (const [, n] of out.nodes) if (!n.groupId) rootNodes.push(n);
 
   if (rootNodes.length > 0) {
-    // [핵심 수정] 루트 노드를 배치할 영역을 더 안정적으로 계산합니다.
+    // 루트 노드를 배치할 영역을 더 안정적으로 계산합니다.
     const groups = Array.from(out.groups.values());
     let area: Rect;
 
@@ -146,7 +146,7 @@ export function initialPlacement(g: Graph, cfg: any): Graph {
       const width = maxX - minX;
       const height = maxY - minY;
 
-      // 루트 노드 영역을 전체 경계 상자의 '아래' 또는 '오른쪽' 중 더 넓은 공간에 배치합니다.
+      // 루트 노드 영역을 전체 경계 상자의 '아래' 또는 '오른쪽' 중 더 넓은 공간에 배치
       if (width > height) {
         // 가로로 넓은 경우: 아래에 배치
         area = {
@@ -171,7 +171,7 @@ export function initialPlacement(g: Graph, cfg: any): Graph {
         };
       }
     } else {
-      // 그룹이 아예 없는 경우, 기본 영역에 배치합니다.
+      // 그룹이 아예 없는 경우, 기본 영역에 배치
       area = { x: 0, y: 40, w: 800, h: 600 };
     }
 

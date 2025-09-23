@@ -93,7 +93,7 @@ function regenerateGraph() {
 type Strategy = "ASTAR" | "VERTICES" | "BUS";
 
 function updateVisualizeControls(strategy: Strategy) {
-  clearDebugData(); // 이전 레이아웃의 디버그 정보를 지웁니다.
+  clearDebugData(); // 이전 레이아웃의 디버그 정보 삭제
 
   labelObs.hidden = strategy !== "ASTAR";
   labelVer.hidden = strategy !== "VERTICES";
@@ -265,7 +265,6 @@ document.getElementById("btn-fit")?.addEventListener("click", () => {
   render();
 });
 
-// ===== 초기 1회 Fit + 렌더 =====
 // ===== 초기 실행 =====
 regenerateGraph();
 updateVisualizeControls("ASTAR"); // 초기 상태 설정

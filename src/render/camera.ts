@@ -1,4 +1,3 @@
-// src/render/camera.ts
 export type Camera = { scale: number; tx: number; ty: number };
 
 export function makeCamera(): Camera {
