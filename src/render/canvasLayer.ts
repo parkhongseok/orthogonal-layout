@@ -73,7 +73,7 @@ export function drawAll(
     drawRoutingVertices(ctx, lastRoutingVertices);
   }
   // 💡 가시성 그래프(네트워크) 그리기 로직 추가
-  if (_overlays.channels && lastVisibilityGraph) {
+  if (_overlays.obstacles && lastVisibilityGraph) {
     // 'channels' 옵션을 재활용
     drawVisibilityGraph(ctx, lastVisibilityGraph);
   }
