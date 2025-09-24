@@ -15,8 +15,9 @@
 
 ## 실행 방법
 
-### 배포 환경에서 사용
-https://ext.dontgoback.kro.kr/orthogonal-layout/
+### 배포 환경에서 바로 사용
+
+- https://ext.dontgoback.kro.kr/orthogonal-layout/
 
 ### 다운로드 후 실행
 ```bash
@@ -31,7 +32,7 @@ $ npm install
 $ npm run dev
 ```
 
-접속: [http://localhost:5173](http://localhost:5173)
+- 접속: [http://localhost:5173](http://localhost:5173)
 
 
 
