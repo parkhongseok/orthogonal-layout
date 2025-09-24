@@ -37,7 +37,7 @@ orthogonal-layout/
 ### 2. Domain Model
 
 <p align="center">
-  <img src="./docs/src/orthogonal-layout-domain.png" width="65%" alt="bus channel 알고리즘">
+  <img src="./docs/src/orthogonal-layout-domain.png" width="65%" alt="orthogonal-layout-domain">
 </p>
 
 - 모든 데이터는 `Node`, `Edge`, `Group의` **Map 컬렉션**으로 구성된 중앙 `Graph` 객체를 통해 관리됩니다.
@@ -46,12 +46,12 @@ orthogonal-layout/
 ### 3. flowChart
 
 <p align="center">
-  <img src="./docs/src/orthogonal-layout-flowchart.png" width="65%" alt="bus channel 알고리즘">
+  <img src="./docs/src/orthogonal-layout-flowchart.png" width="65%" alt="orthogonal-layout-flowchart">
 </p>
 
 - **배치(Placement)** : 노드와 그룹의 위치를 결정합니다.
 - **라우팅(Routing)** : 세 가지 전략 중 하나를 선택해 엣지 경로를 계산합니다.
-- **후처리 및 렌더링(Post Process & Render)** : 통해 최종 결과를 시각화합니다.
+- **후처리 및 렌더링(Post Process & Render)** : 최종 결과를 시각화합니다.
 
 <br/>
 
