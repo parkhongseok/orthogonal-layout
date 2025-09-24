@@ -28,7 +28,7 @@ Status: Accepted
 ### 아키텍처 단계 설명
 
 <p align="center">
-  <img src="../src/orthogonal-layout-flowchart.png" width="65%" alt="bus channel 알고리즘">
+  <img src="../src/orthogonal-layout-flowchart.png" width="65%" alt="orthogonal-layout-flowchart">
 </p>
 
 #### 1. Graph 생성 및 배치 (Placement)
