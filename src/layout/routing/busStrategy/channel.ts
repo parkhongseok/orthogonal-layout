@@ -81,7 +81,7 @@ export function createBusChannels(g: Graph, cfg: any): BusChannel[] {
 }
 
 /**
- * [신규] 채널 목록에 등급(level)과 비용(cost)을 할당
+ * 채널 목록에 등급(level)과 비용(cost)을 할당
  * @param channels 등급/비용을 할당할 채널 목록
  * @param g 전체 그래프 (그룹 위치 확인용)
  * @param cfg 설정 객체

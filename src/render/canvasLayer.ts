@@ -58,8 +58,6 @@ export function drawAll(
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   if (_overlays.grid) drawGrid(ctx, cfg.gridSize, opts.camera);
 
-  drawGroups(ctx, g);
-
   if (_overlays.obstacles && lastBuiltGrid) {
     drawObstacles(ctx, lastBuiltGrid);
   }
@@ -77,6 +75,7 @@ export function drawAll(
   if (_overlays.vertices && lastRoutingVertices) {
     drawRoutingVertices(ctx, lastRoutingVertices);
   }
+  drawGroups(ctx, g);
 
   drawNodes(ctx, g);
   drawNodeNames(ctx, g);

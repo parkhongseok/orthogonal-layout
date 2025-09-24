@@ -11,7 +11,7 @@ export const CONFIG = {
   layout: {
     nodeGapX: 8, // 노드 간 가로 간격(격자 셀 수)
     nodeGapY: 8, // 노드 간 세로 간격(격자 셀 수)
-    groupInset: 8, // 그룹 안쪽 여백(격자 셀 수)
+    groupInset: 6, // 그룹 안쪽 여백(격자 셀 수)
     groupGapX: 8, // 그룹 간 수평 여백(격자 셀 수)
     groupGapY: 8, // 그룹 간 수직 여백(격자 셀 수)
     spreadIterations: 20, // 스프레드 반복 횟수
@@ -32,6 +32,6 @@ export const CONFIG = {
     level1Weight: 3, // 지역도로 가중치
     widthFactor: 80, // 채널 폭에 대한 비용 계수
     congestionPenalty: 50, // 채널 혼잡도 1당 추가될 비용
-    laneWidth: 12, // 차선 폭 (px)
+    laneWidth: 6, // 차선 폭 (px)
   },
 };

@@ -2,7 +2,6 @@
 
 시스템 엔지니어링 다이어그램과 같이 복잡한 노드-엣지 그래프를 자동으로 정돈하는 **Orthogonal Layout 알고리즘** 구현 프로젝트입니다.
 
-
 ## 주요 기능
 
 - **자동 배치:** 노드/그룹을 격자 기반으로 배치, 겹침 방지
@@ -14,6 +13,8 @@
 ---
 
 ## 아키텍처 개요
+
+### 1. 디렉터리 구조
 
 ```plaintext
 orthogonal-layout/
@@ -33,7 +34,31 @@ orthogonal-layout/
       └─ src/            # 문서용 이미지
 ```
 
-상세 설계 및 알고리즘 발전 과정은 [ADR 문서](docs/adr) 참고
+### 2. Domain Model
+
+<p align="center">
+  <img src="./docs/src/orthogonal-layout-domain.png" width="65%" alt="bus channel 알고리즘">
+</p>
+
+- 모든 데이터는 `Node`, `Edge`, `Group의` **Map 컬렉션**으로 구성된 중앙 `Graph` 객체를 통해 관리됩니다.
+- 각 `Node`는 `Port`를 통해 연결점을 정의하고, `Edge`는 라우팅 결과인 `path`를 저장하여 이들 사이의 관계를 나타냅니다.
+
+### 3. flowChart
+
+<p align="center">
+  <img src="./docs/src/orthogonal-layout-flowchart.png" width="65%" alt="bus channel 알고리즘">
+</p>
+
+- **배치(Placement)** : 노드와 그룹의 위치를 결정합니다.
+- **라우팅(Routing)** : 세 가지 전략 중 하나를 선택해 엣지 경로를 계산합니다.
+- **후처리 및 렌더링(Post Process & Render)** : 통해 최종 결과를 시각화합니다.
+
+<br/>
+
+상세 설계 및 알고리즘 발전 과정은 [ADR 문서](docs/adr)를 참고바랍니다.
+
+<br/>
+<br/>
 
 ---
 
@@ -57,11 +82,11 @@ $ npm run dev
 
 ## 사용 방법
 
-1. **그래프 생성:** CREATE 패널에서 노드/엣지/그룹 개수 설정 후 Regenerate
+1. **그래프 생성:** CREATE 패널에서 노드/엣지/그룹 개수 설정 후 **Regenerate**
 2. **레이아웃 실행:** AUTO LAYOUT 패널에서 전략 선택 (A\*, Bus, Vertices)
 3. **시각화 옵션:** VISUALIZE 패널에서 체크박스로 내부 구조 표시
 
-> 마우스 휠로 확대 축소 및 드래그로 화면 이동 가능
+> 마우스 휠로 확대 축소 및 드래그로 화면 이동 가능합니다.
 
 ---
 
@@ -76,7 +101,7 @@ $ npm run dev
 
 ## 구현 화면
 
-### A\* 베이스라인
+### 1. A\* 라우팅
 
 <table align="center">
   <tr>
@@ -98,7 +123,7 @@ $ npm run dev
   </tr>
 </table>
 
-### Bus Channel 라우팅
+### 2. Bus Channel 라우팅
 
 <table align="center">
   <tr>
@@ -120,7 +145,7 @@ $ npm run dev
   </tr>
 </table>
 
-### 정점 네트워크 라우팅
+### 3. 정점 네트워크 라우팅
 
 <table align="center">
   <tr>
@@ -142,7 +167,7 @@ $ npm run dev
   </tr>
 </table>
 
-### 초기 상태
+### 4. 초기 상태
 
 <table align="center">
   <tr>
@@ -163,3 +188,15 @@ $ npm run dev
     </td>
   </tr>
 </table>
+
+## TODO
+
+- **Bus Channel**
+
+  > **TODO**: 성능 개선  
+  > **TODO**: 그룹 밖 채널 겹침 문제  
+  > **TODO**: 채널 넓이 확보 및 우회 필요
+
+- **Vertices Network**
+  > **TODO**: 안전 지역 내 정점 생성 문제  
+  > **TODO**: 단순 경로 최적화 필요

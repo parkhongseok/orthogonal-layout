@@ -15,19 +15,23 @@ export interface Rect {
   h: number;
 }
 export type PortSide = "top" | "bottom" | "left" | "right";
+export type Port = {
+  side: PortSide;
+  offset: number;
+};
 
 export interface Node {
   id: NodeId;
   bbox: Rect;
   groupId?: GroupId;
-  ports?: ReadonlyArray<{ side: PortSide; offset: number }>;
+  ports?: ReadonlyArray<Port>;
 }
 
 export interface Group {
   id: GroupId;
   bbox: Rect;
   children: ReadonlyArray<NodeId>;
-}
+} 
 
 export interface Edge {
   id: EdgeId;

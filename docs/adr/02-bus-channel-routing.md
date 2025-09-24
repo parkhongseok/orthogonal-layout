@@ -1,6 +1,6 @@
 # 버스 채널 라우팅
 
-Date: 2025-09-21  
+Date: 2025-09-21   
 Status: Accepted
 
 ## 맥락

@@ -1,10 +1,6 @@
-import type { Graph,  } from "@domain/types";
+import type { Graph } from "@domain/types";
 import type { RoutingStrategy } from "../strategy";
-import {
-
-  setLastRoutingVertices,
-  setLastVisibilityGraph,
-} from "@render/debug";
+import { setLastRoutingVertices, setLastVisibilityGraph } from "@render/debug";
 
 import { assignPorts } from "@layout/port/assign";
 import { initialPlacement } from "@layout/placement/initPlacement";
@@ -15,6 +11,7 @@ import { sweepCompact } from "@layout/compaction/sweep";
 import { buildVisibilityGraph, createRoutingVertices } from "./visibility";
 import { routeOnVisibilityGraph } from "./router";
 import { finalizePaths } from "./lane";
+import { beautifyPath } from "@layout/port/beautifyPath";
 
 export class VerticesRoutingStrategy implements RoutingStrategy {
   public execute(graph: Graph, cfg: any): Graph {
@@ -24,7 +21,7 @@ export class VerticesRoutingStrategy implements RoutingStrategy {
     // --- 1. 노드 위치 결정 단계 ---
     cur = initialPlacement(cur, cfg);
     cur = resolveOverlap(cur, cfg);
-    cur = spreadNodes(cur, cfg);
+    // cur = spreadNodes(cur, cfg);
     cur = resolveOverlap(cur, cfg);
     cur = sweepCompact(cur, cfg);
 
@@ -40,9 +37,6 @@ export class VerticesRoutingStrategy implements RoutingStrategy {
 
     cur = routeOnVisibilityGraph(cur, visibilityGraph, cfg);
     cur = finalizePaths(cur, visibilityGraph, cfg);
-
     return cur;
   }
 }
-
-

@@ -15,7 +15,7 @@ export class LegacyAStarStrategy implements RoutingStrategy {
     // --- 1. 노드 위치 결정 단계 ---
     cur = initialPlacement(cur, cfg);
     cur = resolveOverlap(cur, cfg);
-    cur = spreadNodes(cur, cfg);
+    // cur = spreadNodes(cur, cfg);
     cur = resolveOverlap(cur, cfg);
     cur = sweepCompact(cur, cfg);
 
