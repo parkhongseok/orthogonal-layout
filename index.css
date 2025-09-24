@@ -1,0 +1,109 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: system-ui, sans-serif;
+  overflow: hidden; /* Prevent body scrollbars */
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh; /* Full viewport height */
+}
+
+#app-header {
+  padding: 8px 16px;
+  border-bottom: 1px solid #ddd;
+  background-color: white;
+  z-index: 10;
+}
+
+#app-header h1 {
+  margin: 0;
+  font-size: 1.2em;
+}
+
+#main-container {
+  display: flex;
+  flex-grow: 1; /* Takes up remaining vertical space */
+  height: 0; /* Prevents container from overflowing, flex-grow will handle height */
+}
+
+#side-panel {
+  flex-basis: 280px; /* Width of the side panel, changed from 1/8th for better fit */
+  flex-shrink: 0;
+  padding: 16px;
+  border-right: 1px solid #ddd;
+  background-color: #f8f9fa;
+  overflow-y: auto; /* Allow scrolling if content overflows */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.panel-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel-section-header {
+  font-weight: bold;
+  font-size: 0.9em;
+  color: #6c757d;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 8px;
+}
+
+.control-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.control-group.vertical {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.control-group.vertical label {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+input[type="number"] {
+  width: 60px;
+}
+
+button {
+  width: 100%;
+}
+
+.control-group:not(.vertical) button {
+  flex-grow: 1;
+}
+
+#canvas-container {
+  flex-grow: 1;
+  position: relative; /* For canvas positioning */
+}
+
+#stage {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#metrics,
+#info-panel {
+  font-size: 12px;
+  color: #495057;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #f8f9fa;
+}
