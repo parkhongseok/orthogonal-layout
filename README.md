@@ -2,6 +2,7 @@
 
 시스템 엔지니어링 다이어그램과 같이 복잡한 노드-엣지 그래프를 자동으로 정돈하는 **Orthogonal Layout 알고리즘** 구현 프로젝트입니다.
 
+
 ## 주요 기능
 
 - **자동 배치:** 노드/그룹을 격자 기반으로 배치, 겹침 방지
@@ -9,6 +10,39 @@
 - **비용 최적화:** 굴곡·교차 최소화 (가중치 기반)
 - **포트 제약:** 노드 면(상/하/좌/우)별 연결
 - **시각화 옵션:** Grid, Obstacles, Vertices 등 알고리즘 내부 상태 확인 가능
+
+---
+
+## 실행 방법
+
+### 배포 환경에서 바로 사용
+
+- https://ext.dontgoback.kro.kr/orthogonal-layout/
+
+### 다운로드 후 실행
+```bash
+# 저장소 클론
+$ git clone https://github.com/parkhongseok/orthogonal-layout.git
+$ cd orthogonal-layout
+
+# 의존성 설치
+$ npm install
+
+# 개발 서버 실행
+$ npm run dev
+```
+
+- 접속: [http://localhost:5173](http://localhost:5173)
+
+
+
+## 사용 방법
+
+1. **그래프 생성:** CREATE 패널에서 노드/엣지/그룹 개수 설정 후 **Regenerate**
+2. **레이아웃 실행:** AUTO LAYOUT 패널에서 전략 선택 (A\*, Bus, Vertices)
+3. **시각화 옵션:** VISUALIZE 패널에서 체크박스로 내부 구조 표시
+
+> 마우스 휠로 확대 축소 및 드래그로 화면 이동 가능합니다.
 
 ---
 
@@ -59,34 +93,6 @@ orthogonal-layout/
 
 <br/>
 <br/>
-
----
-
-## 실행 방법
-
-```bash
-# 저장소 클론
-$ git clone https://github.com/parkhongseok/orthogonal-layout.git
-$ cd orthogonal-layout
-
-# 의존성 설치
-$ npm install
-
-# 개발 서버 실행
-$ npm run dev
-```
-
-접속: [http://localhost:5173](http://localhost:5173)
-
----
-
-## 사용 방법
-
-1. **그래프 생성:** CREATE 패널에서 노드/엣지/그룹 개수 설정 후 **Regenerate**
-2. **레이아웃 실행:** AUTO LAYOUT 패널에서 전략 선택 (A\*, Bus, Vertices)
-3. **시각화 옵션:** VISUALIZE 패널에서 체크박스로 내부 구조 표시
-
-> 마우스 휠로 확대 축소 및 드래그로 화면 이동 가능합니다.
 
 ---
 
