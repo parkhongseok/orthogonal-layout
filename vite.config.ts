@@ -7,6 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 export default defineConfig({
+  base: "/orthogonal-layout/",
   root: ".",
   server: { port: 5173 },
   build: { outDir: "dist" },
