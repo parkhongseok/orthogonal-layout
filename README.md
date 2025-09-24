@@ -1,4 +1,4 @@
-# Orthogonal Layout 자동 정렬 알고리즘 데모
+# Orthogonal Layout 자동 정렬 알고리즘
 
 시스템 엔지니어링 다이어그램과 같이 복잡한 노드-엣지 그래프를 자동으로 정돈하는 **Orthogonal Layout 알고리즘** 구현 프로젝트입니다.
 
