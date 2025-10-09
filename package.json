@@ -8,11 +8,17 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "echo \"(todo) add test runner\" && exit 0"
+    "test": "echo \"(todo) add test runner\" && exit 0",
+    "benchmark": "tsx scripts/run-benchmark.ts"
   },
   "devDependencies": {
     "@types/node": "^24.5.2",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2",
     "vite": "^5.4.20"
+  },
+  "dependencies": {
+    "@types/seedrandom": "^3.0.8",
+    "seedrandom": "^3.0.5"
   }
 }

@@ -1,10 +1,14 @@
-import type { Graph, Node, NodeId, Rect } from './types';
+import type { Edge, EdgeId, Graph, Group, GroupId, Node, NodeId, Rect } from './types';
 
 export function cloneGraph(g: Graph): Graph {
+  const newNodes : Map<NodeId, Node>= new Map(JSON.parse(JSON.stringify(Array.from(g.nodes))));
+  const newEdges : Map<EdgeId, Edge> = new Map(JSON.parse(JSON.stringify(Array.from(g.edges))));
+  const newGroups : Map<GroupId, Group> = new Map(JSON.parse(JSON.stringify(Array.from(g.groups))));
+
   return {
-    nodes: new Map(g.nodes),
-    edges: new Map(g.edges),
-    groups: new Map(g.groups),
+    nodes: newNodes,
+    edges: newEdges,
+    groups: newGroups,
   };
 }
 

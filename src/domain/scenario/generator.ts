@@ -1,18 +1,24 @@
 import type { Graph, NodeId, EdgeId, GroupId, Rect } from "@domain/types";
 import { nodeId, edgeId, groupId } from "@domain/id";
 import { CONFIG } from "@app/config";
+import seedrandom from 'seedrandom';
 
 /**
  * nNodes 중 일부는 그룹에 배정, 일부는 루트 레벨(그룹 밖)
  * - 각 그룹은 최소 1개 이상의 노드를 반드시 가짐
  * - ungroupedRatio(0~1)로 루트 레벨 비율 조정
+ * @param seed - 이 값을 지정하면 항상 동일한 그래프가 생성됩니다.
  */
 export function createInitialGraph(
   nNodes: number,
   nEdges: number,
   nGroups: number,
-  grid: number  
+  grid: number,
+  seed?: number // seed 파라미터 추가
 ): Graph {
+  // seed 값을 기반으로 랜덤 생성기(rng) 초기화
+  const rng = seedrandom(seed !== undefined ? seed.toString() : undefined);
+
   const nodes = new Map();
   const edges = new Map();
   const groups = new Map();
@@ -47,7 +53,7 @@ export function createInitialGraph(
   for (let gi = 0; gi < nGroups && nodeIdx < nNodes; gi++, nodeIdx++) {
     const gid = groupId(gi);
     const g = groups.get(gid)!;
-    const rect: Rect = randomNodeRectInGroup(g.bbox, grid);
+    const rect: Rect = randomNodeRectInGroup(g.bbox, grid, rng); // rng 전달
     const nid = nodeId(nodeIdx);
     nodes.set(nid, { id: nid, bbox: rect, groupId: gid, ports: [] });
     g.children = [...g.children, nid];
@@ -56,16 +62,16 @@ export function createInitialGraph(
 
   // (b) 남은 노드: ungroupedRatio 확률로 루트 레벨, 이외는 임의 그룹
   for (; nodeIdx < nNodes; nodeIdx++) {
-    const makeUngrouped = Math.random() < ungroupedRatio;
+    const makeUngrouped = rng() < ungroupedRatio; // Math.random() -> rng()
     if (makeUngrouped) {
-      const rect: Rect = randomNodeRectInRoot(groups, grid);
+      const rect: Rect = randomNodeRectInRoot(groups, grid, rng); // rng 전달
       const nid = nodeId(nodeIdx);
       nodes.set(nid, { id: nid, bbox: rect, ports: [] }); // groupId 없음 = 루트 레벨
     } else {
-      const gi = Math.floor(Math.random() * nGroups);
+      const gi = Math.floor(rng() * nGroups); // Math.random() -> rng()
       const gid = groupId(gi);
       const g = groups.get(gid)!;
-      const rect: Rect = randomNodeRectInGroup(g.bbox, grid);
+      const rect: Rect = randomNodeRectInGroup(g.bbox, grid, rng); // rng 전달
       const nid = nodeId(nodeIdx);
       nodes.set(nid, { id: nid, bbox: rect, groupId: gid, ports: [] });
       g.children = [...g.children, nid];
@@ -87,10 +93,10 @@ export function createInitialGraph(
     e < nEdges &&
     existingEdgePairs.size < (nodeIds.length * (nodeIds.length - 1)) / 2
   ) {
-    const s = nodeIds[Math.floor(Math.random() * nodeIds.length)];
+    const s = nodeIds[Math.floor(rng() * nodeIds.length)]; // Math.random() -> rng()
     let t = s;
     while (t === s) {
-      t = nodeIds[Math.floor(Math.random() * nodeIds.length)];
+      t = nodeIds[Math.floor(rng() * nodeIds.length)]; // Math.random() -> rng()
     }
 
     // 중복 체크 로직
@@ -128,17 +134,18 @@ export function createInitialGraph(
 
 // ====== Helpers ======
 
-function randomNodeRectInGroup(gbox: Rect, grid: number): Rect {
+// 헬퍼 함수들도 rng를 인자로 받도록 수정
+function randomNodeRectInGroup(gbox: Rect, grid: number, rng: () => number): Rect {
   // 그룹 내부에서 대충 격자에 맞춘 초기 위치 (나중에 initPlacement가 재배치함)
   const pad = 2 * grid;
   const x =
-    gbox.x + pad + ((Math.random() * (gbox.w - 6 * grid - pad * 2)) | 0);
+    gbox.x + pad + ((rng() * (gbox.w - 6 * grid - pad * 2)) | 0);
   const y =
-    gbox.y + pad + ((Math.random() * (gbox.h - 4 * grid - pad * 2)) | 0);
+    gbox.y + pad + ((rng() * (gbox.h - 4 * grid - pad * 2)) | 0);
   return { x: snap(x, grid), y: snap(y, grid), w: 6 * grid, h: 4 * grid };
 }
 
-function randomNodeRectInRoot(groups: Map<GroupId, any>, grid: number): Rect {
+function randomNodeRectInRoot(groups: Map<GroupId, any>, grid: number, rng: () => number): Rect {
   // 루트 레벨은 그룹 블록들 아래쪽 여백에 대충 배치 (초기)
   // 나중에 initPlacement가 root 영역 타일링으로 재배치함
   const marginY = 40;
@@ -152,8 +159,8 @@ function randomNodeRectInRoot(groups: Map<GroupId, any>, grid: number): Rect {
   );
   const spreadX = maxRight + 400; // 넓게 흩뿌려두고, 이후 초기 배치에서 재정렬
 
-  const x = (Math.random() * spreadX) | 0;
-  const y = baseY + ((Math.random() * 400) | 0);
+  const x = (rng() * spreadX) | 0;
+  const y = baseY + ((rng() * 400) | 0);
   return { x: snap(x, grid), y: snap(y, grid), w: 6 * grid, h: 4 * grid };
 }
 

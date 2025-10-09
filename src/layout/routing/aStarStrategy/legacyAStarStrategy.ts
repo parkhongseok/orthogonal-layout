@@ -7,26 +7,31 @@ import { resolveOverlap } from "@layout/placement/resolveOverlap";
 import { spreadNodes } from "@layout/placement/spread";
 import { sweepCompact } from "@layout/compaction/sweep";
 import { beautifyPath } from "@layout/port/beautifyPath";
+import { Profiler } from "../../../../scripts/profiler";
 
 export class LegacyAStarStrategy implements RoutingStrategy {
-  public execute(graph: Graph, cfg: any): Graph {
+  public execute(graph: Graph, cfg: any, profiler: Profiler): Graph {
     console.log("Executing: Legacy A* Strategy");
     let cur = graph;
     // --- 1. 노드 위치 결정 단계 ---
+    profiler.start("Placement");
     cur = initialPlacement(cur, cfg);
-    cur = resolveOverlap(cur, cfg);
     // cur = spreadNodes(cur, cfg);
     cur = resolveOverlap(cur, cfg);
     cur = sweepCompact(cur, cfg);
-
-    // --- 2단계: 라우팅을 위한 포트 할당 ---
     cur = assignPorts(cur, cfg);
+    profiler.stop("Placement");
 
-    // --- 3단계: 라우팅 ---
-    cur = routeAll(cur, cfg);
+    // --- 2단계: 라우팅 ---
+    profiler.start("Routing");
+    cur = routeAll(cur, cfg, profiler);
+    profiler.stop("Routing");
 
-    // --- 4단계: 최종 경로 다듬기 ---
+    // --- 3단계: 최종 경로 다듬기 ---
+    profiler.start("Post-Process");
     cur = beautifyPath(cur, cfg);
+    profiler.stop("Post-Process");
+
     return cur;
   }
 }

@@ -14,6 +14,7 @@ import { Graph } from "@domain/types";
 import { LegacyAStarStrategy } from "@layout/routing/aStarStrategy/legacyAStarStrategy";
 import { clearDebugData } from "@render/debug";
 import { BusRoutingStrategy } from "@layout/routing/busStrategy/busRoutingStrategy";
+import { Profiler } from "../../scripts/profiler";
 
 const canvas = document.getElementById("stage") as HTMLCanvasElement;
 const metricsEl = document.getElementById("metrics")!;
@@ -145,9 +146,16 @@ btnVerAuto.addEventListener("click", () => {
   updateVisualizeControls("VERTICES");
   const t0 = performance.now();
   const verticesRoutingStrategy = new VerticesRoutingStrategy();
+  // 빈 프로파일러 인스턴스 생성
+  const dummyProfiler = new Profiler();
 
   // 파이프라인에 전략을 전달
-  graph = autoLayoutPipeline(graph, CONFIG, verticesRoutingStrategy);
+  graph = autoLayoutPipeline(
+    graph,
+    CONFIG,
+    verticesRoutingStrategy,
+    dummyProfiler
+  );
   const t1 = performance.now();
   setMetrics(metricsEl, { elapsedMs: (t1 - t0).toFixed(1) });
 
@@ -163,9 +171,9 @@ btnBusAuto.addEventListener("click", () => {
   updateVisualizeControls("BUS");
   const t0 = performance.now();
   const busRoutingStrategy = new BusRoutingStrategy();
-
+  const dummyProfiler = new Profiler();
   // 파이프라인에 전략을 전달
-  graph = autoLayoutPipeline(graph, CONFIG, busRoutingStrategy);
+  graph = autoLayoutPipeline(graph, CONFIG, busRoutingStrategy, dummyProfiler);
   const t1 = performance.now();
   setMetrics(metricsEl, { elapsedMs: (t1 - t0).toFixed(1) });
 
@@ -181,9 +189,11 @@ btnAuto.addEventListener("click", () => {
   updateVisualizeControls("ASTAR");
   const t0 = performance.now();
   const legacyStrategy = new LegacyAStarStrategy();
+  // 빈 프로파일러 인스턴스 생성
+  const dummyProfiler = new Profiler();
 
   // 파이프라인에 전략을 전달
-  graph = autoLayoutPipeline(graph, CONFIG, legacyStrategy);
+  graph = autoLayoutPipeline(graph, CONFIG, legacyStrategy, dummyProfiler);
   const t1 = performance.now();
   setMetrics(metricsEl, { elapsedMs: (t1 - t0).toFixed(1) });
 

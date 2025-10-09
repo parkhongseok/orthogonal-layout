@@ -1,3 +1,4 @@
+import { Profiler, profiler } from './../../../../scripts/profiler';
 import type { Graph, Node, Point, NodeRec, Dir, PortSide } from "@domain/types";
 import { buildGrid, worldToCell, cellAt, Grid } from "./grid";
 import { aStarGrid } from "./aStar";
@@ -86,9 +87,13 @@ function findEntryPointNearNode(
  * [1단계 성능 개선] 그래프의 모든 엣지에 대한 직교 경로를 계산하고 적용
  * A* 호출을 엣지당 1회로 최소화하여 성능을 최적화
  */
-export function routeAll(g: Graph, cfg: any): Graph {
+export function routeAll(g: Graph, cfg: any, profiler: Profiler): Graph {
   const out = { ...g, edges: new Map(g.edges) };
+
+  profiler.start("buildGrid");
   const grid = buildGrid(out, cfg);
+  profiler.stop("buildGrid");
+
   setLastBuiltGrid(grid);
   const costCfg = cfg.cost as CostConfig;
 
@@ -105,6 +110,7 @@ export function routeAll(g: Graph, cfg: any): Graph {
     return distB - distA;
   });
 
+  profiler.start("aStar_Loop"); 
   for (const e of edgesToRoute) {
     const s = out.nodes.get(e.sourceId)!;
     const t = out.nodes.get(e.targetId)!;
@@ -159,5 +165,6 @@ export function routeAll(g: Graph, cfg: any): Graph {
 
     out.edges.set(e.id, { ...e, path: finalPath });
   }
+  profiler.stop("aStar_Loop"); 
   return out;
 }
