@@ -55,16 +55,15 @@ def print_module_performance(df: pd.DataFrame, target_scenario: str = 'Large (St
             print(f"\n--- Strategy: {strategy} ---")
             print(module_avg)
 
+# def image_to_base64_str(image_path):
+#     """
+#     # 이미지를 Base64 문자열로 변환합니다.
 
-def image_to_base64_str(image_path):
-    """
-    이미지를 Base64 문자열로 변환합니다.
-
-    Args:
-        image_path (str): 이미지 파일의 경로.
-    """
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+#     Args:
+#         image_path (str): 이미지 파일의 경로.
+#     """
+#     with open(image_path, "rb") as image_file:
+#         return base64.b64encode(image_file.read()).decode('utf-8')
 
 def save_report_to_markdown(df: pd.DataFrame, output_dir: str):
     """
@@ -83,9 +82,9 @@ def save_report_to_markdown(df: pd.DataFrame, output_dir: str):
         f.write("## 📈 Overall Performance Summary (totalTime in ms)\n\n")
         image_path = os.path.join(output_dir, 'total_time_comparison.png')
         if image_path and os.path.exists(image_path):
-            base64_image = image_to_base64_str(image_path)
             f.write(f'### Performance Visualization\n\n')
-            f.write(f'<img src="data:image/png;base64,{base64_image}" alt="Overall Performance Chart" >\n\n')
+            # f.write(f'<img src="data:image/png;base64,{base64_image}" alt="3-Step Performance Chart" width="60%" >\n\n')
+            f.write(f'<img src="{image_path}" alt="Overall Performance Chart" >\n\n')
 
         summary = df.groupby(['scenario', 'strategy'])['totalTime'].agg(['mean', 'std', 'min', 'max']).round(2)
         f.write(summary.to_markdown())
@@ -123,8 +122,9 @@ def save_report_to_markdown(df: pd.DataFrame, output_dir: str):
 
                 image_path = os.path.join(output_dir, f'three_step_breakdown_pie_{strategy}.png')
                 if image_path and os.path.exists(image_path):
-                    base64_image = image_to_base64_str(image_path)
-                    f.write(f'<img src="data:image/png;base64,{base64_image}" alt="3-Step Performance Chart" width="60%" >\n\n')
+                    # base64_image = image_to_base64_str(image_path)
+                    # f.write(f'<img src="data:image/png;base64,{base64_image}" alt="3-Step Performance Chart" width="60%" >\n\n')
+                    f.write(f'<img src="{image_path}" alt="3-Step Performance Chart" width="60%" >\n\n')
 
                 module_avg = strategy_df[measured_modules].mean().round(2).to_frame(name='Average Time (ms)')
                 f.write(module_avg.to_markdown())
@@ -145,8 +145,9 @@ def save_report_to_markdown(df: pd.DataFrame, output_dir: str):
 
                 image_path = os.path.join(output_dir, f'three_step_breakdown_pie_{strategy}.png')
                 if image_path and os.path.exists(image_path):
-                    base64_image = image_to_base64_str(image_path)
-                    f.write(f'<img src="data:image/png;base64,{base64_image}" alt="3-Step Performance Chart" width="60%" >\n\n')
+                    # base64_image = image_to_base64_str(image_path)
+                    # f.write(f'<img src="data:image/png;base64,{base64_image}" alt="3-Step Performance Chart" width="60%" >\n\n')
+                    f.write(f'<img src="{image_path}" alt="3-Step Performance Chart" width="60%" >\n\n')
 
                 module_avg = strategy_df[measured_modules].mean().round(2).to_frame(name='Average Time (ms)')
                 f.write(module_avg.to_markdown())
