@@ -15,12 +15,6 @@ yarn-error.log*
 docs/etc
 config.md
 
-# Analysis
-results/
-
-# Analysis results
-analysis/results/
-
 # Python
 __pycache__/
 *.pyc
