@@ -14,3 +14,7 @@ yarn-error.log*
 .vscode/
 docs/etc
 config.md
+
+# Python
+__pycache__/
+*.pyc
