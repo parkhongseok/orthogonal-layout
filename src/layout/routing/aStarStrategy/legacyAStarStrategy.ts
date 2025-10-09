@@ -4,7 +4,6 @@ import type { RoutingStrategy } from "../strategy"; // 한 단계 상위의 stra
 import { routeAll } from "./routeAll"; // 같은 디렉터리 내의 routeAll.ts
 import { initialPlacement } from "@layout/placement/initPlacement";
 import { resolveOverlap } from "@layout/placement/resolveOverlap";
-import { spreadNodes } from "@layout/placement/spread";
 import { sweepCompact } from "@layout/compaction/sweep";
 import { beautifyPath } from "@layout/port/beautifyPath";
 import { Profiler } from "../../../../scripts/profiler";

@@ -1,0 +1,752 @@
+[
+  {
+    "scenario": "Small",
+    "seed": 42,
+    "strategy": "A-Star",
+    "totalTime": 32.60787499999998,
+    "details": {
+      "Placement": 1.056791000000004,
+      "buildGrid": 0.553167000000002,
+      "aStar_Loop": 30.18266600000001,
+      "Routing": 30.908749999999998,
+      "Post-Process": 0.5317909999999983
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 42,
+    "strategy": "Bus-Channel",
+    "totalTime": 532.6312499999999,
+    "details": {
+      "Placement": 0.2496669999999881,
+      "createBusChannels": 0.966165999999987,
+      "buildBusNetworkGraph": 0.100750000000005,
+      "findRampCandidates": 0.6354169999999897,
+      "findBestRamp": 526.11446,
+      "findBestOffRamp": 3.1716670000000704,
+      "findBusRoute": 0.04675299999996696,
+      "stitchPath": 0.5788740000001553,
+      "routeEdgesOnBus": 530.820375,
+      "Routing Fallback": 0.05383399999993799,
+      "Routing": 531.947375,
+      "Post-Process": 0.16308300000002873
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 42,
+    "strategy": "Vertices-Network",
+    "totalTime": 107.12770799999998,
+    "details": {
+      "Placement": 0.4922080000000051,
+      "createRoutingVertices": 4.111999999999966,
+      "buildVisibilityGraph": 27.299333000000047,
+      "findRampInfo": 68.535708,
+      "findPathOnGraph": 4.808374000000072,
+      "stitchPath": 0.25996100000008937,
+      "routeOnVisibilityGraph": 74.12774999999999,
+      "Routing": 105.54274999999996,
+      "Post-Process": 0.9378330000000688
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 101,
+    "strategy": "A-Star",
+    "totalTime": 14.098416000000043,
+    "details": {
+      "Placement": 0.2664590000000544,
+      "buildGrid": 0.2762920000000122,
+      "aStar_Loop": 13.32858299999998,
+      "Routing": 13.63637499999993,
+      "Post-Process": 0.1005409999999074
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 101,
+    "strategy": "Bus-Channel",
+    "totalTime": 344.437,
+    "details": {
+      "Placement": 0.5363340000000107,
+      "createBusChannels": 0.3508750000000873,
+      "buildBusNetworkGraph": 0.05395799999996598,
+      "findRampCandidates": 0.48633200000006127,
+      "findBestRamp": 339.7143770000006,
+      "findBestOffRamp": 2.6315829999996367,
+      "findBusRoute": 0.04112900000006903,
+      "stitchPath": 0.24304200000051424,
+      "routeEdgesOnBus": 343.23462500000005,
+      "Routing Fallback": 0.015916999999944892,
+      "Routing": 343.65758299999993,
+      "Post-Process": 0.14437500000008185
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 101,
+    "strategy": "Vertices-Network",
+    "totalTime": 64.98504200000002,
+    "details": {
+      "Placement": 0.3196250000000873,
+      "createRoutingVertices": 2.619041000000152,
+      "buildVisibilityGraph": 17.42800000000011,
+      "findRampInfo": 39.4967900000006,
+      "findPathOnGraph": 4.207207000000153,
+      "stitchPath": 0.1090860000003886,
+      "routeOnVisibilityGraph": 44.027458000000024,
+      "Routing": 64.07783399999994,
+      "Post-Process": 0.4749580000000151
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 256,
+    "strategy": "A-Star",
+    "totalTime": 24.29595900000004,
+    "details": {
+      "Placement": 0.23154100000010658,
+      "buildGrid": 0.44091600000001563,
+      "aStar_Loop": 23.21654199999989,
+      "Routing": 23.689791999999898,
+      "Post-Process": 0.08295799999996234
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 256,
+    "strategy": "Bus-Channel",
+    "totalTime": 596.2192920000002,
+    "details": {
+      "Placement": 0.3111250000001746,
+      "createBusChannels": 0.6012919999998303,
+      "buildBusNetworkGraph": 0.037084000000049855,
+      "findRampCandidates": 0.7012920000004215,
+      "findBestRamp": 590.5256650000006,
+      "findBestOffRamp": 3.502289000000701,
+      "findBusRoute": 0.02308200000038596,
+      "stitchPath": 0.21158200000013494,
+      "routeEdgesOnBus": 595.076333,
+      "Routing Fallback": 0.010041999999884865,
+      "Routing": 595.7272909999999,
+      "Post-Process": 0.09579099999996288
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 256,
+    "strategy": "Vertices-Network",
+    "totalTime": 72.04995899999994,
+    "details": {
+      "Placement": 0.32295799999997143,
+      "createRoutingVertices": 2.4135409999998956,
+      "buildVisibilityGraph": 20.937250000000176,
+      "findRampInfo": 42.59395799999993,
+      "findPathOnGraph": 5.00774999999976,
+      "stitchPath": 0.08195999999998094,
+      "routeOnVisibilityGraph": 47.878917,
+      "Routing": 71.23295800000005,
+      "Post-Process": 0.39058399999998983
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 888,
+    "strategy": "A-Star",
+    "totalTime": 15.239542000000029,
+    "details": {
+      "Placement": 0.2543329999998605,
+      "buildGrid": 0.2415000000000873,
+      "aStar_Loop": 14.500084000000015,
+      "Routing": 14.759667000000036,
+      "Post-Process": 0.0629580000002079
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 888,
+    "strategy": "Bus-Channel",
+    "totalTime": 307.7337080000002,
+    "details": {
+      "Placement": 0.21083299999986593,
+      "createBusChannels": 0.25649999999996,
+      "buildBusNetworkGraph": 0.026958000000149696,
+      "findRampCandidates": 0.20845999999983178,
+      "findBestRamp": 304.24033400000053,
+      "findBestOffRamp": 2.332460000000083,
+      "findBusRoute": 0.01633500000048116,
+      "stitchPath": 0.15854200000012497,
+      "routeEdgesOnBus": 307.054834,
+      "Routing Fallback": 0.009833000000071479,
+      "Routing": 307.35020899999995,
+      "Post-Process": 0.0834170000002814
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 888,
+    "strategy": "Vertices-Network",
+    "totalTime": 37.40187500000002,
+    "details": {
+      "Placement": 0.21462500000006912,
+      "createRoutingVertices": 1.3149579999999332,
+      "buildVisibilityGraph": 7.026417000000038,
+      "findRampInfo": 24.27391299999954,
+      "findPathOnGraph": 3.8960400000000845,
+      "stitchPath": 0.06795999999894775,
+      "routeOnVisibilityGraph": 28.37537499999962,
+      "Routing": 36.71891600000026,
+      "Post-Process": 0.35529200000019046
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 1337,
+    "strategy": "A-Star",
+    "totalTime": 23.964750000000095,
+    "details": {
+      "Placement": 0.2411659999997937,
+      "buildGrid": 0.31608300000016243,
+      "aStar_Loop": 23.228791999999885,
+      "Routing": 23.562083000000257,
+      "Post-Process": 0.06970799999999144
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 1337,
+    "strategy": "Bus-Channel",
+    "totalTime": 559.1825410000001,
+    "details": {
+      "Placement": 0.17487499999970169,
+      "createBusChannels": 0.36149999999997817,
+      "buildBusNetworkGraph": 0.03483300000016243,
+      "findRampCandidates": 0.29666699999870616,
+      "findBestRamp": 554.0328719999993,
+      "findBestOffRamp": 3.7923350000000937,
+      "findBusRoute": 0.02112399999941772,
+      "stitchPath": 0.17045500000040192,
+      "routeEdgesOnBus": 558.4206250000002,
+      "Routing Fallback": 0.009790999999950145,
+      "Routing": 558.8292919999999,
+      "Post-Process": 0.09108299999979863
+    }
+  },
+  {
+    "scenario": "Small",
+    "seed": 1337,
+    "strategy": "Vertices-Network",
+    "totalTime": 63.70195899999999,
+    "details": {
+      "Placement": 0.20624999999972715,
+      "createRoutingVertices": 1.49737499999992,
+      "buildVisibilityGraph": 19.115499999999884,
+      "findRampInfo": 36.538040000000365,
+      "findPathOnGraph": 5.614624999999705,
+      "stitchPath": 0.0742500000005748,
+      "routeOnVisibilityGraph": 42.39691600000015,
+      "Routing": 63.01254199999994,
+      "Post-Process": 0.3787919999999758
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 42,
+    "strategy": "A-Star",
+    "totalTime": 645.8302079999999,
+    "details": {
+      "Placement": 1.0237910000000738,
+      "buildGrid": 1.03387500000008,
+      "aStar_Loop": 643.0932910000001,
+      "Routing": 644.234625,
+      "Post-Process": 0.32737500000030195
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 42,
+    "strategy": "Bus-Channel",
+    "totalTime": 28729.728708000002,
+    "details": {
+      "Placement": 1.0276659999999538,
+      "createBusChannels": 2.6393330000000788,
+      "buildBusNetworkGraph": 0.12729099999978644,
+      "findRampCandidates": 4.070586999992884,
+      "findBestRamp": 28634.350704000004,
+      "findBestOffRamp": 84.69437299999481,
+      "findBusRoute": 0.20716399997490953,
+      "stitchPath": 1.0973739999890313,
+      "routeEdgesOnBus": 28725.197166,
+      "Routing Fallback": 0.04858299999978044,
+      "Routing": 28728.015708000003,
+      "Post-Process": 0.3856660000019474
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 42,
+    "strategy": "Vertices-Network",
+    "totalTime": 3686.877166999995,
+    "details": {
+      "Placement": 0.9460000000035507,
+      "createRoutingVertices": 16.66704100000061,
+      "buildVisibilityGraph": 1373.208958000003,
+      "findRampInfo": 2088.5586620000176,
+      "findPathOnGraph": 201.74467099997128,
+      "stitchPath": 0.48357799997756956,
+      "routeOnVisibilityGraph": 2291.874499999998,
+      "Routing": 3681.754208999999,
+      "Post-Process": 3.7848749999975553
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 101,
+    "strategy": "A-Star",
+    "totalTime": 580.7114170000059,
+    "details": {
+      "Placement": 0.6480410000003758,
+      "buildGrid": 1.0012089999945601,
+      "aStar_Loop": 578.375082999999,
+      "Routing": 579.5177909999984,
+      "Post-Process": 0.307916000005207
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 101,
+    "strategy": "Bus-Channel",
+    "totalTime": 20727.486541,
+    "details": {
+      "Placement": 0.7645420000044396,
+      "createBusChannels": 1.3124170000010054,
+      "buildBusNetworkGraph": 0.08466600000247126,
+      "findRampCandidates": 3.0903349999935017,
+      "findBestRamp": 20643.462832000005,
+      "findBestOffRamp": 76.48253900005511,
+      "findBusRoute": 0.22841299998981413,
+      "stitchPath": 0.8731250000055297,
+      "routeEdgesOnBus": 20724.628083000003,
+      "Routing Fallback": 0.054540999997698236,
+      "Routing": 20726.082042000002,
+      "Post-Process": 0.3806250000052387
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 101,
+    "strategy": "Vertices-Network",
+    "totalTime": 6467.769499999995,
+    "details": {
+      "Placement": 0.6463329999969574,
+      "createRoutingVertices": 17.433666999997513,
+      "buildVisibilityGraph": 2579.2077080000017,
+      "findRampInfo": 3584.695789000005,
+      "findPathOnGraph": 279.18895599996904,
+      "stitchPath": 0.4652069999865489,
+      "routeOnVisibilityGraph": 3865.778916000003,
+      "Routing": 6462.424124999998,
+      "Post-Process": 4.435665999997582
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 256,
+    "strategy": "A-Star",
+    "totalTime": 625.9262080000044,
+    "details": {
+      "Placement": 0.7475420000046142,
+      "buildGrid": 0.9842090000020107,
+      "aStar_Loop": 623.5066670000015,
+      "Routing": 624.5971250000002,
+      "Post-Process": 0.3202910000036354
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 256,
+    "strategy": "Bus-Channel",
+    "totalTime": 20181.12787499999,
+    "details": {
+      "Placement": 0.798041000001831,
+      "createBusChannels": 3.600749999997788,
+      "buildBusNetworkGraph": 0.07204099999944447,
+      "findRampCandidates": 2.3824160000804113,
+      "findBestRamp": 20097.204831000003,
+      "findBestOffRamp": 74.81866599994828,
+      "findBusRoute": 0.22117100001923973,
+      "stitchPath": 0.8631660000028205,
+      "routeEdgesOnBus": 20175.91525,
+      "Routing Fallback": 0.04612500000803266,
+      "Routing": 20179.646291999998,
+      "Post-Process": 0.41716599999926984
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 256,
+    "strategy": "Vertices-Network",
+    "totalTime": 6477.152084000001,
+    "details": {
+      "Placement": 0.6646250000048894,
+      "createRoutingVertices": 19.40691700000025,
+      "buildVisibilityGraph": 2579.785499999998,
+      "findRampInfo": 3505.843288999953,
+      "findPathOnGraph": 365.5106630000955,
+      "stitchPath": 0.4716680000710767,
+      "routeOnVisibilityGraph": 3873.2597079999978,
+      "Routing": 6472.456374999994,
+      "Post-Process": 3.769457999995211
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 888,
+    "strategy": "A-Star",
+    "totalTime": 686.6743750000023,
+    "details": {
+      "Placement": 0.8925420000014128,
+      "buildGrid": 1.0695419999974547,
+      "aStar_Loop": 683.9490829999995,
+      "Routing": 685.1423329999961,
+      "Post-Process": 0.397292000008747
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 888,
+    "strategy": "Bus-Channel",
+    "totalTime": 37352.207500000004,
+    "details": {
+      "Placement": 0.7563329999975394,
+      "createBusChannels": 1.5475830000068527,
+      "buildBusNetworkGraph": 0.11837500000547152,
+      "findRampCandidates": 3.3107479999162024,
+      "findBestRamp": 37241.08020700002,
+      "findBestOffRamp": 102.47587500007648,
+      "findBusRoute": 0.21983399995951913,
+      "stitchPath": 1.061457000017981,
+      "routeEdgesOnBus": 37348.71458300001,
+      "Routing Fallback": 0.17629200000374112,
+      "Routing": 37350.562917,
+      "Post-Process": 0.49212499998975545
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 888,
+    "strategy": "Vertices-Network",
+    "totalTime": 4433.729209000012,
+    "details": {
+      "Placement": 0.853000000002794,
+      "createRoutingVertices": 15.778749999997672,
+      "buildVisibilityGraph": 1832.9415000000008,
+      "findRampInfo": 2360.577457000094,
+      "findPathOnGraph": 216.75070599993342,
+      "stitchPath": 0.5071639999951003,
+      "routeOnVisibilityGraph": 2579.814207999996,
+      "Routing": 4428.5383329999895,
+      "Post-Process": 3.782500000001164
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 1337,
+    "strategy": "A-Star",
+    "totalTime": 540.4476250000007,
+    "details": {
+      "Placement": 0.6889999999839347,
+      "buildGrid": 1.002542000001995,
+      "aStar_Loop": 538.0185420000053,
+      "Routing": 539.1458750000165,
+      "Post-Process": 0.2859159999934491
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 1337,
+    "strategy": "Bus-Channel",
+    "totalTime": 18152.250499999995,
+    "details": {
+      "Placement": 0.7572499999951106,
+      "createBusChannels": 1.3671249999897555,
+      "buildBusNetworkGraph": 0.08745799999451265,
+      "findRampCandidates": 2.9775860000227112,
+      "findBestRamp": 18079.184716000134,
+      "findBestOffRamp": 65.7504590000317,
+      "findBusRoute": 0.20395900003495626,
+      "stitchPath": 0.8399180002161302,
+      "routeEdgesOnBus": 18149.365250000003,
+      "Routing Fallback": 0.02579200000036508,
+      "Routing": 18150.847792000015,
+      "Post-Process": 0.37370900000678375
+    }
+  },
+  {
+    "scenario": "Medium",
+    "seed": 1337,
+    "strategy": "Vertices-Network",
+    "totalTime": 5977.468541999988,
+    "details": {
+      "Placement": 0.6461660000204574,
+      "createRoutingVertices": 17.563083000015467,
+      "buildVisibilityGraph": 2406.936625000002,
+      "findRampInfo": 3217.0802130000666,
+      "findPathOnGraph": 326.5069159999548,
+      "stitchPath": 0.6080760000331793,
+      "routeOnVisibilityGraph": 3546.475624999992,
+      "Routing": 5970.9900420000195,
+      "Post-Process": 5.5700420000066515
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 42,
+    "strategy": "A-Star",
+    "totalTime": 1930.3236669999897,
+    "details": {
+      "Placement": 1.4858750000130385,
+      "buildGrid": 1.508084000000963,
+      "aStar_Loop": 1925.8222909999895,
+      "Routing": 1927.5952079999843,
+      "Post-Process": 0.5410419999971054
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 42,
+    "strategy": "Bus-Channel",
+    "totalTime": 32631.27466699999,
+    "details": {
+      "Placement": 1.7001670000026934,
+      "createBusChannels": 16.69412500000908,
+      "buildBusNetworkGraph": 0.04137500000069849,
+      "findRampCandidates": 5.548659000254702,
+      "findBestRamp": 32482.199701999984,
+      "findBestOffRamp": 120.454917000141,
+      "findBusRoute": 0.4943390000553336,
+      "stitchPath": 1.449920999846654,
+      "routeEdgesOnBus": 32611.191458000016,
+      "Routing Fallback": 0.3722080000152346,
+      "Routing": 32628.312333999987,
+      "Post-Process": 0.7014579999959096
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 42,
+    "strategy": "Vertices-Network",
+    "totalTime": 27758.560417,
+    "details": {
+      "Placement": 1.3912079999863636,
+      "createRoutingVertices": 43.99216699998942,
+      "buildVisibilityGraph": 4351.183707999997,
+      "findRampInfo": 22818.99396199995,
+      "findPathOnGraph": 527.0175889999664,
+      "stitchPath": 1.1972579999128357,
+      "routeOnVisibilityGraph": 23351.346875000017,
+      "Routing": 27746.526291999995,
+      "Post-Process": 10.053958000004059
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 101,
+    "strategy": "A-Star",
+    "totalTime": 1763.3445829999982,
+    "details": {
+      "Placement": 1.6212499999965075,
+      "buildGrid": 1.4368330000143033,
+      "aStar_Loop": 1759.0505419999827,
+      "Routing": 1760.7334160000028,
+      "Post-Process": 0.4631250000093132
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 101,
+    "strategy": "Bus-Channel",
+    "totalTime": 30398.279666999995,
+    "details": {
+      "Placement": 1.6682919999875594,
+      "createBusChannels": 2.9675830000196584,
+      "buildBusNetworkGraph": 0.027625000016996637,
+      "findRampCandidates": 4.200297999981558,
+      "findBestRamp": 30273.26562800014,
+      "findBestOffRamp": 112.66512600029819,
+      "findBusRoute": 0.3770010003063362,
+      "stitchPath": 0.845450999942841,
+      "routeEdgesOnBus": 30392.173291000014,
+      "Routing Fallback": 0.14233400000375696,
+      "Routing": 30395.315250000014,
+      "Post-Process": 0.714957999996841
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 101,
+    "strategy": "Vertices-Network",
+    "totalTime": 19031.32041699998,
+    "details": {
+      "Placement": 1.4798749999899883,
+      "createRoutingVertices": 40.293708000011975,
+      "buildVisibilityGraph": 3238.7699999999895,
+      "findRampInfo": 15168.738040999713,
+      "findPathOnGraph": 566.6089209999773,
+      "stitchPath": 1.7258740005199797,
+      "routeOnVisibilityGraph": 15740.22866599998,
+      "Routing": 19019.297792000027,
+      "Post-Process": 10.048333999991883
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 256,
+    "strategy": "A-Star",
+    "totalTime": 2419.9652500000084,
+    "details": {
+      "Placement": 1.375,
+      "buildGrid": 1.724291999998968,
+      "aStar_Loop": 2415.6116250000196,
+      "Routing": 2417.6048329999903,
+      "Post-Process": 0.47399999998742715
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 256,
+    "strategy": "Bus-Channel",
+    "totalTime": 61643.874625,
+    "details": {
+      "Placement": 1.5310419999877922,
+      "createBusChannels": 3.461249999993015,
+      "buildBusNetworkGraph": 0.04958300001453608,
+      "findRampCandidates": 6.7299560002284124,
+      "findBestRamp": 61459.68249699951,
+      "findBestOffRamp": 169.07245899934787,
+      "findBusRoute": 0.37042599968845025,
+      "stitchPath": 0.9326710003078915,
+      "routeEdgesOnBus": 61637.631125000014,
+      "Routing Fallback": 0.13937500002793968,
+      "Routing": 61641.28433299996,
+      "Post-Process": 0.5318330000154674
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 256,
+    "strategy": "Vertices-Network",
+    "totalTime": 25048.644499999995,
+    "details": {
+      "Placement": 1.4675000000279397,
+      "createRoutingVertices": 30.843916999991052,
+      "buildVisibilityGraph": 8370.05487500003,
+      "findRampInfo": 15490.806245000218,
+      "findPathOnGraph": 1139.4339579996886,
+      "stitchPath": 1.7799610000220127,
+      "routeOnVisibilityGraph": 16636.718166000035,
+      "Routing": 25037.620334000036,
+      "Post-Process": 9.085832999960985
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 888,
+    "strategy": "A-Star",
+    "totalTime": 1868.378417,
+    "details": {
+      "Placement": 1.7328330000163987,
+      "buildGrid": 1.5915000000386499,
+      "aStar_Loop": 1863.7064999999711,
+      "Routing": 1865.5636669999803,
+      "Post-Process": 0.5468330000294372
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 888,
+    "strategy": "Bus-Channel",
+    "totalTime": 73381.97629199998,
+    "details": {
+      "Placement": 1.8849999999511056,
+      "createBusChannels": 3.359208999958355,
+      "buildBusNetworkGraph": 0.05433400004403666,
+      "findRampCandidates": 7.209080999949947,
+      "findBestRamp": 73159.72883500025,
+      "findBestOffRamp": 204.84546300035436,
+      "findBusRoute": 0.4263230005162768,
+      "stitchPath": 1.113005000166595,
+      "routeEdgesOnBus": 73374.91129200003,
+      "Routing Fallback": 0.47391699999570847,
+      "Routing": 73378.80583299999,
+      "Post-Process": 0.7271659999969415
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 888,
+    "strategy": "Vertices-Network",
+    "totalTime": 21008.490208000003,
+    "details": {
+      "Placement": 1.5120829999796115,
+      "createRoutingVertices": 34.75291699997615,
+      "buildVisibilityGraph": 3928.7844589999877,
+      "findRampInfo": 16246.463499000645,
+      "findPathOnGraph": 775.3477049994399,
+      "stitchPath": 1.3414169996976852,
+      "routeOnVisibilityGraph": 17028.253540999955,
+      "Routing": 20991.795374999987,
+      "Post-Process": 14.601208999985829
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 1337,
+    "strategy": "A-Star",
+    "totalTime": 2578.4705420000246,
+    "details": {
+      "Placement": 52.399499999999534,
+      "buildGrid": 18.93591599998763,
+      "aStar_Loop": 2504.8883339999593,
+      "Routing": 2524.104915999982,
+      "Post-Process": 0.5012090000091121
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 1337,
+    "strategy": "Bus-Channel",
+    "totalTime": 60601.87725000002,
+    "details": {
+      "Placement": 1.7044999999925494,
+      "createBusChannels": 3.117541000014171,
+      "buildBusNetworkGraph": 0.04329100000904873,
+      "findRampCandidates": 6.725996000110172,
+      "findBestRamp": 60404.27074699919,
+      "findBestOffRamp": 180.463462999498,
+      "findBusRoute": 0.4619979997514747,
+      "stitchPath": 1.2548030001926236,
+      "routeEdgesOnBus": 60595.059666000016,
+      "Routing Fallback": 0.550249999971129,
+      "Routing": 60598.777124999964,
+      "Post-Process": 0.6365419999929145
+    }
+  },
+  {
+    "scenario": "Large (Standard)",
+    "seed": 1337,
+    "strategy": "Vertices-Network",
+    "totalTime": 25723.954999999958,
+    "details": {
+      "Placement": 1.6966659999452531,
+      "createRoutingVertices": 48.194707999995444,
+      "buildVisibilityGraph": 5928.866416000063,
+      "findRampInfo": 18639.354453999782,
+      "findPathOnGraph": 1087.6804180000909,
+      "stitchPath": 1.4642110003624111,
+      "routeOnVisibilityGraph": 19732.927707999945,
+      "Routing": 25709.992666000035,
+      "Post-Process": 11.684499999973923
+    }
+  }
+]

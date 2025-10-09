@@ -1,12 +1,10 @@
 import type { Graph } from "@domain/types";
 import type { RoutingStrategy } from "../strategy";
 import { setLastRoutingVertices, setLastVisibilityGraph } from "@render/debug";
-
 import { assignPorts } from "@layout/port/assign";
 import { initialPlacement } from "@layout/placement/initPlacement";
 import { resolveOverlap } from "@layout/placement/resolveOverlap";
 import { sweepCompact } from "@layout/compaction/sweep";
-
 import { buildVisibilityGraph, createRoutingVertices } from "./visibility";
 import { routeOnVisibilityGraph } from "./router";
 import { finalizePaths } from "./lane";
@@ -38,10 +36,8 @@ export class VerticesRoutingStrategy implements RoutingStrategy {
     const visibilityGraph = buildVisibilityGraph(vertices, cur);
     setLastVisibilityGraph(visibilityGraph);
     profiler.stop("buildVisibilityGraph");
-    
-    profiler.start("routeOnVisibilityGraph");
-    cur = routeOnVisibilityGraph(cur, visibilityGraph, cfg);
-    profiler.stop("routeOnVisibilityGraph");
+    // 내부 모듈별 측정 세분화 
+    cur = routeOnVisibilityGraph(cur, visibilityGraph, cfg, profiler);
     profiler.stop("Routing");
 
     // --- 3단계: 최종 경로 다듬기 ---
