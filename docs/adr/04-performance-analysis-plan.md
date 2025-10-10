@@ -11,21 +11,23 @@ Status: Accepted
 
 ## 결정
 
-### 1단계: 일관성 있는 테스트 환경 구축 (멱등성 확보)
+### 1단계: 멱등성 확보 - 일관성 있는 테스트 환경 구축
 
 - **목표** : 동일 입력(seed)에 대해 항상 동일한 결과를 생성
 - **핵심 조치** : Seed 기반 랜덤 생성기 도입 / 벤치마크 데이터셋 사전 생성
 
 #### ① Seed 기반 PRNG 적용
 
-- `Math.random()` 대신 **Seed 기반 PRNG (예: seedrandom)** 또는 LCG 직접 구현
+- `Math.random()` 대신 **Seed 기반 PRNG (예: seedrandom)**
 - `src/domain/scenario/generator.ts` 내 `createInitialGraph(seed)` 형태로 수정
 - 동일한 seed → 동일한 그래프(노드, 엣지, 그룹) 생성 → 신뢰 가능한 비교 가능
 
-#### ② 벤치마크 데이터셋 생성 (대안)
+  > PRNG : Pseudorandom Number Generator
 
-- 대표 시나리오(예: 120노드/180엣지/4그룹) 10~20개 사전 생성
-- Graph 객체를 JSON으로 저장하여 회귀 테스트(Regression Test)에 활용 가능
+- **대안 1.** : 벤치마크 데이터셋 생성
+  - 대표 시나리오(예: 120노드/180엣지/4그룹) 10~20개 사전 생성
+  - Graph 객체를 JSON으로 저장하여 회귀 테스트(Regression Test)에 활용 가능
+- **대안 2.** : PRNG를 위한 LCG 직접 구현
 
 #### ③ 테스트 시나리오 정의
 
@@ -36,6 +38,8 @@ Status: Accepted
 | Large (Standard) | 120     | 180     | 4       | 기본 기준        |
 | High-Density     | 60      | 180     | 3       | 엣지 밀도 테스트 |
 | Many-Groups      | 120     | 180     | 10      | 그룹 부하 테스트 |
+
+> 우선 Large 까지만 구성 후 필요 시 향후 확장
 
 <br/>
 <br/>
