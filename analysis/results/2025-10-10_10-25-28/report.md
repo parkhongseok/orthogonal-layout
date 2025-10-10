@@ -421,15 +421,13 @@ BusRoutingStrategy.execute()
   - `findBusRoute` 함수에서 수행하는 A\* 탐색은 기존처럼 노드-엣지 그래프를 탐색하는 게 아닙니다.
   - 대신 채널(Channel, $C$)과 교차점(Intersection, $I$)로 이루어진, **도로망 지도**를 탐색합니다.
 
-- **시간 복잡도:** A-Star 알고리즘의 시간 복잡도는 일반적으로 $O($ |간선 수| + |정점 수| $\log$ |정점 수|$)$ 로 표현됩니다.
+- **시간 복잡도:** A-Star 알고리즘의 시간 복잡도는 일반적으로 $O($ |간선 수| + |정점 수| $\log$ |정점 수| $)$ 로 표현됩니다.
 
   - 따라서 `Bus-Channel`방식에 대입하면,
   - |정점 수| = $C$ (전체 체널의 개수)
   - |간선 수| = $I$ (교차점의 개수)
 
-  따라서 `findBusRoute`에서의 A\* 알고리즘의 시간 복잡도는 다음과 같습니다.
-
-$$O(I + C \log C)$$
+  따라서 `findBusRoute`에서의 A\* 알고리즘의 시간 복잡도 $O(I + C \log C)$ 입니다.
 
 - $\log C$ :
   - 우선순위 큐 연산 비용 (Min Heap 사용)
@@ -441,7 +439,7 @@ $$O(I + C \log C)$$
 
 - 표에서는 이 수식을 $O(I + C \log C )$ 로 간소화하여 표현했는데, 이는 그래프가 충분히 연결되어 있을 때 $I$가 $C$보다 크거나 비슷한 경향이 있어 $I$ 항이 전체 복잡도를 주도하는 경우가 많기 때문입니다. 하지만 더 정확한 표현은 $O(I + C \log C)$ 입니다.
 
-- 그리고 이 과정 전체가 $(P*C)^2$ 만큼 반복되고, 다시 전체 엣지 수 $E$ 만큼 반복되니 최종적인 시간 복잡도가 기하급수적으로 커지는 것입니다.
+- 그리고 이 과정 전체가 $(P \cdot C)^2$ 만큼 반복되고, 다시 전체 엣지 수 $E$ 만큼 반복되니 최종적인 시간 복잡도가 기하급수적으로 커지는 것입니다.
 
 ---
 
@@ -589,11 +587,11 @@ VerticesRoutingStrategy.execute()
 </div>
 <br/>
 
-⚠️ 그래프 구축 단계에서 `buildVisibilityGraph`의 실제 복잡도는 정렬을 통해 ($O(V_r)$)으로 최적화되어 있습니다.  
+⚠️ 그래프 구축 단계에서 `buildVisibilityGraph`의 실제 복잡도는 정렬을 통해 ( $O(V_r)$ )으로 최적화📌되어 있습니다.  
 하지만 정점과 장애물 수가 늘어남에 따라 다항 시간으로 증가하는 경향은 동일합니다.
 
 <details>
-<summary>[자세히 보기] 
+<summary>[📌 최적화 자세히 보기] 
 </summary>
 
 - **위치:** [.../visibility.ts](src/layout/routing/verticesStrategy/visibility.ts) 내부 `connectAlignedVertices`함수
@@ -665,14 +663,14 @@ VerticesRoutingStrategy.execute()
 
 주요 최적화 대상은 `buildVisibilityGraph`와 `routeOnVisibilityGraph`입니다.
 
-- **buildVisibilityGraph 개선:**
+- `buildVisibilityGraph` **개선:**
   - 현재의 중첩 반복문 구조 대신, 기하학적 탐색에 효율적인 **Sweep-line 알고리즘** 등을 도입하여 가시성 검사 속도를 $O(V_r \log V_r)$ 수준으로 개선하는 것을 고려할 수 있습니다.
-- **routeOnVisibilityGraph 개선:**
+- `routeOnVisibilityGraph` **개선:**
   - `A-Star` 전략과 마찬가지로, 모든 엣지를 개별적으로 탐색하는 것이 가장 큰 부하의 원인입니다. 출발지와 목적지가 유사한 엣지들을 그룹으로 묶어 **경로를 공유하거나 재활용**하는 기법을 도입하여 A\* 호출 횟수를 줄이는 것이 효과적일 수 있습니다.
 
 이러한 개선은 `docs/adr/03-vertices-network-routing.md`에서 언급한 "단순 경로 최적화 필요", "안전 지역 내 정점 생성 문제 해결" 등의 과제와도 직접적으로 연결됩니다.
 
-이 병목 구간들이 해결된다면, Vertices-Network는 `A-Star`의 속도에 근접하면서도 더 높은 품질의 결과를 제공할 수 있을 것입니다.
+이 병목 구간들이 해결된다면, `Vertices-Network`는 `A-Star`의 속도에 근접하면서도 더 높은 품질의 결과를 제공할 수 있을 것입니다.
 
 <br/>
 <hr/>
