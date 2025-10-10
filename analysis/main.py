@@ -3,6 +3,8 @@ import data_loader
 import analyzer
 import visualizer
 import os
+import report_generator 
+import json
 
 def main():
     """
@@ -30,25 +32,34 @@ def main():
     output_dir = os.path.dirname(latest_file_path)
     print("\n" + "="*50 + "\n")
 
-    # 2. 통계 분석 (콘솔 출력)
-    # analyzer 모듈을 사용해 요약 통계와 모듈별 성능을 콘솔에 출력합니다.
-    analyzer.print_summary_statistics(df)
-    analyzer.print_module_performance(df, target_scenario='Large (Standard)')
+    # 2. 통계 분석 
+    print("📊 Analyzing data...")
+    summary_data = analyzer.analyze_data(df)
     
-    print("\n" + "="*50 + "\n")
+    # 튜플 키를 문자열로 변환
+    if 'overall_summary' in summary_data:
+        summary_data['overall_summary'] = {str(key): value for key, value in summary_data['overall_summary'].items()}
+
+    summary_path = os.path.join(output_dir, 'summary.json')
+    with open(summary_path, 'w') as f:
+        json.dump(summary_data, f, indent=2)
+    print(f"📊 Analysis summary saved to: {summary_path}")
 
     # 3. 데이터 시각화
     # visualizer 모듈을 사용해 분석 결과를 차트로 생성하고 파일로 저장합니다.
     print("🎨 Generating charts...")
-    visualizer.plot_total_time_comparison(df, output_dir)
-    visualizer.plot_three_step_breakdown(df, output_dir)
-    visualizer.plot_routing_breakdown_pie(df, output_dir)
-    visualizer.plot_three_step_breakdown_pie(df, output_dir)
+    charts_dir = os.path.join(output_dir, 'charts')
+    os.makedirs(charts_dir, exist_ok=True)
+
+    visualizer.plot_total_time_comparison(df, charts_dir)
+    visualizer.plot_three_step_breakdown(df, charts_dir)
+    visualizer.plot_routing_breakdown_pie(df, charts_dir)
+    visualizer.plot_three_step_breakdown_pie(df, charts_dir)
     print("\n" + "="*50 + "\n")
 
     # 4. Markdown 리포트 생성 (리포트 파일 저장)
-    analyzer.save_report_to_markdown(df, output_dir)
-    
+    report_generator.save_report_to_markdown(df, summary_data, output_dir)
+
     print("\n✅ Pipeline finished successfully!")
 
 if __name__ == '__main__':

@@ -104,7 +104,7 @@ function saveResults(results: BenchmarkResult[]) {
   }
 
   // JSON 파일명 및 최종 경로
-  const fileName = "benchmark-results.json";
+  const fileName = "raw_results.json";
   const filePath = path.join(outputDir, fileName);
 
   fs.writeFileSync(filePath, JSON.stringify(results, null, 2));

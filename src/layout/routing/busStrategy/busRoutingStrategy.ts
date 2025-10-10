@@ -37,9 +37,7 @@ export class BusRoutingStrategy implements RoutingStrategy {
     const network = buildBusNetworkGraph(channels);
     profiler.stop("buildBusNetworkGraph");
 
-    profiler.start("routeEdgesOnBus");
-    cur = routeEdgesOnBus(cur, network, cfg);
-    profiler.stop("routeEdgesOnBus");
+    cur = routeEdgesOnBus(cur, network, cfg, profiler);
 
     // --- 2-2단계: 하이브리드 라우팅 (Fallback) ---
     profiler.start("Routing Fallback");

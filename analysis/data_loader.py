@@ -32,7 +32,7 @@ def find_latest_benchmark_file() -> Optional[str]:
     latest_dir = sorted(subdirectories, reverse=True)[0]
     
     # 최신 폴더 안의 JSON 파일 경로를 구성
-    json_file_path = os.path.join(RESULTS_DIR, latest_dir, 'benchmark-results.json')
+    json_file_path = os.path.join(RESULTS_DIR, latest_dir, 'raw_results.json')
 
     if os.path.exists(json_file_path):
         return json_file_path

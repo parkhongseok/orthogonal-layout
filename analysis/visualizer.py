@@ -8,15 +8,17 @@ basic_columns = ['scenario', 'seed', 'strategy', 'totalTime']
 three_step_columns = ['Placement', 'Routing', 'Post-Process']
 
 
-def plot_total_time_comparison(df: pd.DataFrame, output_dir: str):
+def plot_total_time_comparison(df: pd.DataFrame, charts_dir: str):
     """
     시나리오별/전략별 전체 실행 시간을 비교하는 막대 차트를 생성하고 저장합니다.
 
     Args:
         df (pd.DataFrame): 전처리된 벤치마크 데이터프레임.
-        output_dir (str): 차트 파일을 저장할 디렉터리 경로.
+        charts_dir (str): 차트 파일을 저장할 디렉터리 경로.
     """
-    output_path = os.path.join(output_dir, 'total_time_comparison.png')
+        # 차트를 저장할 'charts' 디렉터리 경로 생성
+
+    output_path = os.path.join(charts_dir, 'total_time_comparison.png')
 
     plt.figure(figsize=(12, 7))
     sns.barplot(data=df, x='scenario', y='totalTime', hue='strategy', palette='viridis')
@@ -31,14 +33,14 @@ def plot_total_time_comparison(df: pd.DataFrame, output_dir: str):
     plt.close()
     print(f"📊 Chart saved to: {output_path}")
 
-def plot_three_step_breakdown(df: pd.DataFrame, output_dir: str):
+def plot_three_step_breakdown(df: pd.DataFrame, charts_dir: str):
     """
     각 전략의 시나리오별 모듈 실행 시간을 보여주는 누적 막대 차트를 생성하고 저장합니다.
     전략별로 차트 파일을 분리하여 생성합니다.
 
     Args:
         df (pd.DataFrame): 전처리된 벤치마크 데이터프레임.
-        output_dir (str): 차트 파일을 저장할 디렉터리 경로.
+        charts_dir (str): 차트 파일을 저장할 디렉터리 경로.
     """
     strategies = df['strategy'].unique()
     
@@ -61,7 +63,7 @@ def plot_three_step_breakdown(df: pd.DataFrame, output_dir: str):
         plt.tight_layout(rect=[0, 0, 0.85, 1])
         
         safe_strategy_name = strategy.replace(' ', '-').replace('*', 'Star')
-        output_path = os.path.join(output_dir, f'three_step_breakdown_{safe_strategy_name}.png')
+        output_path = os.path.join(charts_dir, f'three_step_breakdown_{safe_strategy_name}.png')
         
         plt.savefig(output_path)
         plt.close()
@@ -69,13 +71,13 @@ def plot_three_step_breakdown(df: pd.DataFrame, output_dir: str):
 
 
 
-def plot_three_step_breakdown_pie(df: pd.DataFrame, output_dir: str, target_scenario: str = 'Large (Standard)'):
+def plot_three_step_breakdown_pie(df: pd.DataFrame, charts_dir: str, target_scenario: str = 'Large (Standard)'):
     """
     특정 시나리오에 대해, 각 전략의 3단계 별 비중을 파이 차트로 생성합니다.
 
     Args:
         df (pd.DataFrame): 전처리된 벤치마크 데이터프레임.
-        output_dir (str): 차트를 저장할 디렉터리 경로.
+        charts_dir (str): 차트를 저장할 디렉터리 경로.
         target_scenario (str): 분석할 대상 시나리오의 이름.
     """
     scenario_df = df[df['scenario'] == target_scenario]
@@ -101,35 +103,43 @@ def plot_three_step_breakdown_pie(df: pd.DataFrame, output_dir: str, target_scen
             
         # 각 세부 모듈의 평균 시간을 계산
         module_avg = measured_modules.mean()
+
+# 임계값 설정 (1% 미만은 표시 안 함)
+        threshold = 1.0 
+        total = module_avg.sum()
+        
+        # 비율이 임계값 미만인 경우 레이블을 빈 문자열로 처리
+        labels = [label if (value / total * 100) >= threshold else '' for label, value in module_avg.items()]
         
         # 파이 차트 생성
         plt.figure(figsize=(10, 8))
         plt.pie(
             module_avg, 
-            labels=module_avg.index, 
-            autopct='%1.1f%%', # 소수점 첫째 자리까지 비율 표시
+            labels=labels, # 수정된 레이블 사용
+            # 비율이 임계값 미만인 경우 퍼센트 텍스트도 표시 안 함
+            autopct=lambda p: f'{p:.1f}%' if p >= threshold else '', 
             startangle=90,
-            colors=sns.color_palette('tab20c', n_colors=len(module_avg))
+            colors=sns.color_palette('tab20c', n_colors=len(module_avg)) # 색상은 'tab20c' 유지
         )
         
-        plt.title(f'Routing Phase Breakdown for "{strategy}"\n({target_scenario} Scenario)', fontsize=16)
-        plt.axis('equal')  # 파이를 원형으로 유지
+        plt.title(f'3-Step Phase Breakdown for "{strategy}"\n({target_scenario} Scenario)', fontsize=16)
+        plt.axis('equal')
         
         # 파일 저장
         safe_strategy_name = strategy.replace(' ', '-').replace('*', 'Star')
-        output_path = os.path.join(output_dir, f'three_step_breakdown_pie_{safe_strategy_name}.png')
+        output_path = os.path.join(charts_dir, f'three_step_breakdown_pie_{safe_strategy_name}.png')
         plt.savefig(output_path)
         plt.close()
         print(f"🥧 Pie chart saved to: {output_path}")
 
 
-def plot_routing_breakdown_pie(df: pd.DataFrame, output_dir: str, target_scenario: str = 'Large (Standard)'):
+def plot_routing_breakdown_pie(df: pd.DataFrame, charts_dir: str, target_scenario: str = 'Large (Standard)'):
     """
     특정 시나리오에 대해, 각 전략의 'Routing' 단계 내부 시간 비중을 파이 차트로 생성합니다.
 
     Args:
         df (pd.DataFrame): 전처리된 벤치마크 데이터프레임.
-        output_dir (str): 차트를 저장할 디렉터리 경로.
+        charts_dir (str): 차트를 저장할 디렉터리 경로.
         target_scenario (str): 분석할 대상 시나리오의 이름.
     """
     scenario_df = df[df['scenario'] == target_scenario]
@@ -156,22 +166,27 @@ def plot_routing_breakdown_pie(df: pd.DataFrame, output_dir: str, target_scenari
         # 각 세부 모듈의 평균 시간을 계산
         module_avg = measured_modules.mean()
         
+        threshold = 1.0
+        total = module_avg.sum()
+        labels = [label if (value / total * 100) >= threshold else '' for label, value in module_avg.items()]
+        
         # 파이 차트 생성
         plt.figure(figsize=(10, 8))
         plt.pie(
             module_avg, 
-            labels=module_avg.index, 
-            autopct='%1.1f%%', # 소수점 첫째 자리까지 비율 표시
+            labels=labels, 
+            autopct=lambda p: f'{p:.1f}%' if p >= threshold else '',
             startangle=90,
-            colors=sns.color_palette('tab20c', n_colors=len(module_avg))
+            # --- ✨ 2단계 수정: 다른 색상 팔레트 사용 ---
+            colors=sns.color_palette('viridis', n_colors=len(module_avg)) 
         )
         
         plt.title(f'Routing Phase Breakdown for "{strategy}"\n({target_scenario} Scenario)', fontsize=16)
-        plt.axis('equal')  # 파이를 원형으로 유지
+        plt.axis('equal')
         
         # 파일 저장
         safe_strategy_name = strategy.replace(' ', '-').replace('*', 'Star')
-        output_path = os.path.join(output_dir, f'routing_breakdown_pie_{safe_strategy_name}.png')
+        output_path = os.path.join(charts_dir, f'routing_breakdown_pie_{safe_strategy_name}.png')
         plt.savefig(output_path)
         plt.close()
         print(f"🥧 Pie chart saved to: {output_path}")

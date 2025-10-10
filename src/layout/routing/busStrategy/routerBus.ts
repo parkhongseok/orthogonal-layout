@@ -1,3 +1,4 @@
+import { Profiler, profiler } from './../../../../scripts/profiler';
 import type {
   Graph,
   Edge,
@@ -17,12 +18,15 @@ import { manhattan } from "@utils/math";
 export function routeEdgesOnBus(
   g: Graph,
   network: BusNetwork,
-  cfg: any
+  cfg: any,
+  profiler: Profiler,
 ): Graph {
   const out = { ...g, edges: new Map(g.edges) };
 
   for (const edge of out.edges.values()) {
-    const path = findPathForEdge(edge, out, network, cfg);
+    profiler.start("findPathForEdge");
+    const path = findPathForEdge(edge, out, network, cfg, profiler);
+    profiler.start("findPathForEdge");
     out.edges.set(edge.id, { ...edge, path });
   }
 
@@ -36,36 +40,51 @@ function findPathForEdge(
   edge: Edge,
   g: Graph,
   network: BusNetwork,
-  cfg: any
+  cfg: any,
+  profiler: Profiler,
 ): Point[] {
   const sourceNode = g.nodes.get(edge.sourceId)!;
   const targetNode = g.nodes.get(edge.targetId)!;
 
   // 1. Off-Ramp 후보군을 먼저 탐색
+  profiler.start("findRampCandidates");
   const offRampCandidates = findRampCandidates(targetNode, network);
   if (offRampCandidates.length === 0)
     return createFallbackPath(sourceNode, targetNode);
+  profiler.stop("findRampCandidates");
 
   // 2. On-Ramp를 찾을 때, 각 후보에서 Off-Ramp 후보군까지의 총 예상 비용을 계산
+  profiler.start("findBestRamp");
   const onRamp = findBestRamp(sourceNode, network, offRampCandidates);
   if (!onRamp) return createFallbackPath(sourceNode, targetNode);
+  profiler.stop("findBestRamp");
 
   // 3. 선택된 On-Ramp를 기준으로 최적의 Off-Ramp를 최종 결정
+  profiler.start("findBestOffRamp");
   const offRamp = findBestOffRamp(onRamp, network, offRampCandidates);
   if (!offRamp) return createFallbackPath(sourceNode, targetNode);
+  profiler.stop("findBestOffRamp");
 
   // 4. Highway: 네트워크 그래프에서 A*로 최단 비용 채널 경로 탐색
+  profiler.start("findBusRoute");
   const channelPath = findBusRoute(
     onRamp.channel.id,
     offRamp.channel.id,
     network
   );
+  profiler.stop("findBusRoute");
 
   // 5. 경로 조합: 찾은 세 조각을 합쳐 최종 직교 경로 생성
   if (channelPath) {
-    return stitchPath(onRamp, offRamp, channelPath, network, edge.id, cfg);
+    profiler.start("stitchPath");
+    const result = stitchPath(onRamp, offRamp, channelPath, network, edge.id, cfg);
+    profiler.stop("stitchPath");
+    return result
   } else {
-    return createFallbackPath(sourceNode, targetNode);
+    profiler.start("createFallbackPath2");
+    const result = createFallbackPath(sourceNode, targetNode);
+    profiler.stop("createFallbackPath2");
+    return result;
   }
 }
 

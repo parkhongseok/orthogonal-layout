@@ -8,46 +8,11 @@ import type {
   PortSide,
 } from "@domain/types";
 import { manhattan } from "@utils/math";
-import { assignPorts, portPosition } from "@layout/port/assign";
+import { portPosition } from "@layout/port/assign";
 import { PriorityQueue } from "@utils/priorityQueue";
 import { cleanupCollinearPoints } from "../aStarStrategy/pathSmoother";
 import { getCandidateSides } from "../aStarStrategy/portSelector";
-import { initialPlacement } from "@layout/placement/initPlacement";
-import { sweepCompact } from "@layout/compaction/sweep";
-import { resolveOverlap } from "@layout/placement/resolveOverlap";
-import { RoutingStrategy } from "../strategy";
-import { buildVisibilityGraph, createRoutingVertices } from "./visibility";
-import { setLastRoutingVertices, setLastVisibilityGraph } from "@render/debug";
-import { finalizePaths } from "./lane";
-
-export class BusRoutingStrategy implements RoutingStrategy {
-  public execute(graph: Graph, cfg: any): Graph {
-    let cur = graph;
-    console.log("Executing Final: Axis-based Bus Routing Strategy");
-
-    // 1. 노드 위치 결정
-    cur = initialPlacement(cur, cfg);
-    cur = resolveOverlap(cur, cfg);
-    cur = sweepCompact(cur, cfg);
-
-    // 2. 포트 할당
-    cur = assignPorts(cur, cfg);
-
-    // 3. 라우팅 네트워크 구축 (Phase 1, 2, 3)
-    const vertices = createRoutingVertices(cur, cfg);
-    setLastRoutingVertices(vertices);
-    const visibilityGraph = buildVisibilityGraph(vertices, cur);
-    setLastVisibilityGraph(visibilityGraph);
-
-    // 4. 경로 탐색 및 직교화 (Phase 4A)
-    cur = routeOnVisibilityGraph(cur, visibilityGraph, cfg);
-
-    // 5. 최종 경로 분리 및 다듬기 (Phase 4B)
-    cur = finalizePaths(cur, visibilityGraph, cfg);
-
-    return cur;
-  }
-}
+import { Profiler } from "../../../../scripts/profiler";
 
 type AStarNode = {
   vertexId: number;
@@ -247,7 +212,8 @@ function stitchPath(
 export function routeOnVisibilityGraph(
   g: Graph,
   visibilityGraph: VisibilityGraph,
-  cfg: any
+  cfg: any,
+  profiler: Profiler
 ): Graph {
   const out = { ...g, edges: new Map(g.edges) };
   const allObstacles = [
@@ -268,7 +234,7 @@ export function routeOnVisibilityGraph(
   for (const edge of edgesToRoute) {
     const sourceNode = out.nodes.get(edge.sourceId)!;
     const targetNode = out.nodes.get(edge.targetId)!;
-
+    profiler.start("findRampInfo");
     const startInfo = findRampInfo(
       sourceNode,
       targetNode,
@@ -281,14 +247,17 @@ export function routeOnVisibilityGraph(
       visibilityGraph,
       allObstacles
     );
+    profiler.stop("findRampInfo");
 
     if (startInfo && endInfo) {
+      profiler.start("findPathOnGraph");
       const vertexIdPath = findPathOnGraph(
         startInfo.vertex.id,
         endInfo.vertex.id,
         visibilityGraph,
         cfg.bus.congestionPenalty
       );
+      profiler.stop("findPathOnGraph");
 
       if (vertexIdPath) {
         for (let i = 0; i < vertexIdPath.length - 1; i++) {
@@ -304,7 +273,9 @@ export function routeOnVisibilityGraph(
         );
 
         // 수정된 stitchPath 호출
+        profiler.start("stitchPath");
         const finalPath = stitchPath(startInfo.port, endInfo.port, vertexPath);
+        profiler.stop("stitchPath");
 
         out.edges.set(edge.id, {
           ...edge,
