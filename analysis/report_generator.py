@@ -20,7 +20,7 @@ def save_report_to_markdown(df: pd.DataFrame, summary_data: dict, output_dir: st
         df (pd.DataFrame): 전처리된 벤치마크 데이터프레임.
         output_dir (str): 리포트 파일을 저장할 디렉터리 경로.
     """
-    report_path = os.path.join(output_dir, 'report.md')
+    report_path = os.path.join(output_dir, 'report_frame.md')
 
     with open(report_path, 'w') as f:
         f.write("# Performance Benchmark Report\n\n")
@@ -28,12 +28,14 @@ def save_report_to_markdown(df: pd.DataFrame, summary_data: dict, output_dir: st
         f.write(f'Date: {os.path.basename(output_dir)}\n\n')
         
         # --- 1. 전체 성능 요약 테이블 ---
-        f.write("## 📈 Overall Performance Summary\n\n")
+        f.write("## 📈 1. Summary\n\n")
+        f.write("[측정에 대한 설명]\n\n")
+        
         image_path = os.path.join(output_dir, 'charts', 'total_time_comparison.png')
         if image_path and os.path.exists(image_path):
             # 절대 경로 대신 파일명만 사용하도록 변경
             image_filename = os.path.basename(image_path)
-            f.write(f'### Performance Visualization\n\n')
+            f.write(f'### 1.1. Performance Visualization\n\n')
             # f.write(f'<img src="data:image/png;base64,{base64_image}" alt="3-Step Performance Chart" width="60%" >\n\n')
             f.write(f'<img src="charts/{image_filename}" alt="Overall Performance Chart" >\n\n')
 

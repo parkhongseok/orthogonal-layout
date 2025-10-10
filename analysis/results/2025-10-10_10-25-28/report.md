@@ -65,11 +65,11 @@ Date: 2025-10-10_10-25-28
 
 <div align="center">
 
-| 시나리오             | A-Star (ms) | Vertices-Network (ms) | Bus-Channel (ms) |
-| -------------------- | ----------- | --------------------- | ---------------- |
-| **Small**            | **23.8**    | 69.28                 | 461.61           |
-| **Medium**           | **594.48**  | 5262.77               | 24962.00         |
-| **Large (Standard)** | **1975.16** | 23762.40              | 51692.80         |
+| 시나리오             | A-Star (ms) | Bus-Channel (ms) | Vertices-Network (ms) |
+| -------------------- | ----------- | ---------------- | --------------------- |
+| **Small**            | **23.36**   | 452.18           | 66.24                 |
+| **Medium**           | **678.15**  | 25492.1          | 5359.49               |
+| **Large (Standard)** | **1976.01** | 51236            | 23371.3               |
 
 <sub>표 1.2.1. Execution Speed</sub>
 
@@ -90,16 +90,19 @@ Date: 2025-10-10_10-25-28
 
 그래프의 복잡도(노드 및 엣지 수) 증가에 따른 수행 시간 변화를 통해 각 전략의 확장성을 평가할 수 있습니다.
 
-#### ① `Bus-Channel` 전략의 낮은 확장성
+#### ① `Bus-Channel`, `Vertices-Network` 전략의 낮은 확장성
 
-`Small`에서 `Large` 시나리오로 규모가 커짐에 따라, **`Bus-Channel`의 수행 시간은 약 112배 (461ms → 51692ms)** 증가했습니다.  
-이는 그래프 크기에 따라 성능이 기하급수적으로 저하되는, **확장성이 매우 낮은(Poor Scalability)** 구조임을 시사합니다.  
-대규모 그래프 환경에서는 현실적으로 사용하기 어려운 수준의 성능 저하입니다.
+`Small`에서 `Large` 시나리오로 규모가 커짐에 따라,
+**`Bus-Channel`의 수행 시간은 약 113배 (452.18ms → 51236ms)** 증가했습니다.  
+ **`Vertices-Network`의 수행 시간은 약 353배 (66.24ms → 23371.3ms)** 증가했습니다.
 
-#### ② `A-Star` 및 `Vertices-Network`의 상대적 우수성
+이는 그래프 크기에 따라 성능이 기하급수적으로 저하되는, **확장성이 매우 낮은(Poor Scalability)** 구조임을 시사합니다.
 
-같은 조건에서 **`A-Star`는 약 83배**, **`Vertices-Network`는 약 343배** 증가했습니다.  
-`Vertices-Network` 역시 증가 폭이 작지는 않으나, `Bus-Channel`과 같은 극단적인 성능 저하 패턴은 보이지 않습니다.
+> `Vertices-Network`의 수행 시간 자체는 더 짧으나, 그래프 규모에 따라 성능 저하 폭이 가장 크다는 점에서 확장성 개선이 시급한 과제임을 알 수 있습니다.
+
+#### ② `A-Star`
+
+같은 조건에서 **`A-Star`는 약 83배 (23.36ms → 1976.01ms)** 증가했습니다.
 
 <br/>
 
@@ -111,18 +114,21 @@ Date: 2025-10-10_10-25-28
 
 | 전략                 | Large (Standard) 시나리오 표준편차(std) | 평가                                |
 | -------------------- | --------------------------------------- | ----------------------------------- |
-| **A-Star**           | **289.56**                              | **매우 안정적 (Highly Stable)**     |
-| **Vertices-Network** | 4040.09                                 | 비교적 안정적 (Relatively Stable)   |
-| **Bus-Channel**      | **17894.80**                            | **매우 불안정적 (Highly Unstable)** |
+| **A-Star**           | **285.21**                              | **매우 안정적 (Highly Stable)**     |
+| **Bus-Channel**      | **18947.4**                             | **매우 불안정적 (Highly Unstable)** |
+| **Vertices-Network** | 3639.31                                 | 비교적 안정적 (Relatively Stable)   |
 
 <sub>표 1.2.3. Performance Stability</sub>
 
 </div>
 <br/>
 
-`Bus-Channel` 전략은 평균 수행 시간(약 51,692ms)의 35%에 달하는 매우 높은 표준편차를 보입니다.  
-이는 동일한 `Large` 시나리오 내에서도 입력 데이터(seed)에 따라 실행 시간이 크게 변동하여 성능을 예측하기 어렵다는 것을 의미합니다.  
-반면 `A-Star`는 표준편차가 가장 낮아, 어떤 입력에 대해서도 일관되고 신뢰성 있는 성능을 제공하는 안정적인 알고리즘으로 평가할 수 있습니다.
+`Bus-Channel` 전략은 평균 수행 시간(약 51,236ms)의 37%에 달하는 매우 높은 표준편차를 보입니다.  
+이는 동일한 `Large` 시나리오 내에서도 입력 데이터(seed)에 따라 실행 시간이 크게 변동하여 성능을 예측하기 어렵다는 것을 의미합니다.
+
+반면 `A-Star`는 평균 수행 시간(약 1976.01ms)의 14% 정도의 표준편차를 보이며, 그 수치 자체가 가장 낮아, 어떤 입력에 대해서도 일관되고 신뢰성 있는 성능을 제공하는 안정적인 알고리즘으로 평가할 수 있습니다.
+
+`Vertices-Network` 전략은 평균 수행 시간 (약 23371.3ms)의 16% 정도의 표준편차를 보입니다.
 
 <br/>
 
@@ -213,7 +219,7 @@ Date: 2025-10-10_10-25-28
 `A-Star` 전략은 현재 가장 빠르고 안정적인 성능을 보여주는 베이스라인입니다.  
 본 분석에서는 `Large (Standard)` 시나리오를 기준으로 `A-Star` 전략의 내부 동작을 심층 분석하여 현재의 성능 특성과 잠재적인 한계를 진단합니다.
 
-> 참고: [.../legacyAStarStrategy.ts](src/layout/routing/aStarStrategy/legacyAStarStrategy.ts)
+> 참고: [.../legacyAStarStrategy.ts](/src/layout/routing/aStarStrategy/legacyAStarStrategy.ts)
 
 <br/>
 
@@ -242,7 +248,7 @@ LegacyAStarStrategy.execute()
         └── aStarGrid()               // 핵심: 단일 엣지에 대한 A\* 탐색 실행
 ```
 
-> 참고: [.../aStarStrategy/routeAll.ts](src/layout/routing/aStarStrategy/routeAll.ts)
+> 참고: [.../aStarStrategy/routeAll.ts](/src/layout/routing/aStarStrategy/routeAll.ts)
 
 `routeAll` 함수는 모든 엣지($E$)에 대해 반복하면서, 각 엣지마다 `aStarGrid` 함수를 호출하여 격자 위에서 최적 경로를 탐색합니다.
 
@@ -341,13 +347,13 @@ LegacyAStarStrategy.execute()
 `Bus-Channel` 전략은 그림1.에서 확인되었듯이, 가장 느린 수행 시간과 심각한 확장성 문제를 보였습니다.  
 본 섹션에서는 `Large (Standard)` 시나리오를 기준으로 성능 저하의 근본 원인을 코드 호출 구조와 시간 복잡도 측면에서 심층적으로 분석합니다.
 
-> 참고: [.../busRoutingStrategy.ts](src/layout/routing/busStrategy/busRoutingStrategy.ts)
+> 참고: [.../busRoutingStrategy.ts](/src/layout/routing/busStrategy/busRoutingStrategy.ts)
 
 <br/>
 
 #### 1) 병목 지점 식별
 
-`routing breakdown result` 테이블에서 **routeEdgesOnBus가 라우팅 시간의 거의 100%를 차지**하는 압도적인 병목 구간임이 확인되었습니다.
+`표 2.2.2.` 에서 `findBestRamp` **가 라우팅 시간의 99.7%를 차지**하는 압도적인 병목 구간임을 확인했습니다.
 
 > 참고 : ADR 문서(docs/adr/02-bus-channel-routing.md)
 > 예측했던 것 이상으로, 실제 라우팅 과정 자체에 근본적인 비효율이 존재
@@ -356,9 +362,7 @@ LegacyAStarStrategy.execute()
 
 #### 2) 호출 흐름 분석
 
-`routeEdgesOnBus` 함수의 극심한 성능 저하는 모든 엣지에 대해 **매우 복잡하고 중첩된 탐색 과정을 반복**하는 구조에서 비롯됩니다. 핵심 로직인 `findPathForEdge`의 호출 흐름은 아래와 같습니다.
-
-> 참고: [routerBus.ts](src/layout/routing/busStrategy/routerBus.ts)
+`Bus-Channel` 전략의 전체적인 호출 흐름은 아래와 같이 구성됩니다.
 
 ```js
 BusRoutingStrategy.execute()
@@ -367,8 +371,8 @@ BusRoutingStrategy.execute()
         └── findPathForEdge(edge, ...)
             ├── findRampCandidates(targetNode) // 2. Off-Ramp 후보 탐색 (Ports * Channels)
             │
-            └── findBestRamp(sourceNode, offRampCandidates)
-                ├── findRampCandidates(sourceNode) // 3. On-Ramp 후보 탐색 (Ports * Channels)
+            └── findBestRamp(sourceNode, offRampCandidates) // [‼️ 병목 지점 ‼️]
+                ├── findRampCandidates(sourceNode) //  3. On-Ramp 후보 탐색 (Ports * Channels)
                 │
                 └── for (onRamp of onRampCandidates) // --- 4. 모든 On-Ramp 후보에 대해 반복 ---
                     └── findCheapestRouteToCandidates(onRamp, offRampCandidates)
@@ -376,14 +380,11 @@ BusRoutingStrategy.execute()
                             └── findBusRoute(onRamp, offRamp) // 6. 채널 네트워크 A* 탐색 (Inetersection * log Channel)
 ```
 
-위 호출 구조는 **다섯 단계 이상의 중첩된 반복문**으로 이루어져 있습니다.  
-따라서 각 단계의 연산량이 그래프의 크기가 커짐에 따라 급격히 증가하는 조합 폭발(Combinatorial Explosion) 문제를 야기합니다.
-
 - **1~3단계 (후보군 생성):**  
   하나의 엣지를 처리하기 위해, 시작 노드와 도착 노드의 모든 포트($P$)와 모든 채널($C$)을 조합하여 수많은 **진입(On-Ramp) 및 진출(Off-Ramp) 후보를 생성**합니다.  
   후보군의 수는 $O(P C)$ 에 비례합니다.
 
-- **4~5단계 (최적 조합 탐색):**  
+- **4~5단계 (최적 조합 탐색):** [‼️ 병목 지점 ‼️]
   최적의 경로를 찾기 위해, 생성된 모든 On-Ramp 후보와 모든 Off-Ramp 후보의 조합을 **완전 탐색(Brute-force)** 합니다.  
   이 과정에서 `findBusRoute`(채널 A\*) 함수가 $R_{on} \cdot R_{off}$ 만큼 반복 호출됩니다.  
   ($R$은 Ramp 후보 수)
@@ -393,18 +394,23 @@ BusRoutingStrategy.execute()
 
 <br/>
 
+위 호출 구조에서 `findBestRamp`는 최적의 진입로(On-Ramp)를 찾기 위해, 가능한 모든 진입로 후보와 모든 진출로(Off-Ramp) 후보의 조합을 탐색합니다.
+따라서 각 단계의 연산량이 그래프의 크기가 커짐에 따라 급격히 증가하는 조합 폭발(Combinatorial Explosion)로 인한 심각한 성능 저하를 유발합니다.
+
+<br/>
+
 #### 3) 시간 복잡도 분석
 
 `routeEdgesOnBus`의 전체적인 시간 복잡도는 각 단계의 복잡도를 곱한 형태로 나타낼 수 있습니다.
 
 <div align="center">
 
-|          단계           |         함수         | 복잡도 추정                          | 설명                                                                                                            |
-| :---------------------: | :------------------: | ------------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
-|      **엣지 반복**      |  `routeEdgesOnBus`   | $O(E)$                               | $E$ : 전체 엣지 수                                                                                              |
-|   **Ramp 후보 생성**    | `findRampCandidates` | $O(R_{on, off})$ = $O(P C)$          | $P$ : 노드 포트 수 <br/> $C$ : 전체 채널 수 <br/> $R_{on}$ : On-Ramp 후보 수 <br/> $R_{off}$ : Off-Ramp 후보 수 |
-| **최적 Ramp 조합 탐색** |    `findBestRamp`    | $O((P  C)^2 \cdot I \log C)$         | $R_{on} \cdot R_{off} \cdot$ A\* 채널 탐색 📌 <br/> $I$ : 채널 교차점의 수                                      |
-|        **총계**         |          -           | $O(E \cdot (P  C)^2 \cdot I \log C)$ | 최종 추정 복잡도                                                                                                |
+|          단계           |                  함수                  | 복잡도 추정                          | 설명                                                                                                            |
+| :---------------------: | :------------------------------------: | ------------------------------------ | :-------------------------------------------------------------------------------------------------------------- |
+|      **엣지 반복**      |           `routeEdgesOnBus`            | $O(E)$                               | $E$ : 전체 엣지 수                                                                                              |
+|   **Ramp 후보 생성**    |          `findRampCandidates`          | $O(R_{on, off})$ = $O(P C)$          | $P$ : 노드 포트 수 <br/> $C$ : 전체 채널 수 <br/> $R_{on}$ : On-Ramp 후보 수 <br/> $R_{off}$ : Off-Ramp 후보 수 |
+| **최적 Ramp 조합 탐색** | `findBestRamp` <br/> [‼️ 병목 지점 ‼️] | $O((P  C)^2 \cdot I \log C)$         | $R_{on} \cdot R_{off} \cdot$ A\* 채널 탐색 📌 <br/> $I$ : 채널 교차점의 수                                      |
+|        **총계**         |                   -                    | $O(E \cdot (P  C)^2 \cdot I \log C)$ | 최종 추정 복잡도                                                                                                |
 
 <sub> 표 2.2.3. routeEdgesOnBus 시간 복잡도 분석 </sub>
 
@@ -421,15 +427,13 @@ BusRoutingStrategy.execute()
   - `findBusRoute` 함수에서 수행하는 A\* 탐색은 기존처럼 노드-엣지 그래프를 탐색하는 게 아닙니다.
   - 대신 채널(Channel, $C$)과 교차점(Intersection, $I$)로 이루어진, **도로망 지도**를 탐색합니다.
 
-- **시간 복잡도:** A-Star 알고리즘의 시간 복잡도는 일반적으로 $O($ |간선 수| + |정점 수| $\log$ |정점 수|$)$ 로 표현됩니다.
+- **시간 복잡도:** A-Star 알고리즘의 시간 복잡도는 일반적으로 $O($ |간선 수| + |정점 수| $\log$ |정점 수| $)$ 로 표현됩니다.
 
   - 따라서 `Bus-Channel`방식에 대입하면,
   - |정점 수| = $C$ (전체 체널의 개수)
   - |간선 수| = $I$ (교차점의 개수)
 
-  따라서 `findBusRoute`에서의 A\* 알고리즘의 시간 복잡도는 다음과 같습니다.
-
-$$O(I + C \log C)$$
+  따라서 `findBusRoute`에서의 A\* 알고리즘의 시간 복잡도 $O(I + C \log C)$ 입니다.
 
 - $\log C$ :
   - 우선순위 큐 연산 비용 (Min Heap 사용)
@@ -441,7 +445,7 @@ $$O(I + C \log C)$$
 
 - 표에서는 이 수식을 $O(I + C \log C )$ 로 간소화하여 표현했는데, 이는 그래프가 충분히 연결되어 있을 때 $I$가 $C$보다 크거나 비슷한 경향이 있어 $I$ 항이 전체 복잡도를 주도하는 경우가 많기 때문입니다. 하지만 더 정확한 표현은 $O(I + C \log C)$ 입니다.
 
-- 그리고 이 과정 전체가 $(P*C)^2$ 만큼 반복되고, 다시 전체 엣지 수 $E$ 만큼 반복되니 최종적인 시간 복잡도가 기하급수적으로 커지는 것입니다.
+- 그리고 이 과정 전체가 $(P \cdot C)^2$ 만큼 반복되고, 다시 전체 엣지 수 $E$ 만큼 반복되니 최종적인 시간 복잡도가 기하급수적으로 커지는 것입니다.
 
 ---
 
@@ -507,7 +511,7 @@ $$O(I + C \log C)$$
 | stitchPath            |              1.35 |
 | createRoutingVertices |             35.68 |
 | buildVisibilityGraph  |           5161.09 |
-| findRampInfo          |           17385.2 |
+| findRampInfo          |          17385.20 |
 | findPathOnGraph       |            772.12 |
 
 <sub> 표 2.3.2. Routing Phase Breakdown for "Bus-Channel"</sub>
@@ -521,7 +525,7 @@ $$O(I + C \log C)$$
 
 `Vertices-Network` 전략은 `A-Star`의 속도와 `Bus-Channel`의 경로 품질 사이의 절충안으로 설계되었습니다. 비록 `A-Star`보다는 느리지만, `Bus-Channel`보다는 훨씬 뛰어난 확장성을 보여주어 최적화를 통해 주력 전략으로 발전할 잠재력을 가지고 있습니다.
 
-> 참고: [.../verticesRoutingStrategy.ts](src/layout/routing/verticesStrategy/verticesRoutingStrategy.ts)
+> 참고: [.../verticesRoutingStrategy.ts](/src/layout/routing/verticesStrategy/verticesRoutingStrategy.ts)
 
 <br/>
 
@@ -529,13 +533,15 @@ $$O(I + C \log C)$$
 
 `표 2.3.2.`에 따르면, 라우팅 단계의 성능 부하는 크게 두 개의 함수에 집중되어 있습니다.
 
-- `routeOnVisibilityGraph:`  
-  생성된 가시성 그래프 위에서 실제 엣지 경로를 탐색하는 단계 (18,464.5ms, 약 77.7%)
+- `findRampInfo:`  
+  가장 큰 병목 구간으로, 각 엣지의 시작/끝 노드에 가장 적합한 진입/진출 정점을 찾는 역할을 합니다.  
+  (17,385ms, 74.4%)
 
 - `buildVisibilityGraph`  
-  라우팅을 위한 가시성 그래프(네트워크)를 구축하는 사전 준비 단계 (5,247.97ms, 약 22.1%)
+  라우팅을 위한 가시성 그래프(네트워크)를 구축하는 사전 준비 단계입니다.  
+  (약 5,161ms 22.1%)
 
-`createRoutingVertices`(37.83ms)의 비중은 미미하며, 성능 문제는 **그래프 생성**과 **경로 탐색**이라는 두 핵심 과정에 있음을 알 수 있습니다.
+`createRoutingVertices`(약 36ms)의 비중은 미미하며, 성능 문제는 **그래프 생성**과 **진입/진출로 탐색**이라는 두 핵심 과정에 있음을 알 수 있습니다.
 
 <br/>
 
@@ -549,7 +555,7 @@ VerticesRoutingStrategy.execute()
 ├── buildVisibilityGraph()       // 2. 가시성 그래프 구축 (1차 병목)
 └── routeOnVisibilityGraph()     // 3. 그래프 기반 경로 탐색 (2차 병목)
     └── for (edge of edgesToRoute)
-        ├── findRampInfo()
+        ├── findRampInfo()       // [‼️ 병목 지점 ‼️]
         └── findPathOnGraph()    // A* on Visibility Graph
 ```
 
@@ -557,7 +563,7 @@ VerticesRoutingStrategy.execute()
 
 이 함수는 생성된 모든 라우팅 정점($V_r$)들을 대상으로, 서로 장애물에 가려지지 않는(visible) 쌍을 찾아 간선으로 연결하는 역할을 합니다.
 
-> 참고: [.../visibility.ts](src/layout/routing/verticesStrategy/visibility.ts)
+> 참고: [.../visibility.ts](/src/layout/routing/verticesStrategy/visibility.ts)
 
 현재 구현은 동일한 축(x 또는 y)에 정렬된 정점 그룹 내에서 모든 쌍을 순회하며 `isPathObstructed` 함수를 호출합니다. `isPathObstructed는` 다시 모든 장애물($O$)을 확인하므로, 이 과정의 계산량이 상당합니다.  
 가시성 그래프의 간선 수($E_v$)가 $V_r^2$에 가깝게 증가할 수 있어, 그래프 규모가 커질수록 이 단계의 부하가 증가합니다.
@@ -568,7 +574,7 @@ VerticesRoutingStrategy.execute()
 
 이 함수는 `A-Star` 전략과 유사하게, 그래프의 모든 엣지($E$)에 대해 개별적으로 경로 탐색을 수행합니다.
 
-> 참고: [.../router.ts](src/layout/routing/verticesStrategy/router.ts)
+> 참고: [.../router.ts](/src/layout/routing/verticesStrategy/router.ts)
 
 `A-Star` 전략과의 차이점은, 전체 그리드가 아닌 미리 계산된 **가시성 그래프** 위에서 탐색(`findPathOnGraph`)을 수행한다는 점입니다. 탐색 공간 자체는 작아졌지만, 이 탐색을 모든 엣지에 대해 반복해야 하므로 여전히 $O(E)$ 에 비례하는 부하가 발생합니다.
 
@@ -589,14 +595,14 @@ VerticesRoutingStrategy.execute()
 </div>
 <br/>
 
-⚠️ 그래프 구축 단계에서 `buildVisibilityGraph`의 실제 복잡도는 정렬을 통해 ($O(V_r)$)으로 최적화되어 있습니다.  
+⚠️ 그래프 구축 단계에서 `buildVisibilityGraph`의 실제 복잡도는 정렬을 통해 [📌최적화되어 있습니다.  
 하지만 정점과 장애물 수가 늘어남에 따라 다항 시간으로 증가하는 경향은 동일합니다.
 
 <details>
-<summary>[자세히 보기] 
+<summary>[📌 최적화 자세히 보기] 
 </summary>
 
-- **위치:** [.../visibility.ts](src/layout/routing/verticesStrategy/visibility.ts) 내부 `connectAlignedVertices`함수
+- **위치:** [.../visibility.ts](/src/layout/routing/verticesStrategy/visibility.ts) 내부 `connectAlignedVertices`함수
 
 - **아이디어:** 어차피 수평/수직 연결만 볼 것이므로, 같은 선상에 있는 정점들만, 그것도 바로 옆에 있는 정점들끼리만 확인하기
 
@@ -665,15 +671,53 @@ VerticesRoutingStrategy.execute()
 
 주요 최적화 대상은 `buildVisibilityGraph`와 `routeOnVisibilityGraph`입니다.
 
-- **buildVisibilityGraph 개선:**
+- `buildVisibilityGraph` **개선:**
   - 현재의 중첩 반복문 구조 대신, 기하학적 탐색에 효율적인 **Sweep-line 알고리즘** 등을 도입하여 가시성 검사 속도를 $O(V_r \log V_r)$ 수준으로 개선하는 것을 고려할 수 있습니다.
-- **routeOnVisibilityGraph 개선:**
+- `routeOnVisibilityGraph` **개선:**
   - `A-Star` 전략과 마찬가지로, 모든 엣지를 개별적으로 탐색하는 것이 가장 큰 부하의 원인입니다. 출발지와 목적지가 유사한 엣지들을 그룹으로 묶어 **경로를 공유하거나 재활용**하는 기법을 도입하여 A\* 호출 횟수를 줄이는 것이 효과적일 수 있습니다.
 
 이러한 개선은 `docs/adr/03-vertices-network-routing.md`에서 언급한 "단순 경로 최적화 필요", "안전 지역 내 정점 생성 문제 해결" 등의 과제와도 직접적으로 연결됩니다.
 
-이 병목 구간들이 해결된다면, Vertices-Network는 `A-Star`의 속도에 근접하면서도 더 높은 품질의 결과를 제공할 수 있을 것입니다.
+이 병목 구간들이 해결된다면, `Vertices-Network`는 `A-Star`의 속도에 근접하면서도 더 높은 품질의 결과를 제공할 수 있을 것입니다.
 
 <br/>
 <hr/>
 <br/>
+
+## 3. 향후 개선 방향
+
+### 3.1. 단기 목표
+
+#### 3.1.1. Vertices-Network 전략 최적화:
+
+- **`findRampInfo` 함수 개선:**  
+  현재 74.4%의 가장 큰 병목인 이 함수는 모든 정점을 순회하며 최적의 진입점을 찾고 있습니다. 이를 공간 분할 자료구조(예: Quadtree, k-d tree)를 활용하여 특정 노드 주변의 정점만 효율적으로 탐색하도록 개선하면, 탐색 범위를 줄여 성능을 크게 향상시킬 수 있습니다.
+
+- **`buildVisibilityGraph` 알고리즘 교체:**  
+  현재 구현은 정렬을 통해 최적화되었지만, 더 효율적인 Sweep-line 알고리즘을 도입하여 가시성 그래프 구축 시간을 단축할 수 있습니다. 이는 복잡한 그래프에서 더 큰 효과를 볼 것입니다.
+
+<br/>
+
+### 3.2. 중기 목표
+
+#### 3.2.1. 전역적 경로 탐색(Global Routing) 도입:
+
+- **`Bus-Channel`과 `Vertices-Network`의 확장성 문제 해결:**  
+  두 전략 모두 모든 엣지를 개별적으로 탐색하는 현재 구조($O(E \cdot ...)$)는 근본적인 확장성 한계를 가집니다. 이를 해결하기 위해, 출발지와 목적지가 유사한 엣지들을 그룹으로 묶어 **경로를 공유하거나 재활용**하는 기법을 도입을 고려해야합니다.
+  이를 통해 A\* 탐색 호출 횟수를 줄여 전체 성능을 개선 효과를 기대할 수 있습니다.
+
+#### 3.2.2. **`Bus-Channel` 전략의 재설계 또는 폐기:**
+
+- 현재의 `findBestRamp` 함수는 알고리즘 설계 자체의 결함으로 인해 실사용이 불가능한 수준의 성능을 보입니다. 만약 이 전략의 '공통 통로' 개념을 유지하려면, 개별 엣지 단위가 아닌 모든 엣지의 경로를 동시에 최적화하는 **전역적 접근 방식(Global Routing)** 으로 완전히 재설계해야 합니다. 현실적으로 어렵다면, 리소스 낭비를 막기 위해 과감히 **프로젝트에서 폐기(Deprecate)** 하는 것을 검토해야 합니다.
+
+<br/>
+
+### 3.3. 장기 목표
+
+#### 3.3.1. 하이브리드(Hybrid) 전략 개발:
+
+- 각 전략의 장점을 결합한 새로운 하이브리드 전략을 구상할 수 있습니다. 예를 들어, `Vertices-Network`로 전체적인 경로의 뼈대를 잡고, 복잡한 구간이나 실패한 경로는 `A-Star`로 마무리하는 방식입니다. 이는 품질과 성능의 균형을 맞춘 최종 해결책이 될 수 있습니다.
+
+<br/>
+
+이러한 개선 방향을 통해 현재의 성능 병목을 해결하고, 더 복잡하고 큰 규모의 그래프에서도 안정적으로 고품질의 레이아웃을 생성하는 것을 목표로 하고자 합니다.
