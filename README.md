@@ -2,7 +2,6 @@
 
 시스템 엔지니어링 다이어그램과 같이 복잡한 노드-엣지 그래프를 자동으로 정돈하는 **Orthogonal Layout 알고리즘** 구현 프로젝트입니다.
 
-
 ## 주요 기능
 
 - **자동 배치:** 노드/그룹을 격자 기반으로 배치, 겹침 방지
@@ -20,6 +19,7 @@
 - https://ext.dontgoback.kro.kr/orthogonal-layout/
 
 ### 다운로드 후 실행
+
 ```bash
 # 저장소 클론
 $ git clone https://github.com/parkhongseok/orthogonal-layout.git
@@ -33,8 +33,6 @@ $ npm run dev
 ```
 
 - 접속: [http://localhost:5173](http://localhost:5173)
-
-
 
 ## 사용 방법
 
@@ -194,12 +192,21 @@ orthogonal-layout/
     </td>
   </tr>
 </table>
+<br/>
+
+## 성능 개선을 위한 측정 및 분석
+
+- [분석 설계](/docs/adr/04-performance-analysis-plan.md)
+- [분석 아키텍처](/docs/adr/05-성능-분석-자동화-아키텍처.md)
+- [분석 결과 보고서](/analysis/results/2025-10-10_10-25-28/report.md)
+
+<br/>
 
 ## TODO
 
 - **Bus Channel**
 
-  > **TODO**: 성능 개선  
+  > **TODO**: 성능 개선 (진행중)
   > **TODO**: 그룹 밖 채널 겹침 문제  
   > **TODO**: 채널 넓이 확보 및 우회 필요
 
