@@ -11,14 +11,17 @@ Date: {{ date }}
 {% if total_time_chart_filename %}
 <img src="charts/{{ total_time_chart_filename }}" alt="Overall Performance Chart" >
 <sub>그림 1.1. Overall Performance Comparison</sub>
+<br/>
 {% endif %}
 
 <div align="center">
+
 {{ summary_table_md }}
+
 </div>
 
 
- #### Analysis
+ #### 1.2. Analysis
 [여기에 분석 내용을 직접 작성하세요]
 
 <br/>
@@ -26,19 +29,19 @@ Date: {{ date }}
 <br/>
 
 {% for section in sections %}
-## {{ section.sec2 }} 🛠️ Performance for '{{ section.scenario_name }}' Scenario (average time in ms)
+## 🛠️ {{ section.sec2 }} Performance for '{{ section.scenario_name }}' Scenario (average time in ms)
 
 {% for strat in section.strategies %}
-### {{ strat.sec3 }}. Strategy: {{ strat.name }}
+### {{ strat.sec3 }} Strategy: {{ strat.name }}
 
 {% if strat.three_step.has %}
-#### {{ strat.three_step.sec4 }}. three step result 
+#### {{ strat.three_step.sec4 }} three step result 
 
 <table>
   <tr>
     <td align="center">
     {% if strat.three_step.chart_filename %}
-    <img src="charts/{{ strat.three_step.chart_filename }}" alt="3-Step Performance Chart" width="100%" >
+<img src="charts/{{ strat.three_step.chart_filename }}" alt="three-Step Performance Chart" width="100%" >
     <br/>
     <sub>{{ strat.three_step.fig_caption }}</sub>
     {% endif %}
@@ -56,13 +59,13 @@ Date: {{ date }}
 {% endif %}
 
 {% if strat.routing_breakdown.has %}
-#### {{ strat.routing_breakdown.sec4 }}. routing breakdown result
+#### {{ strat.routing_breakdown.sec4 }} routing breakdown result
 
 <table>
   <tr>
     <td align="center">
     {% if strat.routing_breakdown.chart_filename %}
-    <img src="charts/{{ strat.routing_breakdown.chart_filename }}" alt="Routing Detail Chart" width="100%" >
+  <img src="charts/{{ strat.routing_breakdown.chart_filename }}" alt="Routing Detail Chart" width="100%" >
     <br/>
     <sub>{{ strat.routing_breakdown.fig_caption }}</sub>
     {% endif %}
@@ -79,7 +82,7 @@ Date: {{ date }}
 <br/>
 {% endif %}
 
- #### Analysis
+ #### {{ strat.analysis_sec4 }} Analysis
 [여기에 분석 내용을 직접 작성하세요]
 
 <hr/>

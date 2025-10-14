@@ -3,33 +3,43 @@ import data_loader
 import analyzer
 import visualizer
 import os
-import report_generator 
+import report_generator
 import json
+import argparse
 
 def main():
     """
     성능 분석 및 시각화 파이프라인 전체를 실행하는 메인 함수입니다.
     """
+    parser = argparse.ArgumentParser(description='Run the analysis and visualization pipeline.')
+    parser.add_argument(
+        '--target',
+        type=str,
+        help='Target directory prefix (e.g., \'YYYY-MM-DD\' or \'YYYY-MM-DD_HH-MM-SS\') to analyze specific results.'
+    )
+    args = parser.parse_args()
+
     print("🚀 Starting Analysis and Visualization Pipeline...")
 
     # 1. 데이터 로딩
-    # data_loader 모듈을 사용해 가장 최신 벤치마크 파일을 찾습니다.
-    latest_file_path = data_loader.find_latest_benchmark_file()
+    # 'target' 인자를 사용하여 특정 날짜 또는 최신 벤치마크 파일을 찾습니다.
+    benchmark_file_path = data_loader.find_benchmark_file(args.target)
 
-    if not latest_file_path:
+    if not benchmark_file_path:
         print("❌ Error: No benchmark result file found.")
-        print("Please run 'npm run benchmark' first to generate data.")
+        if not args.target:
+            print("Please run 'npm run benchmark' first to generate data.")
         return # 데이터 파일이 없으면 실행을 중단합니다.
 
     # 찾은 파일을 로드하고 데이터프레임으로 전처리합니다.
-    df = data_loader.load_and_preprocess_data(latest_file_path)
+    df = data_loader.load_and_preprocess_data(benchmark_file_path)
 
     if df is None:
         print("❌ Error: Failed to load or process data. Aborting.")
         return # 데이터 로딩에 실패하면 실행을 중단합니다.
     
     # 결과물을 저장할 현재 실행의 고유 디렉터리 경로를 가져옴
-    output_dir = os.path.dirname(latest_file_path)
+    output_dir = os.path.dirname(benchmark_file_path)
     print("\n" + "="*50 + "\n")
 
     # 2. 통계 분석 
