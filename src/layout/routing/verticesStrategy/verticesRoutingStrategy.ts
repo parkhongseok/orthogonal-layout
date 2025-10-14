@@ -16,16 +16,16 @@ export class VerticesRoutingStrategy implements RoutingStrategy {
     console.log("Executing: Bus Routing Strategy");
 
     // --- 1. 노드 위치 결정 단계 ---
-    profiler.start("Placement");
+    profiler.start("L1-Placement");
     cur = initialPlacement(cur, cfg);
     cur = resolveOverlap(cur, cfg);
     // cur = spreadNodes(cur, cfg);
     cur = sweepCompact(cur, cfg);
     cur = assignPorts(cur, cfg);
-    profiler.stop("Placement");
+    profiler.stop("L1-Placement");
 
     // --- 2단계: 가시성 그래프 네트워크 구축 및 라우팅 ---
-    profiler.start("Routing");
+    profiler.start("L1-Routing");
     profiler.start("createRoutingVertices");
     const vertices = createRoutingVertices(cur, cfg);
     setLastRoutingVertices(vertices); // 디버깅: 정점 시각화
@@ -38,12 +38,12 @@ export class VerticesRoutingStrategy implements RoutingStrategy {
     profiler.stop("buildVisibilityGraph");
     // 내부 모듈별 측정 세분화 
     cur = routeOnVisibilityGraph(cur, visibilityGraph, cfg, profiler);
-    profiler.stop("Routing");
+    profiler.stop("L1-Routing");
 
     // --- 3단계: 최종 경로 다듬기 ---
-    profiler.start("Post-Process");
+    profiler.start("L1-Post-Process");
     cur = finalizePaths(cur, visibilityGraph, cfg);
-    profiler.stop("Post-Process");
+    profiler.stop("L1-Post-Process");
 
     return cur;
   }

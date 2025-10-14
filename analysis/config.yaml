@@ -1,0 +1,11 @@
+levels:
+  l1_names: ["Placement", "Routing", "Post-Process"]
+  delimiter: ":"
+  regex: "^L(?P<level>\\d+)[-_](?P<path>[A-Za-z0-9:._-]+)$"
+
+report:
+  decimals: 2
+  align: right
+  captions:
+    table_prefix: "표"
+    figure_prefix: "그림"

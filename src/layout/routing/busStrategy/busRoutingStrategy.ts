@@ -18,16 +18,16 @@ export class BusRoutingStrategy implements RoutingStrategy {
     console.log("Executing: Bus Routing Strategy");
 
     // --- 1. 노드 위치 결정 단계 ---
-    profiler.start("Placement");
+    profiler.start("L1-Placement");
     cur = initialPlacement(cur, cfg);
     cur = resolveOverlap(cur, cfg);
     // cur = spreadNodes(cur, cfg);
     cur = sweepCompact(cur, cfg);
     cur = assignPorts(cur, cfg);
-    profiler.stop("Placement");
+    profiler.stop("L1-Placement");
 
     // --- 2-1단계: 버스 채널 생성 및 라우팅 ---
-    profiler.start("Routing");
+    profiler.start("L1-Routing");
     profiler.start("createBusChannels");
     const channels = createBusChannels(cur, cfg);
     setLastBusChannels(channels);
@@ -66,13 +66,13 @@ export class BusRoutingStrategy implements RoutingStrategy {
       }
     }
     profiler.stop("Routing Fallback");
-    profiler.stop("Routing");
+    profiler.stop("L1-Routing");
     
     // --- 3단계: 최종 경로 다듬기 ---
-    profiler.start("Post-Process");
+    profiler.start("L1-Post-Process");
     // cur = separatedPaths(cur, lastVisibilityGraph, cfg);
     cur = beautifyPath(cur, cfg);
-    profiler.stop("Post-Process");
+    profiler.stop("L1-Post-Process");
 
     return cur;
   }

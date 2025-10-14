@@ -7,6 +7,16 @@ import os
 basic_columns = ['scenario', 'seed', 'strategy', 'totalTime']
 three_step_columns = ['Placement', 'Routing', 'Post-Process']
 
+def resolve_three_step_columns(df: pd.DataFrame):
+    """
+    Support both legacy three-step names and new L1-* columns.
+    Returns (selected_columns, rename_map) where rename_map maps selected name -> display name.
+    """
+    l1_prefixed = {f"L1-{name}": name for name in three_step_columns if f"L1-{name}" in df.columns}
+    if len(l1_prefixed) > 0:
+        return list(l1_prefixed.keys()), l1_prefixed
+    legacy = [col for col in three_step_columns if col in df.columns]
+    return legacy, {name: name for name in legacy}
 
 def plot_total_time_comparison(df: pd.DataFrame, charts_dir: str):
     """
@@ -16,8 +26,6 @@ def plot_total_time_comparison(df: pd.DataFrame, charts_dir: str):
         df (pd.DataFrame): 전처리된 벤치마크 데이터프레임.
         charts_dir (str): 차트 파일을 저장할 디렉터리 경로.
     """
-        # 차트를 저장할 'charts' 디렉터리 경로 생성
-
     output_path = os.path.join(charts_dir, 'total_time_comparison.png')
 
     plt.figure(figsize=(12, 7))
@@ -31,7 +39,7 @@ def plot_total_time_comparison(df: pd.DataFrame, charts_dir: str):
     
     plt.savefig(output_path)
     plt.close()
-    print(f"📊 Chart saved to: {output_path}")
+    print(f" Chart saved to: {output_path}")
 
 def plot_three_step_breakdown(df: pd.DataFrame, charts_dir: str):
     """
@@ -46,12 +54,15 @@ def plot_three_step_breakdown(df: pd.DataFrame, charts_dir: str):
     
     for strategy in strategies:
         strategy_df = df[df['strategy'] == strategy].dropna(axis=1, how='all')
-        
-        detail_columns = [col for col in strategy_df.columns if col not in basic_columns and col in three_step_columns]
+
+        # Resolve columns (legacy or L1-*) and rename for display
+        selected_cols, rename_map = resolve_three_step_columns(df)
+        detail_columns = [c for c in selected_cols if c in strategy_df.columns]
         if not detail_columns:
             continue
 
         module_avg = strategy_df.groupby('scenario')[detail_columns].mean()
+        module_avg = module_avg.rename(columns=rename_map)
         
         module_avg.plot(kind='bar', stacked=True, figsize=(12, 7), colormap='tab20c')
         
@@ -67,9 +78,7 @@ def plot_three_step_breakdown(df: pd.DataFrame, charts_dir: str):
         
         plt.savefig(output_path)
         plt.close()
-        print(f"🛠️ Chart saved to: {output_path}")
-
-
+        print(f" Chart saved to: {output_path}")
 
 def plot_three_step_breakdown_pie(df: pd.DataFrame, charts_dir: str, target_scenario: str = 'Large (Standard)'):
     """
@@ -89,12 +98,10 @@ def plot_three_step_breakdown_pie(df: pd.DataFrame, charts_dir: str, target_scen
     for strategy in strategies:
         strategy_df = scenario_df[scenario_df['strategy'] == strategy]
         
-        # 'Routing' 단계에 속하는 세부 모듈들을 식별합니다. (Placement, Post-Process, totalTime 제외)
-        routing_detail_cols = [
-            col for col in df.columns
-            if col in three_step_columns
-        ]
-        
+        # Resolve three-step columns and rename for display
+        selected_cols, rename_map = resolve_three_step_columns(df)
+        routing_detail_cols = [c for c in selected_cols if c in strategy_df.columns]
+
         # 해당 전략에서 측정된 값들만 필터링
         measured_modules = strategy_df[routing_detail_cols].dropna(axis=1, how='all')
         
@@ -103,8 +110,9 @@ def plot_three_step_breakdown_pie(df: pd.DataFrame, charts_dir: str, target_scen
             
         # 각 세부 모듈의 평균 시간을 계산
         module_avg = measured_modules.mean()
+        module_avg.index = [rename_map.get(ix, ix) for ix in module_avg.index]
 
-# 임계값 설정 (1% 미만은 표시 안 함)
+        # 임계값 설정 (1% 미만은 표시 안 함)
         threshold = 1.0 
         total = module_avg.sum()
         
