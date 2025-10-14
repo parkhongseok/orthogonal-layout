@@ -198,7 +198,7 @@ orthogonal-layout/
 
 - [분석 설계](/docs/adr/04-performance-analysis-plan.md)
 - [분석 아키텍처](/docs/adr/05-성능-분석-자동화-아키텍처.md)
-- [분석 결과 보고서](/analysis/results/2025-10-10_10-25-28/report.md)
+- [분석 결과 보고서](/analysis/results/2025-10-10_10-25-28/report_2.md)
 
 <br/>
 
