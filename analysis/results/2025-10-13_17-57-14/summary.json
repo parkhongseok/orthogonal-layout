@@ -1,0 +1,59 @@
+{
+  "overall_summary": {
+    "('Large (Standard)', 'A-Star')": {
+      "mean": 1539.7,
+      "std": 209.49,
+      "min": 1360.92,
+      "max": 1826.11
+    },
+    "('Large (Standard)', 'Bus-Channel')": {
+      "mean": 26854.66,
+      "std": 9566.82,
+      "min": 16299.76,
+      "max": 37092.93
+    },
+    "('Large (Standard)', 'Vertices-Network')": {
+      "mean": 1698.5,
+      "std": 263.6,
+      "min": 1325.8,
+      "max": 2001.93
+    },
+    "('Medium', 'A-Star')": {
+      "mean": 482.71,
+      "std": 46.31,
+      "min": 412.8,
+      "max": 535.56
+    },
+    "('Medium', 'Bus-Channel')": {
+      "mean": 13224.75,
+      "std": 3844.78,
+      "min": 9743.31,
+      "max": 19152.33
+    },
+    "('Medium', 'Vertices-Network')": {
+      "mean": 436.71,
+      "std": 94.69,
+      "min": 335.08,
+      "max": 553.43
+    },
+    "('Small', 'A-Star')": {
+      "mean": 20.25,
+      "std": 9.69,
+      "min": 11.03,
+      "max": 36.61
+    },
+    "('Small', 'Bus-Channel')": {
+      "mean": 257.59,
+      "std": 78.77,
+      "min": 168.92,
+      "max": 319.96
+    },
+    "('Small', 'Vertices-Network')": {
+      "mean": 23.54,
+      "std": 13.76,
+      "min": 9.65,
+      "max": 44.66
+    }
+  },
+  "large_scenario_breakdown": {}
+}

@@ -1,0 +1,89 @@
+# Performance Benchmark Report
+
+Date: {{ date }}
+
+## 📈 1. Summary
+
+[측정에 대한 설명]
+
+### 1.1. Performance Visualization
+
+{% if total_time_chart_filename %}
+<img src="charts/{{ total_time_chart_filename }}" alt="Overall Performance Chart" >
+<sub>그림 1.1. Overall Performance Comparison</sub>
+{% endif %}
+
+<div align="center">
+{{ summary_table_md }}
+</div>
+
+
+ #### Analysis
+[여기에 분석 내용을 직접 작성하세요]
+
+<br/>
+<hr/>
+<br/>
+
+{% for section in sections %}
+## {{ section.sec2 }} 🛠️ Performance for '{{ section.scenario_name }}' Scenario (average time in ms)
+
+{% for strat in section.strategies %}
+### {{ strat.sec3 }}. Strategy: {{ strat.name }}
+
+{% if strat.three_step.has %}
+#### {{ strat.three_step.sec4 }}. three step result 
+
+<table>
+  <tr>
+    <td align="center">
+    {% if strat.three_step.chart_filename %}
+    <img src="charts/{{ strat.three_step.chart_filename }}" alt="3-Step Performance Chart" width="100%" >
+    <br/>
+    <sub>{{ strat.three_step.fig_caption }}</sub>
+    {% endif %}
+  </td>
+  <td align="center" width="50%">
+
+{{ strat.three_step.table_md }}
+
+<sub>{{ strat.three_step.tbl_caption }}</sub>
+
+  </td>
+  </tr>
+</table>
+<br/>
+{% endif %}
+
+{% if strat.routing_breakdown.has %}
+#### {{ strat.routing_breakdown.sec4 }}. routing breakdown result
+
+<table>
+  <tr>
+    <td align="center">
+    {% if strat.routing_breakdown.chart_filename %}
+    <img src="charts/{{ strat.routing_breakdown.chart_filename }}" alt="Routing Detail Chart" width="100%" >
+    <br/>
+    <sub>{{ strat.routing_breakdown.fig_caption }}</sub>
+    {% endif %}
+  </td>
+  <td align="center" width="50%">
+
+{{ strat.routing_breakdown.table_md }}
+
+<sub>{{ strat.routing_breakdown.tbl_caption }}</sub>
+
+  </td>
+  </tr>
+</table>
+<br/>
+{% endif %}
+
+ #### Analysis
+[여기에 분석 내용을 직접 작성하세요]
+
+<hr/>
+<br/>
+
+{% endfor %}
+{% endfor %}

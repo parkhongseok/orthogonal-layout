@@ -1,16 +1,70 @@
 import os
 import pandas as pd
+from jinja2 import Environment, FileSystemLoader
 
 basic_columns = ['scenario', 'seed', 'strategy', 'totalTime']
 three_step_column_names = ['Placement', 'Routing', 'Post-Process']
 
-# def image_to_base64_str(image_path):
-#     """
-#     # 이미지를 Base64 문자열로 변환합니다.
+def resolve_three_step_columns(df: pd.DataFrame):
+    """
+    Determine which columns to treat as the three main steps (L1), supporting
+    both legacy names (e.g., 'Placement') and new L1-prefixed names (e.g., 'L1-Placement').
+    Returns a tuple: (selected_columns_in_df, rename_map_for_display)
+    where rename_map maps dataframe column name -> display name.
+    """
+    # Prefer L1-* columns if present
+    l1_prefixed = {f"L1-{name}": name for name in three_step_column_names if f"L1-{name}" in df.columns}
+    if len(l1_prefixed) > 0:
+        return list(l1_prefixed.keys()), l1_prefixed
 
-#     """
-#     with open(image_path, "rb") as image_file:
-#         return base64.b64encode(image_file.read()).decode('utf-8')
+    # Fallback to legacy column names
+    legacy = [col for col in three_step_column_names if col in df.columns]
+    legacy_map = {name: name for name in legacy}
+    return legacy, legacy_map
+
+def format_numbers(df: pd.DataFrame, decimals: int = 2) -> pd.DataFrame:
+    """Format all numeric columns to fixed decimals as strings (e.g., 12.40)."""
+    formatted = df.copy()
+    for col in formatted.columns:
+        if pd.api.types.is_numeric_dtype(formatted[col]):
+            formatted[col] = formatted[col].map(lambda x: f"{x:.{decimals}f}" if pd.notna(x) else "")
+    return formatted
+
+def md_table(df: pd.DataFrame) -> str:
+    """Render DataFrame to GitHub-flavor markdown with fixed 2 decimals and right alignment."""
+    # Use tabulate backend formatting to guarantee trailing zeros
+    return df.to_markdown(tablefmt='github', floatfmt=".2f", numalign='right', stralign='right')
+
+def caption_figure(section_prefix: str, idx: int, title: str) -> str:
+    return f"그림 {section_prefix}.{idx}. {title}"
+
+def caption_table(section_prefix: str, idx: int, title: str) -> str:
+    return f"표 {section_prefix}.{idx}. {title} "
+
+class Numbering:
+    """Simple hierarchical numbering for sections and captions.
+    Levels: 2 (scenario), 3 (strategy), 4 (sub-sections like three-step/routing)
+    """
+    def __init__(self):
+        self.counters = {2: 0, 3: 0, 4: 0}
+
+    def _reset_below(self, level: int):
+        for k in list(self.counters.keys()):
+            if k > level:
+                self.counters[k] = 0
+
+    def sec(self, level: int) -> str:
+        self._reset_below(level)
+        self.counters[level] += 1
+        parts = []
+        for lv in (2, 3, 4):
+            if lv > level:
+                break
+            if self.counters[lv] == 0:
+                parts.append('0')
+            else:
+                parts.append(str(self.counters[lv]))
+        return '.'.join(parts) + '.'
 
 def save_report_to_markdown(df: pd.DataFrame, summary_data: dict, output_dir: str):
     """
@@ -21,104 +75,86 @@ def save_report_to_markdown(df: pd.DataFrame, summary_data: dict, output_dir: st
         output_dir (str): 리포트 파일을 저장할 디렉터리 경로.
     """
     report_path = os.path.join(output_dir, 'report_frame.md')
+    charts_dir = os.path.join(output_dir, 'charts')
+    num = Numbering()
 
-    with open(report_path, 'w') as f:
-        f.write("# Performance Benchmark Report\n\n")
+    # Build summary context
+    summary_df = pd.DataFrame.from_dict(summary_data['overall_summary'], orient='index')
+    total_time_chart_filename = None
+    total_chart_path = os.path.join(charts_dir, 'total_time_comparison.png')
+    if os.path.exists(total_chart_path):
+        total_time_chart_filename = os.path.basename(total_chart_path)
 
-        f.write(f'Date: {os.path.basename(output_dir)}\n\n')
-        
-        # --- 1. 전체 성능 요약 테이블 ---
-        f.write("## 📈 1. Summary\n\n")
-        f.write("[측정에 대한 설명]\n\n")
-        
-        image_path = os.path.join(output_dir, 'charts', 'total_time_comparison.png')
-        if image_path and os.path.exists(image_path):
-            # 절대 경로 대신 파일명만 사용하도록 변경
-            image_filename = os.path.basename(image_path)
-            f.write(f'### 1.1. Performance Visualization\n\n')
-            # f.write(f'<img src="data:image/png;base64,{base64_image}" alt="3-Step Performance Chart" width="60%" >\n\n')
-            f.write(f'<img src="charts/{image_filename}" alt="Overall Performance Chart" >\n\n')
-
-        # summary_data를 사용하여 표 생성
-        summary_df = pd.DataFrame.from_dict(summary_data['overall_summary'], orient='index')
-        f.write(summary_df.to_markdown())
-
-        f.write("\n\n #### Analysis\n")
-        f.write("[여기에 분석 내용을 직접 작성하세요]\n\n")
-        
-        f.write('\n\n')
-        f.write('<br/>\n')
-        f.write('<hr/>\n')
-        f.write('<br/>\n')
-        f.write('\n\n')
-
-        # --- 2. 'Large' 시나리오 모듈별 성능 분석 테이블 ---
-        target_scenario = 'Large (Standard)'
-        f.write(f"## 🛠️ Performance for '{target_scenario}' Scenario (average time in ms)\n\n")
-        
-        scenario_df = df[df['scenario'] == target_scenario]
-        
-        if scenario_df.empty:
-            f.write(f"No data found for scenario: '{target_scenario}'\n")
-            return
-
-        strategies = sorted(scenario_df['strategy'].unique())
-        for strategy in strategies:
+    # Sections (currently only 'Large (Standard)')
+    sections = []
+    target_scenario = 'Large (Standard)'
+    scenario_df = df[df['scenario'] == target_scenario]
+    if not scenario_df.empty:
+        sec2 = num.sec(2)
+        section = {
+            'scenario_name': target_scenario,
+            'sec2': sec2,
+            'strategies': []
+        }
+        for strategy in sorted(scenario_df['strategy'].unique()):
             strategy_df = scenario_df[scenario_df['strategy'] == strategy]
+            sec3 = num.sec(3)
 
-            f.write(f"### Strategy: {strategy}\n\n")
+            # Three-step
+            three_step_cols, rename_map = resolve_three_step_columns(strategy_df)
+            three_step_has = len(strategy_df[three_step_cols].dropna(axis=1, how='all').columns) > 0
+            three_step = {'has': False}
+            if three_step_has:
+                sec4 = num.sec(4)
+                display_df = strategy_df[three_step_cols].rename(columns=rename_map)
+                module_avg = display_df.mean().to_frame(name='Average Time (ms)')
+                three_step = {
+                    'has': True,
+                    'sec4': sec4,
+                    'chart_filename': f'three_step_breakdown_pie_{strategy}.png' if os.path.exists(os.path.join(charts_dir, f'three_step_breakdown_pie_{strategy}.png')) else None,
+                    'table_md': md_table(module_avg),
+                    'fig_caption': caption_figure(f"{num.counters[2]}.{num.counters[3]}", num.counters[4], f'3-Step Phase Breakdown for "{strategy}"'),
+                    'tbl_caption': caption_table(f"{num.counters[2]}.{num.counters[3]}", num.counters[4], f'3-Step Phase Breakdown for "{strategy}"')
+                }
 
-            # three step result (Large Case)
-            three_step_columns = [
-                col for col in df.columns 
-                if col in three_step_column_names
-            ]
+            # Routing breakdown (exclude basics and three-step)
+            routing_cols = [c for c in df.columns if c not in basic_columns + list(three_step_columns)]
+            measured = strategy_df[routing_cols].dropna(axis=1, how='all').columns
+            routing = {'has': False}
+            if len(measured) > 0:
+                sec4_r = num.sec(4)
+                module_avg_r = strategy_df[measured].mean().to_frame(name='Average Time (ms)')
+                routing = {
+                    'has': True,
+                    'sec4': sec4_r,
+                    'chart_filename': f'routing_breakdown_pie_{strategy}.png' if os.path.exists(os.path.join(charts_dir, f'routing_breakdown_pie_{strategy}.png')) else None,
+                    'table_md': md_table(module_avg_r),
+                    'fig_caption': caption_figure(f"{num.counters[2]}.{num.counters[3]}", num.counters[4], f'Routing Phase Breakdown for "{strategy}"'),
+                    'tbl_caption': caption_table(f"{num.counters[2]}.{num.counters[3]}", num.counters[4], f'Routing Phase Breakdown for "{strategy}"')
+                }
 
-            measured_modules = strategy_df[three_step_columns].dropna(axis=1, how='all').columns
-            
-            if len(measured_modules) > 0:
-                f.write("#### three step result \n\n")
+            section['strategies'].append({
+                'name': strategy,
+                'sec3': sec3,
+                'three_step': three_step,
+                'routing_breakdown': routing,
+            })
 
-                image_path = os.path.join(output_dir, 'charts', f'three_step_breakdown_pie_{strategy}.png')
-                if image_path and os.path.exists(image_path):
-                    # base64_image = image_to_base64_str(image_path)
-                    # f.write(f'<img src="data:image/png;base64,{base64_image}" alt="3-Step Performance Chart" width="60%" >\n\n')
-                    image_filename = os.path.basename(image_path)
-                    f.write(f'<img src="charts/{image_filename}" alt="3-Step Performance Chart" width="60%" >\n\n')
+        sections.append(section)
 
-                module_avg = strategy_df[measured_modules].mean().round(2).to_frame(name='Average Time (ms)')
-                f.write(module_avg.to_markdown())
-                f.write('\n\n')
-                f.write('<br/>\n')
-                f.write('\n\n')
+    # Prepare template context
+    templates_dir = os.path.join(os.path.dirname(__file__), 'templates')
+    env = Environment(loader=FileSystemLoader(templates_dir))
+    template = env.get_template('report.md.j2')
+    context = {
+        'date': os.path.basename(output_dir),
+        'total_time_chart_filename': total_time_chart_filename,
+        'summary_table_md': md_table(summary_df),
+        'sections': sections,
+    }
 
-            routing_breakedown_columns = [
-                col for col in df.columns 
-                if col not in three_step_column_names + basic_columns
-            ]
-
-            measured_modules = strategy_df[routing_breakedown_columns].dropna(axis=1, how='all').columns
-
-            if len(measured_modules) > 0:
-                f.write("#### routing breakdown result\n\n")
-
-                image_path = os.path.join(output_dir, 'charts', f'routing_breakdown_pie_{strategy}.png')
-                if image_path and os.path.exists(image_path):
-                    # base64_image = image_to_base64_str(image_path)
-                    # f.write(f'<img src="data:image/png;base64,{base64_image}" alt="3-Step Performance Chart" width="60%" >\n\n')
-                    image_filename = os.path.basename(image_path)
-                    f.write(f'<img src="charts/{image_filename}" alt="Routing Detail Chart" width="60%" >\n\n')
-
-                module_avg = strategy_df[measured_modules].mean().round(2).to_frame(name='Average Time (ms)')
-                f.write(module_avg.to_markdown())
-
-                f.write("\n\n #### Analysis\n")
-                f.write("[여기에 분석 내용을 직접 작성하세요]\n\n")
-
-                f.write('\n\n')
-                f.write('<br/>\n')
-                f.write('<hr/>\n')
-                f.write('<br/>\n')
-                f.write('\n\n')
-
+    # Render and write
+    content = template.render(**context)
+    with open(report_path, 'w', encoding='utf-8') as f:
+        f.write(content)
     print(f"📜 Report saved to: {report_path}")
